@@ -17,9 +17,13 @@
 package ua.utility.kfsdbupgrade;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -37,6 +41,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -47,8 +52,6 @@ public class App {
     private static final String HEADER1 = "================================================ ? ================================================";
     private static String riceUpgradeRoot;
     private static String kfsUpgradeRoot;
-    private static PrintWriter outputLog;
-    private static PrintWriter processedFiles;
     private static List<String> riceUpgradeFolders;
     private static List <String> kfsUpgradeFolders;
     private static Properties properties;
@@ -72,19 +75,14 @@ public class App {
                 Statement stmt = null;
                 boolean success = false;
                 try {
-                    outputLog = new PrintWriter(properties.getProperty("output-log-file-name"));
-                    processedFiles = new PrintWriter(properties.getProperty("processed-files-file-name"));
                     conn = getConnection();
                     stmt = conn.createStatement();
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
                     if (doInitialProcessing(stmt)) {
-                        if (doRiceUpgrade(conn, stmt)) {
-                            writeOut("");
-                            if (doKfsUpgrade(conn, stmt)) {
-                                success = true;
-                            }
-                        }   
+                        if (doKfsUpgrade(conn, stmt)) {
+                            success = true;
+                        }
                     }
                     
                     if (success) {
@@ -100,18 +98,6 @@ public class App {
 
                 finally {
                     closeDbObjects(conn, stmt, null);
-
-                    try {
-                        outputLog.close();
-                    }
-
-                    catch (Exception ex) {};
-
-                    try {
-                        processedFiles.close();
-                    }
-
-                    catch (Exception ex) {};
                 }
             } else {
                 System.out.println("invalid properties file: " + args[0]);
@@ -233,37 +219,6 @@ public class App {
         return retval;
     }
 
-    private static boolean doRiceUpgrade(Connection conn, Statement stmt) {
-        boolean retval = true;
-        
-        Set <File> processedRiceFiles = getProcessedRiceFiles();
-        
-        writeHeader1("upgrading rice");
-        for (int i = 0; retval && (i < riceUpgradeFolders.size()); ++i) {
-            String folder = riceUpgradeFolders.get(i);
-            writeHeader2("processing rice folder " + folder);
-            
-            for (String fileName : riceFiles.get(folder)) {
-                File f = new File(riceUpgradeRoot + "/" + folder + "/" + fileName);
-                if (!processedRiceFiles.contains(f)) {
-                    if (!runSqlFile(conn, stmt, f, "/")) {
-                        retval = false;
-                        processedFiles.println("[failure] " + f.getPath());
-                        break;
-                    } else {
-                        processedFiles.println("[success] " + f.getPath());
-                    }
-                }
-            }
-            
-            if (retval && !"file".equals(properties.getProperty("commit-level"))) {
-                retval = doCommit(conn);
-            }
-        }
-        
-        return retval;
-    }
-
     private static void doRollback(Connection conn) {
         try {
             conn.rollback();
@@ -291,7 +246,7 @@ public class App {
     private static boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
         boolean retval = true;
         writeHeader2("processing sql file " + f.getPath());
-        List <String> sqlStatements = getSqlStatements(f, delimiter);
+        List <String> sqlStatements = getSqlStatements(f);
         
         if (!sqlStatements.isEmpty()) {
             for (String sql : sqlStatements) {
@@ -317,37 +272,37 @@ public class App {
         return retval;
     }
     
-    private static List <String> getSqlStatements(File f, String delimiter) {
+    private static List <String> getSqlStatements(File f) {
         List <String> retval = new ArrayList<>();
         LineNumberReader lnr = null;
         
         try {
-            StringBuilder buf = new StringBuilder(1024);
-            
             lnr = new LineNumberReader(new FileReader(f));
-            
             String line = null;
+            StringBuilder sql = new StringBuilder(512);
             
             while ((line = lnr.readLine()) != null) {
                 if (StringUtils.isNotBlank(line) && !line.trim().startsWith("--")) {
-                    buf.append(line);
+                    line = line.trim();
+                    if (line.equals("/")) {
+                        if (sql.length() > 0) {
+                            retval.add(sql.toString());
+                            sql.setLength(0);
+                        } 
+                    } else if (line.endsWith("/") || line.endsWith(";")) {
+                        sql.append(" ");
+                        sql.append(line.substring(0, line.length()-1));
+                        retval.add(sql.toString());
+                        sql.setLength(0);
+                    } else {
+                        sql.append(" ");
+                        sql.append(line);
+                    }
                 }
             }
             
-            if (buf.length() > 0) {
-                StringTokenizer st = new StringTokenizer(buf.toString(), delimiter);
-                
-                while (st.hasMoreTokens()) {
-                    String s = st.nextToken().trim();
-                    StringBuilder sql = new StringBuilder(s.length());
-                    StringTokenizer st2 = new StringTokenizer(s);
-                    while(st2.hasMoreTokens()) {
-                        sql.append(st2.nextToken());
-                        sql.append(" ");
-                    }
-                    
-                    retval.add(sql.toString());
-                }
+            if (sql.length() > 0) {
+                retval.add(sql.toString());
             }
         }
         
@@ -384,16 +339,16 @@ public class App {
                     if (f.getName().endsWith(".sql")) {
                         if (!runSqlFile(conn, stmt, f, ";")) {
                             retval = false;
-                            processedFiles.println("[failure] " + f.getPath());
+                            writeProcessedFileInfo("[failure] " + f.getPath());
                         } else {
-                            processedFiles.println("[success] " + f.getPath());
+                            writeProcessedFileInfo("[success] " + f.getPath());
                         }
                     } else {
                         if(!runLiquibase(conn, f)) {
                             retval = false;
-                            processedFiles.println("[failure] " + f.getPath());
+                            writeProcessedFileInfo("[failure] " + f.getPath());
                         } else {
-                            processedFiles.println("[success] " + f.getPath());
+                            writeProcessedFileInfo("[success] " + f.getPath());
                         }
                     }
 
@@ -414,31 +369,25 @@ public class App {
     
     private static boolean runLiquibase(Connection conn, File f) {
         boolean retval = true;
-        PrintWriter pw = null;
-
+        StringWriter sw = new StringWriter();
         writeHeader2("processing liquibase file " + f.getPath());
 
         try {
             Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
-            liquibase.reportStatus(true, null, outputLog);
+            liquibase.reportStatus(true, null, sw);
             liquibase.update(null);
             retval = true;
+            writeOut(sw.toString());
         }
         
         catch (Exception ex) {
             retval= false;
+            if (sw != null) {
+                writeOut(sw.toString());
+            }
             writeOut(ex);
         }
         
-        finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            }
-            
-            catch (Exception ex) {};
-        }
         return retval;
     }
 
@@ -450,9 +399,27 @@ public class App {
     }
     
     private static void writeLog(Exception ex) {
-        outputLog.println();
-        outputLog.println(ERROR);
-        ex.printStackTrace(outputLog);
+        PrintWriter pw = null;
+        
+        try {
+            pw = getOutputLogWriter();
+            pw.println();
+            pw.println(ERROR);
+            ex.printStackTrace(pw);
+        }
+        
+        catch (Exception ex2) {
+        }
+        
+        finally {
+            try {
+                if (pw != null) {
+                    pw.close();
+                }
+            }
+            
+            catch (Exception ex2) {};
+        }
     }
 
     private static void writeOut(String msg) {
@@ -461,10 +428,28 @@ public class App {
     }
     
     private static void writeLog(String msg) {
-        if (StringUtils.isNotBlank(msg)) {
-            outputLog.println(getTimeString() + msg);
-        } else {
-            outputLog.println();
+        PrintWriter pw = null;
+        
+        try {
+            pw = getOutputLogWriter();
+            if (StringUtils.isNotBlank(msg)) {
+                pw.println(getTimeString() + msg);
+            } else {
+                pw.println();
+            }
+        }
+        
+        catch (Exception ex2) {
+        }
+        
+        finally {
+            try {
+                if (pw != null) {
+                    pw.close();
+                }
+            }
+            
+            catch (Exception ex2) {};
         }
     }
 
@@ -544,11 +529,22 @@ public class App {
         String s = sql.toUpperCase();
         return (!s.toUpperCase().startsWith("UPDATE") && !s.startsWith("INSERT") && !s.startsWith("DELETE"));
     }
+
+    private static void deleteFile(File f) throws IOException {
+        try {
+            FileUtils.forceDelete(f);
+        }
+        
+        catch (FileNotFoundException ex) {};
+    }
     
     private static boolean doInitialProcessing(Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
         try {
+            deleteFile(new File(properties.getProperty("output-log-file-name")));
+            deleteFile(new File(properties.getProperty("processed-files-file-name")));
+            
             writeHeader1("pre-upgrade processing");
             writeHeader2("dropping materialized view logs..");
             res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
@@ -589,5 +585,35 @@ public class App {
         writeOut(msg);
         writeOut(UNDERLINE);
         writeOut("");
+    }
+    
+    private static PrintWriter getOutputLogWriter() throws IOException {
+        return new PrintWriter(new FileWriter(properties.getProperty("output-log-file-name"), true));
+    }
+
+    private static PrintWriter getProcessedFilesWriter() throws IOException {
+        return new PrintWriter(new FileWriter(properties.getProperty("processed-files-file-name"), true));
+    }
+    
+    private static void writeProcessedFileInfo(String txt) {
+        PrintWriter pw = null;
+        try {
+            pw = getProcessedFilesWriter();
+            pw.println(txt);
+        }
+        
+        catch (Exception ex) {
+            writeOut(ex);
+        }
+        
+        finally {
+            try {
+                if (pw != null) {
+                    pw.close();
+                }
+            }
+            
+            catch (Exception ex) {};
+        }
     }
 }
