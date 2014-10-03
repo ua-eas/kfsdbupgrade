@@ -32,16 +32,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
+import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -160,33 +157,6 @@ public class App {
         return retval;
     }
 
-    private static Set <File> getProcessedFiles() {
-        Set <File> retval = new HashSet<>();
-        String fname = properties.getProperty("last-good-file");
-        
-        if (StringUtils.isNotBlank(fname)) {
-            File lastGoodKfsFile = new File(fname);
-            if (lastGoodKfsFile.isFile() && lastGoodKfsFile.exists()) {
-                boolean foundit = false;
-                for (int i = 0; !foundit && (i < upgradeFolders.size()); ++i) {
-                    String folder = upgradeFolders.get(i);
-                    for (String fileName : upgradeFiles.get(folder)) {
-                        File f = new File(upgradeRoot + "/" + folder + "/" + fileName);
-
-                        if (!lastGoodKfsFile.equals(f)) {
-                            retval.add(f);
-                        } else {
-                            foundit = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return retval;
-    }
-
     private static void doRollback(Connection conn) {
         try {
             conn.rollback();
@@ -252,7 +222,7 @@ public class App {
             while ((line = lnr.readLine()) != null) {
                 if (StringUtils.isNotBlank(line) && !line.trim().startsWith("--")) {
                     line = line.trim();
-                    if (line.equals("/")) {
+                    if (line.equals("/") || line.equals(";")) {
                         if (sql.length() > 0) {
                             retval.add(sql.toString());
                             sql.setLength(0);
@@ -307,45 +277,102 @@ public class App {
         return retval;
     }
     
+    private static String getLastProcessedFolder(String lastProcessedFile) {
+        String retval = null;
+        String s = lastProcessedFile.substring(properties.getProperty("upgrade-base-directory").length() + 1);
+        int pos = s.indexOf("/");
+        retval = s.substring(0, pos);
+        return retval;
+    }
+    
+    private static List <String> getFolders(String lastProcessedFile) {
+        List <String> retval = new ArrayList<>();
+
+        if (StringUtils.isNotBlank(lastProcessedFile)) {
+            String lastProcessedFolder = getLastProcessedFolder(lastProcessedFile);
+            boolean foundit = false;
+            for (String folder : upgradeFolders) {
+                if (lastProcessedFolder.equals(folder)) {
+                    foundit = true;
+                }
+                
+                if (foundit) {
+                    retval.add(folder);
+                }
+            }
+        } else {
+            retval = upgradeFolders;
+        }
+        
+        return retval;
+    }
+    
+    private static List <String> getFolderFiles(String folder, String lastProcessedFile) {
+        List <String> retval = new ArrayList<>();
+        if (StringUtils.isBlank(lastProcessedFile)) {
+            retval = upgradeFiles.get(folder);
+        } else {
+            boolean foundit = false;
+            String lastProcessedFolder = getLastProcessedFolder(lastProcessedFile);
+            int len = (properties.getProperty("upgrade-base-directory") + "/" + folder + "/").length();
+
+            if (!folder.equals(lastProcessedFolder)) {
+                retval = upgradeFiles.get(folder);
+            } else {
+                for (String s : upgradeFiles.get(folder)) {
+                    if (s.equals(lastProcessedFile.substring(len))) {
+                        foundit = true;
+                    } else if (foundit) {
+                        retval.add(s);
+                    }
+                }
+            }
+        }
+        return retval;
+    }
+    
     private static boolean doUpgrade(Connection conn, Statement stmt) {
         boolean retval = true;
         writeHeader1("upgrading kfs");
-        Set <File> processedKfsFiles = getProcessedFiles();
+
+        String lastProcessedFile = properties.getProperty("last-processed-file");
+
+        List <String> folders = getFolders(lastProcessedFile);
         
-        for (int i = 0; retval && (i < upgradeFolders.size()); ++i) {
-            String folder = upgradeFolders.get(i);
+        for (String folder : folders) {
             writeHeader2("processing folder " + folder);
             
-            for (String fname : upgradeFiles.get(folder)) {
+            for (String fname : getFolderFiles(folder, lastProcessedFile)) {
                 File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
                 
-                if (!processedKfsFiles.contains(f)) {
-                    if (f.getName().endsWith(".sql")) {
-                        if (!runSqlFile(conn, stmt, f, ";")) {
-                            retval = false;
-                            writeProcessedFileInfo("[failure] " + f.getPath());
-                        } else {
-                            writeProcessedFileInfo("[success] " + f.getPath());
-                        }
+                if (f.getName().endsWith(".sql")) {
+                    if (!runSqlFile(conn, stmt, f, ";")) {
+                        retval = false;
+                        writeProcessedFileInfo("[failure] " + f.getPath());
                     } else {
-                        if(!runLiquibase(conn, f)) {
-                            retval = false;
-                            writeProcessedFileInfo("[failure] " + f.getPath());
-                        } else {
-                            writeProcessedFileInfo("[success] " + f.getPath());
-                        }
+                        writeProcessedFileInfo("[success] " + f.getPath());
                     }
-
-                    if (!retval) {
-                        break;
-                    } 
+                } else {
+                    if(!runLiquibase(conn, f)) {
+                        retval = false;
+                        writeProcessedFileInfo("[failure] " + f.getPath());
+                    } else {
+                        writeProcessedFileInfo("[success] " + f.getPath());
+                    }
                 }
+
+                if (!retval) {
+                    break;
+                } 
             }
             
             if (retval && !"file".equals(properties.getProperty("commit-level"))) {
                 retval = doCommit(conn);
             }
 
+            if (!retval) {
+                break;
+            }
         }
         
         return retval;
@@ -357,7 +384,7 @@ public class App {
         writeHeader2("processing liquibase file " + f.getPath());
 
         try {
-            Liquibase liquibase = new Liquibase(null, new FileSystemResourceAccessor(f.getParentFile().getPath()), new JdbcConnection(conn));
+            Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
             liquibase.reportStatus(true, null, sw);
             liquibase.update(null);
             retval = true;

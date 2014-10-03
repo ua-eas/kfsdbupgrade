@@ -23,7 +23,7 @@
 	<changeSet author="kfs" id="KFS_400_KRNS_PARM_T_NEW_PARAMS" >	
       		<insert tableName="KRNS_PARM_TYP_T">
                     <column name="PARM_TYP_CD" value="HELP" />			
-                    <column name="OBJ_ID" value="SYS_GUID()" />
+                    <column name="OBJ_ID" value="14bf3fc9-5803-4977-a0f6-a592cac84baa" />
                     <column name="VER_NBR" valueNumeric="1" />
                     <column name="NM" value="Help Documentation" />
                     <column name="ACTV_IND" value="Y"/>
