@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2010 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">	
+	<!-- Ensure that all KFS namespaces have the KFS application namespace code. -->
+
+	<!-- New KFS parameters since 3.0.1 -->
+	<changeSet author="kfs" id="KFS_400_KRNS_PARM_T_NEW_PARAMS" >	
+		<loadData tableName="KRNS_PARM_T" file="kfs_40_new_params.csv" >
+			<column header="NMSPC_CD" type="string" />
+			<column header="PARM_DTL_TYP_CD" type="string" />
+			<column header="PARM_NM" type="string" />
+			<column header="PARM_TYP_CD" type="string" />
+			<column header="TXT" type="string" />
+			<column header="PARM_DESC_TXT" type="string" />
+			<column header="CONS_CD" type="string" />
+			<column header="APPL_NMSPC_CD" type="string" />
+			<column header="OBJ_ID" type="string" />
+		</loadData>
+    </changeSet>
+
+	<!-- Remove no-longer-used parameters -->
+    <changeSet author="kfs" id="KFS_40_DELETE_OLD_PARMS">
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-LD' AND PARM_DTL_TYP_CD = 'LaborPosterStep' AND PARM_NM = 'SENT_TO_POSTER_OBJECT_CODES'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'COST_SHARE_ORGS_BUDGET_PERMISSION'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'DEFAULT_APPOINTMENT_TYPE'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'DEFAULT_NONPERSONNEL_INFLATION_RATE'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'DEFAULT_PERSONNEL_INFLATION_RATE'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'FIRST25K_SUBCATEGORY_CODES'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'GRADUATE_ASSISTANT_NONPERSONNEL_CATEGORY'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'GRADUATE_ASSISTANT_NONPERSONNEL_DESCRIPTION'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'GRADUATE_ASSISTANT_NONPERSONNEL_SUB_CATEGORY'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'PERIOD_IDENTIFIER'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'PERSONNEL_STATUSES'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'RESEARCH_RISKS_ANIMALS_ACTIVE'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'RESEARCH_RISKS_HUMAN_SUBJECTS_ACTIVE'</where>
+    	</delete>
+    	<delete tableName="KRNS_PARM_T">
+    		<where>NMSPC_CD = 'KFS-CG' AND PARM_DTL_TYP_CD = 'Document' AND PARM_NM = 'TO_BE_NAMED_LABEL'</where>
+    	</delete>
+    </changeSet>
+    
+	<!-- fix the descriptions on parameters which are misleading -->
+    <changeSet author="kfs" id="KFS_40_FIX_PARM_DESC">
+    	<update tableName="KRNS_PARM_T">
+    		<column name="PARM_DESC_TXT" value="Object levels that, when associated with Contract &amp; Grant accounts on a Purchase Order, will not force the PO to route to a C&amp;G workgroup for approval. Format of list is chart 1=object level 1, object level 2;chart 2=object level 3,object level 4,object level 5" />
+    		<where>NMSPC_CD = 'KFS-PURAP' AND PARM_DTL_TYP_CD = 'PurchaseOrder' AND PARM_NM = 'NO_CG_ROUTE_OBJECT_LEVELS_BY_CHART'</where>
+    	</update>
+    	<update tableName="KRNS_PARM_T">
+    		<column name="PARM_DESC_TXT" value="The number of ElectronicPaymentClaim summaries which should appear on a single note attached to a claiming document." />
+    		<where>NMSPC_CD = 'KFS-SYS' AND PARM_DTL_TYP_CD = 'ElectronicPaymentClaim' AND PARM_NM = 'ELECTRONIC_FUNDS_CLAIM_SUMMARIES_PER_NOTE'</where>
+    	</update>
+    </changeSet>
+    
+</databaseChangeLog>   
+      

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2010 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<data xmlns="ns:workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ns:workflow resource:WorkflowData">
+  <documentTypes xmlns="ns:workflow/DocumentType" xsi:schemaLocation="ns:workflow/DocumentType resource:DocumentType">
+
+	<!-- Add the maintenance doc document handler URL to KFS since removed 
+		 from KualiDocument in the baseline Rice distribution. -->
+    <documentType>
+      <name>KFS</name>
+      <parent>KualiDocument</parent>
+      <docHandler>${application.url}/kr/maintenance.do?methodToCall=docHandler</docHandler>
+    </documentType>
+
+	<!-- Remove the route paths to ensure that they inherit from the parent.  In 3.0.1 they were
+		 defined as the same as the parent, but that stopped them from inheriting when an institution
+		 attempted to customize a parent document's workflow. -->
+    <documentType>
+      <name>VNSM</name>
+      <parent>FSSM</parent>
+    </documentType>
+    <documentType>
+      <name>CGSM</name>
+      <parent>FSSM</parent>
+    </documentType>
+    <documentType>
+      <name>PRSM</name>
+      <parent>FSSM</parent>
+    </documentType>
+
+	<!-- Add help URLs -->
+    <documentType overwriteMode="true">
+      <name>BC</name>
+      <helpDefinitionURL>default.htm?turl=WordDocuments%2Fbudgetdonstructionselection.htm</helpDefinitionURL>
+      <postProcessorName />
+      <routePaths />
+    </documentType>
+
+    <documentType overwriteMode="true">
+      <name>PVEN</name>
+      <helpDefinitionURL>default.htm?turl=WordDocuments%2Fvendor2.htm</helpDefinitionURL>
+    </documentType>
+
+	<!-- Update the label on these documents -->
+    <documentType overwriteMode="true">
+      <name>RA</name>
+      <label>Research Administration</label>
+    </documentType>
+
+  </documentTypes>
+</data>

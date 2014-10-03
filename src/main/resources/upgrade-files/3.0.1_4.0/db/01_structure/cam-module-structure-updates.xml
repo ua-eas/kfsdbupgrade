@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2010 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+	<changeSet author="Bob" id="KFS_40_CAMS_VENDOR_FIELD_LENGTHS">
+		<comment>KFSMI-5869  CAB doesn"t accept a vendor name &gt; 40 characters </comment>
+		<modifyColumn tableName="CM_AST_COMPONENT_T">
+			<column name="CACMP_MFR_NM" type="VARCHAR2(45)" />
+			<column name="CACMP_VENDOR_NM" type="VARCHAR2(45)" />
+		</modifyColumn>
+		<modifyColumn tableName="CM_CPTLAST_DOC_T">
+			<column name="CPTLAST_MFR_NM" type="VARCHAR2(45)" />
+			<column name="CPTLAST_VENDOR_NM" type="VARCHAR2(45)" />
+		</modifyColumn>
+		<modifyColumn tableName="CM_CPTLAST_T">
+			<column name="CPTLAST_MFR_NM" type="VARCHAR2(45)" />
+			<column name="CPTLAST_VENDOR_NM" type="VARCHAR2(45)" />
+		</modifyColumn>
+		<modifyColumn tableName="CM_CPTLAST_DTL_T">
+			<column name="CPTLAST_MFR_NM" type="VARCHAR2(45)" />
+		</modifyColumn>
+		<modifySql dbms="mysql">
+			<replace replace="VARCHAR2" with="VARCHAR" />
+		</modifySql>
+	</changeSet>
+
+</databaseChangeLog>

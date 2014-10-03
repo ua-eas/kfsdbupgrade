@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2010 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">	
+
+	<!-- Add the endowment namespace code -->
+	<changeSet author="kfs" id="KFS_4.0_KRNS_NMSPC_T_ADD_ENDOW">
+		<insert tableName="KRNS_NMSPC_T">
+			<column name="NMSPC_CD" value="KFS-ENDOW" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="NM" value="Endowment" />
+			<column name="ACTV_IND" value="Y" />
+			<column name="APPL_NMSPC_CD" value="KFS" />
+		</insert>
+		<modifySql dbms="mysql">
+			<replace replace="SYS_GUID" with="UUID" />
+		</modifySql>
+    </changeSet>
+
+	<!-- Add the standard components for the KFS-ENDOW namespace -->    
+	<changeSet author="kfs" id="KFS_4.0_KRNS_PARM_DTL_TYP_T_ADD_ENDOW">
+		<insert tableName="KRNS_PARM_DTL_TYP_T">
+			<column name="NMSPC_CD" value="KFS-ENDOW" />
+			<column name="PARM_DTL_TYP_CD" value="All" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="NM" value="All" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		<insert tableName="KRNS_PARM_DTL_TYP_T">
+			<column name="NMSPC_CD" value="KFS-ENDOW" />
+			<column name="PARM_DTL_TYP_CD" value="Batch" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="NM" value="Batch" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		<insert tableName="KRNS_PARM_DTL_TYP_T">
+			<column name="NMSPC_CD" value="KFS-ENDOW" />
+			<column name="PARM_DTL_TYP_CD" value="Document" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="NM" value="Document" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		<insert tableName="KRNS_PARM_DTL_TYP_T">
+			<column name="NMSPC_CD" value="KFS-ENDOW" />
+			<column name="PARM_DTL_TYP_CD" value="Lookup" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="NM" value="Lookup" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		<modifySql dbms="mysql">
+			<replace replace="SYS_GUID" with="UUID" />
+		</modifySql>
+	</changeSet>
+
+	<!-- New parameters for the endowment module -->
+	<changeSet author="kfs" id="KFS_400_KRNS_PARM_T_ENDOW_PARAMS">
+		<loadData tableName="KRNS_PARM_T" file="kfs_40_endowment_parms.csv">
+			<column header="NMSPC_CD" type="string" />
+			<column header="PARM_DTL_TYP_CD" type="string" />
+			<column header="PARM_NM" type="string" />
+			<column header="PARM_TYP_CD" type="string" />
+			<column header="TXT" type="string" />
+			<column header="PARM_DESC_TXT" type="string" />
+			<column header="CONS_CD" type="string" />
+			<column header="APPL_NMSPC_CD" type="string" />
+			<column header="OBJ_ID" type="string" />
+		</loadData>
+    </changeSet>
+
+
+</databaseChangeLog>   
+      

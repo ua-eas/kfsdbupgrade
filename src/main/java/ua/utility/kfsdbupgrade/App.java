@@ -50,26 +50,20 @@ public class App {
     private static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
     private static final String ERROR = "************************************************* error *************************************************";
     private static final String HEADER1 = "================================================ ? ================================================";
-    private static String riceUpgradeRoot;
-    private static String kfsUpgradeRoot;
-    private static List<String> riceUpgradeFolders;
-    private static List <String> kfsUpgradeFolders;
+    private static String upgradeRoot;
+    private static List<String> upgradeFolders;
     private static Properties properties;
     private static String propertiesFileName;
-    private static Map<String, List<String>> riceFiles;
-    private static Map<String, List<String>> kfsFiles;
+    private static Map<String, List<String>> upgradeFiles;
 
     public static void main(final String args[]) {
         if (args.length == 1) {
             properties = loadProperties(args[0]);
             if (properties != null) {
                 propertiesFileName = args[0];
-                riceUpgradeRoot = properties.getProperty("rice-upgrade-base-directory");
-                kfsUpgradeRoot = properties.getProperty("kfs-upgrade-base-directory");
-                riceUpgradeFolders = loadList(properties.getProperty("rice-upgrade-folders"));
-                kfsUpgradeFolders = loadList(properties.getProperty("kfs-upgrade-folders"));
-                riceFiles = loadFolderFileMap("rice-files-");
-                kfsFiles = loadFolderFileMap("kfs-files-");
+                upgradeRoot = properties.getProperty("upgrade-base-directory");
+                upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
+                upgradeFiles = loadFolderFileMap("files-");
                 
                 Connection conn = null;
                 Statement stmt = null;
@@ -80,7 +74,7 @@ public class App {
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
                     if (doInitialProcessing(stmt)) {
-                        if (doKfsUpgrade(conn, stmt)) {
+                        if (doUpgrade(conn, stmt)) {
                             success = true;
                         }
                     }
@@ -165,34 +159,7 @@ public class App {
         return retval;
     }
 
-    private static Set <File> getProcessedRiceFiles() {
-        Set <File> retval = new HashSet<>();
-        String fname = properties.getProperty("last-good-rice-file");
-        
-        if (StringUtils.isNotBlank(fname)) {
-            File lastGoodRiceFile = new File(fname);
-            if (lastGoodRiceFile.isFile() && lastGoodRiceFile.exists()) {
-                boolean foundit = false;
-                for (int i = 0; !foundit && (i < riceUpgradeFolders.size()); ++i) {
-                    String folder = riceUpgradeFolders.get(i);
-                    for (String fileName : riceFiles.get(folder)) {
-                        File f = new File(riceUpgradeRoot + "/" + folder + "/" + fileName);
-
-                        if (!lastGoodRiceFile.equals(f)) {
-                            retval.add(f);
-                        } else {
-                            foundit = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return retval;
-    }
-    
-    private static Set <File> getProcessedKfsFiles() {
+    private static Set <File> getProcessedFiles() {
         Set <File> retval = new HashSet<>();
         String fname = properties.getProperty("last-good-kfs-file");
         
@@ -200,10 +167,10 @@ public class App {
             File lastGoodKfsFile = new File(fname);
             if (lastGoodKfsFile.isFile() && lastGoodKfsFile.exists()) {
                 boolean foundit = false;
-                for (int i = 0; !foundit && (i < kfsUpgradeFolders.size()); ++i) {
-                    String folder = kfsUpgradeFolders.get(i);
-                    for (String fileName : kfsFiles.get(folder)) {
-                        File f = new File(kfsUpgradeRoot + "/" + folder + "/" + fileName);
+                for (int i = 0; !foundit && (i < upgradeFolders.size()); ++i) {
+                    String folder = upgradeFolders.get(i);
+                    for (String fileName : upgradeFiles.get(folder)) {
+                        File f = new File(upgradeRoot + "/" + folder + "/" + fileName);
 
                         if (!lastGoodKfsFile.equals(f)) {
                             retval.add(f);
@@ -323,17 +290,33 @@ public class App {
         return retval;
     }
     
-    private static boolean doKfsUpgrade(Connection conn, Statement stmt) {
+    private static File getUpgradeFile(String fname) {
+        File retval = null;
+        
+        int pos = fname.lastIndexOf(".");
+
+        File modFile = new File(fname.substring(0, pos) + "_mod" + fname.substring(pos));
+        
+        if (modFile.isFile() && modFile.exists()) {
+            retval = modFile;
+        } else {
+            retval = new File(fname);
+        }
+        
+        return retval;
+    }
+    
+    private static boolean doUpgrade(Connection conn, Statement stmt) {
         boolean retval = true;
         writeHeader1("upgrading kfs");
-        Set <File> processedKfsFiles = getProcessedKfsFiles();
+        Set <File> processedKfsFiles = getProcessedFiles();
         
-        for (int i = 0; retval && (i < kfsUpgradeFolders.size()); ++i) {
-            String folder = kfsUpgradeFolders.get(i);
-            writeHeader2("processing KFS folder " + folder);
+        for (int i = 0; retval && (i < upgradeFolders.size()); ++i) {
+            String folder = upgradeFolders.get(i);
+            writeHeader2("processing folder " + folder);
             
-            for (String fname : kfsFiles.get(folder)) {
-                File f = new File(kfsUpgradeRoot + "/" + folder + "/" + fname);
+            for (String fname : upgradeFiles.get(folder)) {
+                File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
                 
                 if (!processedKfsFiles.contains(f)) {
                     if (f.getName().endsWith(".sql")) {
@@ -382,9 +365,7 @@ public class App {
         
         catch (Exception ex) {
             retval= false;
-            if (sw != null) {
-                writeOut(sw.toString());
-            }
+            writeOut(sw.toString());
             writeOut(ex);
         }
         
@@ -559,7 +540,7 @@ public class App {
                 stmt.execute("drop materialized view log on " + log);
                 writeOut("dropped materialized view log on " + log);
             }
-            
+
             retval = true;
         }
         

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2010 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+	<changeSet id="KFS_40_PURAP_ADD_PREQ_ELEC_INV_REJECT_DOC"
+		author="kfs">
+		<addColumn tableName="ap_elctrnc_inv_rjt_doc_t">
+			<column name="preq_id" type="NUMBER(9,0)" />
+		</addColumn>
+		<modifySql dbms="mysql">
+			<replace replace="NUMBER" with="DECIMAL" />
+		</modifySql>
+	</changeSet>
+
+	<changeSet author="David" id="KFS_40_PURAP_ADD_ACTIVE_ELEC_INV">
+		<comment>Needs to add a new column to AP_ELCTRNC_INV_MAP_T</comment>
+		<addColumn tableName="AP_ELCTRNC_INV_MAP_T">
+			<column name="DOBJ_MAINT_CD_ACTV_IND" type="VARCHAR2(1)" />
+		</addColumn>
+		<update tableName="AP_ELCTRNC_INV_MAP_T">
+			<column name="DOBJ_MAINT_CD_ACTV_IND" value="Y" />
+		</update>
+		<modifySql dbms="mysql">
+			<replace replace="VARCHAR2" with="VARCHAR" />
+			<replace replace="varchar2" with="VARCHAR" />
+		</modifySql>
+	</changeSet>
+
+	<changeSet id="KFS_40_PURAP_ADD_ACTIVE_PUR_PO_QT_LST_VNDR_T" author="kfs">
+		<addColumn tableName="PUR_PO_QT_LST_VNDR_T">
+			<column name="ACTV_IND" type="CHAR(1)" defaultValue="Y" />
+		</addColumn>
+	</changeSet>
+
+</databaseChangeLog>

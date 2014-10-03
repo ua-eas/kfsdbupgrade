@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2010 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+	<changeSet author="kfs" id="KFS_40_ENDOW_ORIGIN_CODE">
+		<comment> Persist Kuali Endowment Origination Code to the base data  </comment>
+		<insert tableName="FS_ORIGIN_CODE_T">
+			<column name="FS_ORIGIN_CD" value="EM" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="FS_SERVER_NM" value="KULDBA" />
+			<column name="FS_DATABASE_NM" value="KFS" />
+			<column name="FS_DATABASE_DESC" value="KFS" />
+			<column name="ROW_ACTV_IND" value="Y" />
+		</insert>
+		<modifySql dbms="mysql">
+			<replace replace="SYS_GUID" with="UUID" />
+		</modifySql>
+	</changeSet>
+	
+	<changeSet author="kfs" id="KFS_LOAD_END_ACRL_MTHD_T">
+		<loadData tableName="END_ACRL_MTHD_T" file="02_data/END_ACRL_MTHD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_CAE_CD_T">
+		<loadData tableName="END_CAE_CD_T" file="02_data/END_CAE_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_CLS_CD_TYP_T">
+		<loadData tableName="END_CLS_CD_TYP_T" file="02_data/END_CLS_CD_TYP_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_DONR_LBL_SEL_T">
+		<loadData tableName="END_DONR_LBL_SEL_T" file="02_data/END_DONR_LBL_SEL_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_ETRAN_TYP_CD_T">
+		<loadData tableName="END_ETRAN_TYP_CD_T" file="02_data/END_ETRAN_TYP_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_FEE_BAL_TYP_CD_T">
+		<loadData tableName="END_FEE_BAL_TYP_CD_T" file="02_data/END_FEE_BAL_TYP_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_FEE_BASE_CD_T">
+		<loadData tableName="END_FEE_BASE_CD_T" file="02_data/END_FEE_BASE_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_FEE_RT_DEF_CD_T">
+		<loadData tableName="END_FEE_RT_DEF_CD_T" file="02_data/END_FEE_RT_DEF_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_FEE_TYP_CD_T">
+		<loadData tableName="END_FEE_TYP_CD_T" file="02_data/END_FEE_TYP_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_FREQ_CD_T">
+		<loadData tableName="END_FREQ_CD_T" file="02_data/END_FREQ_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_IP_IND_T">
+		<loadData tableName="END_IP_IND_T" file="02_data/END_IP_IND_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_PMT_TYP_CD_T">
+		<loadData tableName="END_PMT_TYP_CD_T" file="02_data/END_PMT_TYP_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_SEC_VLTN_MTHD_T">
+		<loadData tableName="END_SEC_VLTN_MTHD_T" file="02_data/END_SEC_VLTN_MTHD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_TRAN_TYP_CD_T">
+		<loadData tableName="END_TRAN_TYP_CD_T" file="02_data/END_TRAN_TYP_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_TRAN_SUB_TYP_T">
+		<loadData tableName="END_TRAN_SUB_TYP_T" file="02_data/END_TRAN_SUB_TYP_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_TRAN_SRC_TYP_T">
+		<loadData tableName="END_TRAN_SRC_TYP_T" file="02_data/END_TRAN_SRC_TYP_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_SEC_RPT_GRP_T">
+		<loadData tableName="END_SEC_RPT_GRP_T" file="02_data/END_SEC_RPT_GRP_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_AGRMNT_SPCL_INSTRC_CD_T">
+		<loadData tableName="END_AGRMNT_SPCL_INSTRC_CD_T" file="02_data/END_AGRMNT_SPCL_INSTRC_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_AGRMNT_STAT_CD_T">
+		<loadData tableName="END_AGRMNT_STAT_CD_T" file="02_data/END_AGRMNT_STAT_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_TRAN_RESTR_CD_T">
+		<loadData tableName="END_TRAN_RESTR_CD_T" file="02_data/END_TRAN_RESTR_CD_T.csv" />
+    </changeSet>
+
+	<changeSet author="kfs" id="KFS_LOAD_END_TYP_RESTR_CD_T">
+		<loadData tableName="END_TYP_RESTR_CD_T" file="02_data/END_TYP_RESTR_CD_T.csv" />
+    </changeSet>
+	
+</databaseChangeLog>
