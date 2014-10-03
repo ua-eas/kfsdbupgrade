@@ -39,8 +39,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -161,7 +162,7 @@ public class App {
 
     private static Set <File> getProcessedFiles() {
         Set <File> retval = new HashSet<>();
-        String fname = properties.getProperty("last-good-kfs-file");
+        String fname = properties.getProperty("last-good-file");
         
         if (StringUtils.isNotBlank(fname)) {
             File lastGoodKfsFile = new File(fname);
@@ -356,7 +357,7 @@ public class App {
         writeHeader2("processing liquibase file " + f.getPath());
 
         try {
-            Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
+            Liquibase liquibase = new Liquibase(null, new FileSystemResourceAccessor(f.getParentFile().getPath()), new JdbcConnection(conn));
             liquibase.reportStatus(true, null, sw);
             liquibase.update(null);
             retval = true;
