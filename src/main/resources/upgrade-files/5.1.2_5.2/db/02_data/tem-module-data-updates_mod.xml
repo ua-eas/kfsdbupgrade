@@ -1,0 +1,908 @@
+<databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
+	
+	<changeSet author="KFSTEM" id="KFSMI-10508">
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="APTS"/>
+			<column name="NM" value="Apartment"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="befb8d7c-e8a9-4424-b99f-c6783bcd9854"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="BARR"/>
+			<column name="NM" value="Barracks"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="5ffebec9-5166-484a-bb72-6c432061a7cd"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="CAMP"/>
+			<column name="NM" value="Camping"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="SYS_GUID()"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="DORM"/>
+			<column name="NM" value="Dormitory"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="fe1b97b3-7af5-42f0-b7aa-7b2c37d5b3cb"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="HOTL"/>
+			<column name="NM" value="Hotel"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="f629c40a-f58d-4963-b2da-6b06194cb647"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="HOUS"/>
+			<column name="NM" value="House"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="60ecbe8d-8ff4-469b-855a-b9993bb3fd9a"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="MOTL"/>
+			<column name="NM" value="Motel"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="22346f1d-1c50-457a-9159-dd150904e717"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="OTHR"/>
+			<column name="NM" value="Other"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="08b704ec-9185-436f-91c8-5c6a4aca931b"/>
+		</insert>
+		<insert tableName="TEM_ACCOMM_TYP_T">
+			<column name="CODE" value="UNKN"/>
+			<column name="NM" value="Unknown"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="29ead914-ec06-43fa-8e22-c29577bf5833"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="BUSINS"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CLASS_SVC_NAME" value="Business-First Class"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="0484a43d-827f-4576-a7f8-3ef69cd9fed5"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="COACH"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CLASS_SVC_NAME" value="Coach-Economy"/>
+			<column name="APRVL_REQ_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="8ccc380f-0a9b-4a86-86cf-aaed8fe03392"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="ECNPLUS"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CLASS_SVC_NAME" value="Economy Plus"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="fd64b8c3-83c0-4cd3-b464-cc57b5159349"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="PBUSINS"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CLASS_SVC_NAME" value="Business-First Class"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="bb656653-ae04-4c75-bdd0-16e9c2e07d81"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="PCOACH"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CLASS_SVC_NAME" value="Coach-Economy"/>
+			<column name="APRVL_REQ_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="17919f49-e947-4ab1-9dd2-78e503968b2a"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="PECNPLUS"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CLASS_SVC_NAME" value="Economy Plus"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="ce267611-8a67-40b1-96f3-2c72658e63b2"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="ECONMY"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CLASS_SVC_NAME" value="Economy, Intermediate"/>
+			<column name="APRVL_REQ_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="24a03fe7-e5c3-4fc7-b652-1d2b1f24f193"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="GPS"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CLASS_SVC_NAME" value="GPS"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="N"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="265d8e10-3f79-4db3-b6fd-f52cdcb9fe9b"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="PRIVLIMO"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CLASS_SVC_NAME" value="Private Limo"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="b6fdd2b7-5aa6-44a8-b6e1-7299d581a4b4"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="SHRRIDE"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CLASS_SVC_NAME" value="Shared Ride"/>
+			<column name="APRVL_REQ_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="1a6182fe-923c-48cf-9d45-170e6aa82c5e"/>
+		</insert>
+		<insert tableName="TEM_CLASS_SVC_T">
+			<column name="CODE" value="UPGRDE"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CLASS_SVC_NAME" value="Upgrade (Mid-Size, Van, Other)"/>
+			<column name="APRVL_REQ_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="5edb22d3-82db-44cc-9da0-8445b8fd8ae3"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="CWK"/>
+			<column name="NM" value="Co-worker"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="3401af52-d5f4-46a1-a2a8-43dcf80d1a2c"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="FRD"/>
+			<column name="NM" value="Friend"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="435b208e-41a1-46ab-b9d6-18adae787529"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="GRP"/>
+			<column name="NM" value="Grandparent"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="086ac5fb-602c-4e35-9798-704801a338a4"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="NON"/>
+			<column name="NM" value="None"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="c337a422-f5a7-4bb5-a922-4f249675b306"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="OTH"/>
+			<column name="NM" value="Other"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="9e9c9dd5-d3eb-4298-a545-0946458f7a0e"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="PAR"/>
+			<column name="NM" value="Partner"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="0a5898d1-516d-4d07-ac17-10b57bcf85a1"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="PRN"/>
+			<column name="NM" value="Parent"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="b0b7b18b-1388-40e2-8162-fa56e0091b7a"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="REL"/>
+			<column name="NM" value="Relative"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="0d1e1437-98b6-4dcf-8ae9-7cb534957b8d"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="SBL"/>
+			<column name="NM" value="Sibling"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="04f32527-edce-4b76-aaa7-ccf68e4af49d"/>
+		</insert>
+		<insert tableName="TEM_CONT_REL_TYP_T">
+			<column name="CODE" value="SPS"/>
+			<column name="NM" value="Spouse"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="0f9594c2-1b07-486e-ad41-ee75215a1ac2"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="A"/>
+			<column name="OBJ_ID" value="546d7831-4c2f-4ebf-9690-4d0f27700206"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Airfare"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="Y"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="AL"/>
+			<column name="OBJ_ID" value="f4fc0f9b-0905-4683-b606-e6e7c1b994e8"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Alcohol"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="B"/>
+			<column name="OBJ_ID" value="437bee3c-5732-4658-a67b-73feaebea8e7"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Breakfast"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="B"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="C"/>
+			<column name="OBJ_ID" value="2790dd7a-1d06-4012-bdff-9b978deba937"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Conference Registration"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="D"/>
+			<column name="OBJ_ID" value="2bb828db-28e3-4613-b9c6-6c567adebd40"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Dinner"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="D"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="EL"/>
+			<column name="OBJ_ID" value="1a1c66e3-0e6d-4ab3-9016-d1de04303e90"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Light Refreshments"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="I"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GA"/>
+			<column name="OBJ_ID" value="3673c293-2127-4acb-a5cc-7649451ead70"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Airfare"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="Y"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GB"/>
+			<column name="OBJ_ID" value="12850153-7b62-4d36-a3d1-d1320f2be42a"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Breakfast"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="B"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GD"/>
+			<column name="OBJ_ID" value="fd71bddd-04e1-4d58-bc85-a9bf0e087c08"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Dinner"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="D"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GL"/>
+			<column name="OBJ_ID" value="f8ea11eb-117e-40db-aa15-295bb0832190"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Lodging"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="L"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GN"/>
+			<column name="OBJ_ID" value="0470f537-1a45-474a-b3d4-52ee8f0c079a"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Lunch"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="J"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GO"/>
+			<column name="OBJ_ID" value="4e47c2c9-8798-45c5-ab8d-2a39a439bc00"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Other"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GR"/>
+			<column name="OBJ_ID" value="4a47f8cd-e957-4068-8052-bd0d0e1ec077"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Automobile Rental"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="Y"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="GS"/>
+			<column name="OBJ_ID" value="95ad66ee-9b0a-4098-bcae-53a5ce867ee8"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Group Show Tickets"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="HB"/>
+			<column name="OBJ_ID" value="67c950a8-85ac-4955-a32f-0b652a9fc7bf"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Hosted Breakfast"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="Y"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="B"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="HL"/>
+			<column name="OBJ_ID" value="06b36289-ff4e-4315-8f1a-8a1589d08556"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Hosted Lunch"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="Y"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="L"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="HD"/>
+			<column name="OBJ_ID" value="cbbd99c6-e305-4f2b-a5fc-4bcc4ce6e2fc"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Hosted Dinner"/>
+			<column name="GRP_TRVL_IND" value="Y"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="Y"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="D"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="L"/>
+			<column name="OBJ_ID" value="24651388-8f32-4bb3-8d26-6e60598327e2"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Lodging"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="L"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="LN"/>
+			<column name="OBJ_ID" value="9ba26257-ca32-434b-8ad0-42c800f329da"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Lunch"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="J"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MD"/>
+			<column name="OBJ_ID" value="2b1e3c5c-c74b-49b8-b707-7a6440a61983"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Domestic storage over 30d"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MH"/>
+			<column name="OBJ_ID" value="083c0df2-d6c6-4405-a0a4-efa8d233c448"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="House hunting costs"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MI"/>
+			<column name="OBJ_ID" value="4a43e6e5-505a-49d9-856b-632a95da4bed"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="International storage"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="ML"/>
+			<column name="OBJ_ID" value="64146c45-2173-4903-94d6-b831f0b922b0"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Living Allowance"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MA"/>
+			<column name="OBJ_ID" value="b3470597-1043-4815-b314-ab9619b3490e"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Mileage - Aircraft"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="M"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MM"/>
+			<column name="OBJ_ID" value="f7529812-2281-4468-b219-bf375c1f2658"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Mileage - Motorcyle"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="M"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MP"/>
+			<column name="OBJ_ID" value="3725b542-c621-44d1-b7e6-81d100d64ab4"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Mileage - Privately Owned Vehicle"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="M"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MR"/>
+			<column name="OBJ_ID" value="3489ac70-4268-40de-bd3a-c319032d7be7"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Moving Equipmental Rental"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="MT"/>
+			<column name="OBJ_ID" value="faa1e5e8-10c6-4443-8b3d-fc560157a39d"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Temporary Living"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="O"/>
+			<column name="OBJ_ID" value="75d0db6a-6c9f-4ea2-998d-21b36f7e4cd9"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Other"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="PA"/>
+			<column name="OBJ_ID" value="00e69946-968a-4a16-8ab7-50cdcbf5cab9"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Prepaid Airfare"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="Y"/>
+			<column name="EXP_PRPY_IND" value="Y"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="A"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="PC"/>
+			<column name="OBJ_ID" value="8859ad43-7a23-4f9a-a3a3-441874fe268b"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Prepaid Conference Registration"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="Y"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="PL"/>
+			<column name="OBJ_ID" value="86d1a7ed-2bac-4078-8a1e-96721ca5cbc3"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Prepaid Lodging"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="Y"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="L"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="PM"/>
+			<column name="OBJ_ID" value="ce4bf722-d37b-4f17-a27b-5660a5e6a101"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Prepaid Moving Equipment Rental"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="Y"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="PO"/>
+			<column name="OBJ_ID" value="e2fb14ca-4f36-4027-addd-d235509a9639"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Prepaid Other"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="Y"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="PS"/>
+			<column name="OBJ_ID" value="3656556f-fbf2-4325-a670-b0f5a9bb3e70"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Prepaid Show Tickets"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="Y"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="R"/>
+			<column name="OBJ_ID" value="ada0bae2-8f21-468d-b8a2-c7c72b9b03f7"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Automobile Rental"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="Y"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="R"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="ST"/>
+			<column name="OBJ_ID" value="45c9b618-759b-4bd9-9cbc-65f334c52c07"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Show Tickets"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="T"/>
+			<column name="OBJ_ID" value="09aefbc2-305c-476e-86f5-fc6ae3e91e08"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Taxi/Limousine Service"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="CTGRY_DFLT_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_EXP_TYP_T">
+			<column name="EXP_TYP_CD" value="W"/>
+			<column name="OBJ_ID" value="91acbb01-c178-44b9-b171-d5257ced2490"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="EXP_TYP_NM" value="Lodging Allowance"/>
+			<column name="GRP_TRVL_IND" value="N"/>
+			<column name="EXP_DETAIL_REQ_IND" value="N"/>
+			<column name="EXP_PRPY_IND" value="N"/>
+			<column name="HOSTED_IND" value="N"/>
+			<column name="EXP_TYP_META_CTGRY_CD" value="W"/>
+			<column name="CTGRY_DFLT_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_MIE_BREAK_DOWN_T">
+			<column name="MEALS_INC" valueNumeric="46.0"/>
+			<column name="BKFST" valueNumeric="7.0"/>
+			<column name="LUNCH" valueNumeric="11.0"/>
+			<column name="DIN" valueNumeric="23.0"/>
+			<column name="INC" valueNumeric="5.0"/>
+			<column name="LAST_UPD_DT" valueDate="2011-08-31T00:00:00"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="72de4b4c-bdcb-46d4-b257-4fb19d30564f"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_MIE_BREAK_DOWN_T">
+			<column name="MEALS_INC" valueNumeric="51.0"/>
+			<column name="BKFST" valueNumeric="8.0"/>
+			<column name="LUNCH" valueNumeric="12.0"/>
+			<column name="DIN" valueNumeric="26.0"/>
+			<column name="INC" valueNumeric="5.0"/>
+			<column name="LAST_UPD_DT" valueDate="2011-08-31T00:00:00"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="6c758853-afea-40a2-8d97-eaede4191d79"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_MIE_BREAK_DOWN_T">
+			<column name="MEALS_INC" valueNumeric="56.0"/>
+			<column name="BKFST" valueNumeric="9.0"/>
+			<column name="LUNCH" valueNumeric="13.0"/>
+			<column name="DIN" valueNumeric="29.0"/>
+			<column name="INC" valueNumeric="5.0"/>
+			<column name="LAST_UPD_DT" valueDate="2011-08-31T00:00:00"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="23065b75-347c-479b-939e-d27a37a99567"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_MIE_BREAK_DOWN_T">
+			<column name="MEALS_INC" valueNumeric="61.0"/>
+			<column name="BKFST" valueNumeric="10.0"/>
+			<column name="LUNCH" valueNumeric="15.0"/>
+			<column name="DIN" valueNumeric="31.0"/>
+			<column name="INC" valueNumeric="5.0"/>
+			<column name="LAST_UPD_DT" valueDate="2011-08-31T00:00:00"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="f1d85a76-bc46-4f2d-aee7-f8caa7e3b652"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_MIE_BREAK_DOWN_T">
+			<column name="MEALS_INC" valueNumeric="66.0"/>
+			<column name="BKFST" valueNumeric="11.0"/>
+			<column name="LUNCH" valueNumeric="16.0"/>
+			<column name="DIN" valueNumeric="34.0"/>
+			<column name="INC" valueNumeric="5.0"/>
+			<column name="LAST_UPD_DT" valueDate="2011-08-31T00:00:00"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="b276b6be-1f4a-4c38-8598-b2cc94486346"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_MIE_BREAK_DOWN_T">
+			<column name="MEALS_INC" valueNumeric="71.0"/>
+			<column name="BKFST" valueNumeric="12.0"/>
+			<column name="LUNCH" valueNumeric="18.0"/>
+			<column name="DIN" valueNumeric="36.0"/>
+			<column name="INC" valueNumeric="5.0"/>
+			<column name="LAST_UPD_DT" valueDate="2011-08-31T00:00:00"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="759ecb77-732d-45dc-a3a1-60407c59a658"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_REGION_T">
+			<column name="REGION_CD" value="XXX"/>
+			<column name="TRIP_TYP_CD" value="OUT" />
+			<column name="REGION_NM" value="Region Not Found"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="1788135e-7646-4002-a770-0bca61f2723f"/>
+		</insert>
+		<insert tableName="TEM_PRI_DEST_T">
+			<column name="ID" valueNumeric="2147483647"/>
+			<column name="PRI_DEST_NM" value="Primary Destination Not Found"/>
+			<column name="REGION_CD" value="XXX"/>
+			<column name="COUNTY_CD" value=""/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="8ff62f46-6b6e-44dd-9207-4644284d4cac"/>
+		</insert>
+		<insert tableName="TEM_PER_DIEM_T">
+			<column name="ID" valueNumeric="2147483647"/>
+			<column name="PRI_DEST_ID" valueNumeric="2147483647"/>
+			<column name="BKFST" valueNumeric="0.0"/>
+			<column name="LUNCH" valueNumeric="0.0"/>
+			<column name="DIN" valueNumeric="0.0"/>
+			<column name="LODGING" valueNumeric="0.0"/>
+			<column name="INC" valueNumeric="0.0"/>
+			<column name="MEALS_INC" valueNumeric="0.0"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="4c228d03-8755-44e1-8974-b6151c12c21d"/>
+		</insert>
+		<insert tableName="TEM_TRAVELER_TYP_T">
+			<column name="CODE" value="EMP"/>
+			<column name="NM" value="Employee"/>
+			<column name="ADVANCES_IND" value="Y"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="c2afa276-bf95-4fb4-8077-3ea661773350"/>
+		</insert>
+		<insert tableName="TEM_TRAVELER_TYP_T">
+			<column name="CODE" value="NON"/>
+			<column name="NM" value="Non-Employee"/>
+			<column name="ADVANCES_IND" value="N"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="635682f5-7000-4c86-b9e8-8c9927f291ed"/>
+		</insert>
+		<insert tableName="TEM_TRIP_TYP_T">
+			<column name="CODE" value="IN"/>
+			<column name="NM" value="In-State"/>
+			<column name="GEN_ENC_IND" value="Y"/>
+			<column name="ENC_BAL_TYP" value="EX"/>
+			<column name="ENC_OBJ_CD" value="6000"/>
+			<column name="CONT_INFO_REQ_IND" value="N"/>
+			<column name="BLANKET_IND" value="Y"/>
+			<column name="AUTO_TR_LIMIT" valueNumeric="0.0"/>
+			<column name="USE_PER_DIEM" value="Y"/>
+			<column name="TA_REQUIRED" value="N"/>
+			<column name="PER_DIEM_CALC_METHOD" value="P"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="71a31dc1-ef56-49bf-b0da-7b0ae19083bd"/>
+		</insert>
+		<insert tableName="TEM_TRIP_TYP_T">
+			<column name="CODE" value="INT"/>
+			<column name="NM" value="International"/>
+			<column name="GEN_ENC_IND" value="Y"/>
+			<column name="ENC_BAL_TYP" value="EX"/>
+			<column name="ENC_OBJ_CD" value="6200"/>
+			<column name="CONT_INFO_REQ_IND" value="Y"/>
+			<column name="BLANKET_IND" value="N"/>
+			<column name="AUTO_TR_LIMIT" valueNumeric="0.0"/>
+			<column name="USE_PER_DIEM" value="Y"/>
+			<column name="TA_REQUIRED" value="N"/>
+			<column name="PER_DIEM_CALC_METHOD" value="P"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="9a26ea50-49e4-4765-8182-6000232e1faf"/>
+		</insert>
+		<insert tableName="TEM_TRIP_TYP_T">
+			<column name="CODE" value="OUT"/>
+			<column name="NM" value="Out of State"/>
+			<column name="GEN_ENC_IND" value="Y"/>
+			<column name="ENC_BAL_TYP" value="EX"/>
+			<column name="ENC_OBJ_CD" value="6100"/>
+			<column name="CONT_INFO_REQ_IND" value="N"/>
+			<column name="BLANKET_IND" value="N"/>
+			<column name="AUTO_TR_LIMIT" valueNumeric="0.0"/>
+			<column name="USE_PER_DIEM" value="Y"/>
+			<column name="TA_REQUIRED" value="N"/>
+			<column name="PER_DIEM_CALC_METHOD" value="P"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="9febc5ea-7aeb-4738-ba7d-c37910632139"/>
+		</insert>
+		<insert tableName="TEM_TRVL_CARD_TYP_T">
+			<column name="CODE" value="CORP"/>
+			<column name="NM" value="Corporate Travel"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="b57bfb94-fe6a-41bd-92d1-285edad1b441"/>
+		</insert>
+		<insert tableName="TEM_TRVL_CARD_TYP_T">
+			<column name="CODE" value="CTS"/>
+			<column name="NM" value="CTS Travel"/>
+			<column name="ACTV_IND" value="Y"/>
+			<column name="VER_NBR" valueNumeric="1"/>
+			<column name="OBJ_ID" value="8c7fce7d-94f9-4e40-acb3-8fa80f684869"/>
+		</insert>
+                <!--
+		<modifySql dbms="mysql">
+			<replace replace="SYS_GUID()" with="uuid()" />
+		</modifySql>
+                -->
+	</changeSet>
+
+</databaseChangeLog>

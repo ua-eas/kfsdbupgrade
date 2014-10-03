@@ -17,13 +17,16 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
-  <changeSet author="KFS50" id="PDP_PMT_CHG_CD_T">
-    <comment>KFSMI-KFSMI-6802 Need to create new PaymentChangeCode</comment>
-    <insert tableName="PDP_PMT_CHG_CD_T">
-      <column name="PMT_CHG_CD" value="RC" />
-      <column name="PMT_CHG_CD_DESC" value="REISSUE CANCEL" />
+  <changeSet author="KFS50" id="PUR_COMM_T">
+    <comment>KFSMI-7172 New Parameter UNORDERED_ITEM_DEFAULT_COMMODITY_CODE and new Commodity code 99200000 </comment>
+    <insert tableName="PUR_COMM_T">
+      <column name="PUR_COMM_CD" value="99200000" />
+      <column name="OBJ_ID" valueNumeric="SYS_GUID " />
       <column name="VER_NBR" valueNumeric="1" />
-      <column name="OBJ_ID" value="SYS_GUID" />
+      <column name="PUR_COMM_DESC" value="default commodity code for unordered items" />
+      <column name="PUR_SALES_TAX_IND" value="N" />
+      <column name="ITM_RSTRC_IND" value="N" />
+      <column name="DOBJ_MAINT_CD_ACTV_IND" value="Y" />
     </insert>
     <modifySql dbms="mysql">
       <replace replace="SYS_GUID" with="uuid()" />
@@ -32,4 +35,5 @@
       <replace replace="SYS_GUID" with="sys_guid()" />
     </modifySql>
   </changeSet>
+  
 </databaseChangeLog>

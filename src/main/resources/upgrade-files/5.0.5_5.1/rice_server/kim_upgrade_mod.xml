@@ -1,0 +1,318 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+	<changeSet id="KFSCNTRB-705 KIM" author="KFS52">
+		<comment>Add the necessary KIM data for the Rice permission and system parameter which are used for research participant upload.</comment>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM1" />
+			<column name="OBJ_ID" value="9613f223-b738-4ab6-92a9-81bb961b198e" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="33" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Upload Research Participant CSV Files" />
+			<column name="DESC_TXT" value="Authorizes access to upload Research Participant CSV files into PDP" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT1" />
+			<column name="OBJ_ID" value="275c8023-7802-44f8-a968-ef047cf3ce57" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM1" />
+			<column name="KIM_TYP_ID" value="15" />
+			<column name="KIM_ATTR_DEFN_ID" value="1" />
+			<column name="ATTR_VAL" value="researchParticipantInboundServiceInputType" />
+		</insert>
+
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM1" />
+			<column name="OBJ_ID" value="d2af2070-d668-4123-8d8e-a333f5df20b1" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="20" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM1" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM2" />
+			<column name="OBJ_ID" value="bbe54cd7-eba1-4e76-a978-c9a2df6b6338" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="27" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Full Unmask Field Payment Detail Payee Name" />
+			<column name="DESC_TXT" value="Authorizes users to view the Payee Name on the Payment Detail Lookup and Inquiry" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT2" />
+			<column name="OBJ_ID" value="2d0fd45d-52b5-48f5-a550-c0e979c08137" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM2" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="5" />
+			<column name="ATTR_VAL" value="PaymentDetail" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT3" />
+			<column name="OBJ_ID" value="2c1364a6-babd-4ce4-907c-33929b3e689b" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM2" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="6" />
+			<column name="ATTR_VAL" value="paymentGroup.payeeName" />
+		</insert>
+
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM2" />
+			<column name="OBJ_ID" value="046c3926-ed43-4e8a-bb30-67a786091067" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="12" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM2" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM3" />
+			<column name="OBJ_ID" value="1deaaf16-c1c9-4a46-be80-c2bbe1009656" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="27" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Full Unmask Field Payment Detail Payee Street" />
+			<column name="DESC_TXT" value="Authorizes users to view the Payee Street on the Payment Detail Inquiry" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT4" />
+			<column name="OBJ_ID" value="d6508b4f-880b-4d22-8e64-237bfc86340b" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM3" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="5" />
+			<column name="ATTR_VAL" value="PaymentDetail" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT5" />
+			<column name="OBJ_ID" value="b0b5b98c-edb9-409a-8eb1-1335f9eeb13c" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM3" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="6" />
+			<column name="ATTR_VAL" value="paymentGroup.street" />
+		</insert>
+
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM3" />
+			<column name="OBJ_ID" value="50c628b1-c67f-4e97-b39d-db292b96f210" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="12" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM3" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM4" />
+			<column name="OBJ_ID" value="b4c3714a-2232-413c-8f24-82c556897f14" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="27" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Full Unmask Field Payment Detail Payee City" />
+			<column name="DESC_TXT" value="Authorizes users to view the Payee City on the Payment Detail Inquiry" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT6" />
+			<column name="OBJ_ID" value="b95730c1-9619-46dc-8a15-2d2d761221fb" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM4" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="5" />
+			<column name="ATTR_VAL" value="PaymentDetail" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT7" />
+			<column name="OBJ_ID" value="0677be79-cf5c-4bad-b930-def7264d48e8" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM4" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="6" />
+			<column name="ATTR_VAL" value="paymentGroup.city" />
+		</insert>
+
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM4" />
+			<column name="OBJ_ID" value="e0040260-0f79-410f-9944-995384c6e593" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="12" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM4" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM5" />
+			<column name="OBJ_ID" value="2cc3fd9a-d889-446f-bbe7-8668cb611dee" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="27" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Full Unmask Field Payment Detail Payee State" />
+			<column name="DESC_TXT" value="Authorizes users to view the Payee State on the Payment Detail Inquiry" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT8" />
+			<column name="OBJ_ID" value="f8bafb7a-8fe0-44cc-9d0b-2c8cf27543ea" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM5" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="5" />
+			<column name="ATTR_VAL" value="PaymentDetail" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT9" />
+			<column name="OBJ_ID" value="d48bf53e-f1a7-4cb5-9673-4436c8aa2d57" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM5" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="6" />
+			<column name="ATTR_VAL" value="paymentGroup.state" />
+		</insert>
+
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM5" />
+			<column name="OBJ_ID" value="00124dff-78c2-4864-8ae0-caadc9a539ab" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="12" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM5" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM6" />
+			<column name="OBJ_ID" value="SYS_GUID()" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="27" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Full Unmask Field Payment Detail Payee Zip Code" />
+			<column name="DESC_TXT" value="Authorizes users to view the Payee Zip Code on the Payment Detail Inquiry" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT10" />
+			<column name="OBJ_ID" valueComputed="d3bba8f2-65ac-44d2-9e8f-49a5dda5eb73" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM6" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="5" />
+			<column name="ATTR_VAL" value="PaymentDetail" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRMATT11" />
+			<column name="OBJ_ID" value="ba131d2e-6c15-409b-984e-4a5ce687be90" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM6" />
+			<column name="KIM_TYP_ID" value="11" />
+			<column name="KIM_ATTR_DEFN_ID" value="6" />
+			<column name="ATTR_VAL" value="paymentGroup.zipCd" />
+		</insert>
+
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM6" />
+			<column name="OBJ_ID" value="9fd5cb99-6a21-48d9-be9d-93dfd7bae108" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="12" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM6" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB705-PRM7" />
+			<column name="OBJ_ID" value="faa60363-d8cb-4ea9-9b69-eb7feba8ece9" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_TMPL_ID" value="50" />
+			<column name="NMSPC_CD" value="KFS-PDP" />
+			<column name="NM" value="Download Research Participant Check File(s)" />
+			<column name="DESC_TXT" value="Authorizes users to download the Check File created for Research Participant Upload" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRM7ATT1" />
+			<column name="OBJ_ID" value="b9e2b205-9558-49fd-9bc3-1f8fd868ba82" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM7" />
+			<column name="KIM_TYP_ID" value="KFSCNTRB199-TYP1" />
+			<column name="KIM_ATTR_DEFN_ID" value="4" />
+			<column name="ATTR_VAL" value="KFS-PDP" />
+		</insert>
+		
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB705-PRM7ATT2" />
+			<column name="OBJ_ID" value="e99e1d6d-b1fb-4b8c-9863-184ea6bebbc9" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM7" />
+			<column name="KIM_TYP_ID" value="KFSCNTRB199-TYP1" />
+			<column name="KIM_ATTR_DEFN_ID" value="KFSCNTRB199-ATTRDEF1" />
+			<column name="ATTR_VAL" value="staging/PDP/paymentExtract/RP-Upload*" />
+		</insert>
+		
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM7" />
+			<column name="OBJ_ID" value="e32ea686-2d4f-4689-bf16-0cc48bb18a68" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="12" />
+			<column name="PERM_ID" value="KFSCNTRB705-PRM7" />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		<!--
+		<modifySql dbms="mysql">
+	        <replace replace="SYS_GUID()" with="UUID() " />
+	    </modifySql>
+            -->
+	</changeSet>
+	<changeSet author="KFS52" id="KFSCNTRB-762">
+		<comment>KFSCNTRB-762 Create Trial Balance in KFS</comment>
+		<insert tableName="KRIM_PERM_T">
+			<column name="PERM_ID" value="KFSCNTRB-762-PRM1" />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="OBJ_ID" value="fd564a01-0e8f-4368-ba75-745d38a9dcee" />
+			<column name="PERM_TMPL_ID" value="29" />
+			<column name="NMSPC_CD" value="KFS-GL" />
+			<column name="NM" value="Use Trial Balance Screen" />
+			<column name="DESC_TXT" value="Allows users to access Trial Balance Report screen." />
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		<insert tableName="KRIM_PERM_ATTR_DATA_T">
+			<column name="ATTR_DATA_ID" value="KFSCNTRB-762-PRM1-ATTR1" />		
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="OBJ_ID" value="ae21f322-c006-4b5b-b68c-cfbf6345e36d" />
+			<column name="PERM_ID" value="KFSCNTRB-762-PRM1" />
+			<column name="KIM_TYP_ID" value="12" />
+			<column name="KIM_ATTR_DEFN_ID" value="2" />
+			<column name="ATTR_VAL" value="org.kuali.kfs.gl.web.struts.TrialBalanceReportAction" />
+		</insert>
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFSCNTRB-762-RLPRM1" />		
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="OBJ_ID" value="9f4ef3c8-6855-4d59-aa58-cedcd596c8f4" />
+			<column name="ROLE_ID" value="54" />
+			<column name="PERM_ID" value="KFSCNTRB-762-PRM1" />
+		</insert>
+                <!--
+		<modifySql dbms="mysql">
+			<replace replace="SYS_GUID()" with="UUID() " />
+		</modifySql>
+                -->
+	</changeSet>	
+
+</databaseChangeLog>
