@@ -48,8 +48,8 @@
 	<changeSet author="KFS41" id="REMOVE_OBSELETE_PARAMETERS">
 		<comment>KFSMI-6526 Remove parameter W9_OWNERSHIP_TYPES from data set.</comment>
 		<delete tableName="KRNS_PARM_T">
-			<where>NMSPC_CD="KFS-FP" AND PARM_DTL_TYP_CD="DisbursementVoucher"
-				AND PARM_NM="W9_OWNERSHIP_TYPES"</where>
+			<where>NMSPC_CD='KFS-FP' AND PARM_DTL_TYP_CD='DisbursementVoucher'
+				AND PARM_NM='W9_OWNERSHIP_TYPES'</where>
 		</delete>
 	</changeSet>
 
@@ -82,7 +82,7 @@
 		</insert>
 	</changeSet>
 	
-	<changeSet author="KFS41" id="NEW_ENDOWMENT_PARAMETERS">
+	<changeSet author="KFS41" id="NEW_ENDOWMENT_PARAMETERS2">
 		<comment>KFSMI-6443 Create System parameter for Effort Certification FEDERAL_SPONSOR_TYPE_CODE</comment>
 		<insert tableName="KRNS_PARM_T">
 			<column name="NMSPC_CD" value="KFS-EC" />

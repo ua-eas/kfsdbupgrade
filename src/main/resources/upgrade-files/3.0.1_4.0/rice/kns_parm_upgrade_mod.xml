@@ -21,6 +21,13 @@
 
 	<!-- New KFS parameters since 3.0.1 -->
 	<changeSet author="kfs" id="KFS_400_KRNS_PARM_T_NEW_PARAMS" >	
+      		<insert tableName="KRNS_PARM_TYP_T">
+                    <column name="PARM_TYP_CD" value="HELP" />			
+                    <column name="OBJ_ID" value="SYS_GUID()" />
+                    <column name="VER_NBR" valueNumeric="1" />
+                    <column name="NM" value="Help Documentation" />
+                    <column name="ACTV_IND" value="Y"/>
+                </insert>
 		<loadData tableName="KRNS_PARM_T" file="kfs_40_new_params_mod.csv" >
 			<column header="NMSPC_CD" type="string" />
 			<column header="PARM_DTL_TYP_CD" type="string" />
