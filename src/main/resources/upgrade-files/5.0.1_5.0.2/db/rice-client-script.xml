@@ -26,11 +26,10 @@ ALTER TABLE KRNS_PESSIMISTIC_LOCK_T ADD SESN_ID VARCHAR2(40) DEFAULT '' NOT NULL
 		]]></sql>
 	</changeSet>
 
-<!--
 	<changeSet author="RICE213" id="RICE_CLIENT_UPDATES_mysql" dbms="mysql">
 		<sqlFile path="rice_213_client_final_mysql.sql" />
 	</changeSet>
--->
+
 	<changeSet author="RICE216" id="RICE_CLIENT_UPDATES_oracle" dbms="oracle">
 		<sql><![CDATA[
 		--
@@ -43,9 +42,8 @@ ALTER TABLE KRNS_PESSIMISTIC_LOCK_T MODIFY (SESN_ID DEFAULT 'undefined');
 
 		]]></sql>		
 	</changeSet>
-        <!--
 	<changeSet author="RICE216" id="RICE_CLIENT_UPDATES_mysql" dbms="mysql">
 		<sqlFile path="rice_216_client_final_mysql.sql" />
 	</changeSet>
-	-->
+	
 </databaseChangeLog>

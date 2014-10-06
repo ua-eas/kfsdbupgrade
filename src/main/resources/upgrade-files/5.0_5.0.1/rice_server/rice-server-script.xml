@@ -218,9 +218,8 @@ perm_id = (select perm_id from krim_perm_t where nm = 'Edit Kuali ENROUTE Docume
 		]]></sql>
 	</changeSet>
 	
-        <!--
 	<changeSet author="RICE212" id="RICE_SERVER_UPDATES_mysql" dbms="mysql">
 		<sqlFile path="rice_212_final_mysql.sql" />
 	</changeSet>
--->
+
 </databaseChangeLog>
