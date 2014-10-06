@@ -23,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -51,14 +50,12 @@ public class App {
     private static String upgradeRoot;
     private static List<String> upgradeFolders;
     private static Properties properties;
-    private static String propertiesFileName;
     private static Map<String, List<String>> upgradeFiles;
-
+    
     public static void main(final String args[]) {
         if (args.length == 1) {
             properties = loadProperties(args[0]);
             if (properties != null) {
-                propertiesFileName = args[0];
                 upgradeRoot = properties.getProperty("upgrade-base-directory");
                 upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
                 upgradeFiles = loadFolderFileMap("files-");
@@ -380,29 +377,35 @@ public class App {
     
     private static boolean runLiquibase(Connection conn, File f) {
         boolean retval = true;
-        StringWriter sw = new StringWriter();
         writeHeader2("processing liquibase file " + f.getPath());
-
+        PrintWriter pw = null;
         try {
             Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
-            liquibase.reportStatus(true, null, sw);
+            liquibase.reportStatus(true, null, pw = getOutputLogWriter());
             liquibase.update(null);
             retval = true;
-            writeOut(sw.toString());
         }
         
         catch (Exception ex) {
             retval= false;
-            writeOut(sw.toString());
+            pw.close();
+            pw = null;
             writeOut(ex);
         }
+        
+        finally {
+            if (pw != null) {
+                pw.close();
+            }
+        }
+        
         
         return retval;
     }
 
     private static void writeOut(Exception ex) {
         System.out.println();
-        System.out.println(ERROR);
+        System.out.println(getTimeString() + ERROR);
         ex.printStackTrace(System.out);
         writeLog(ex);
     }
@@ -413,7 +416,7 @@ public class App {
         try {
             pw = getOutputLogWriter();
             pw.println();
-            pw.println(ERROR);
+            pw.println(getTimeString() + ERROR);
             ex.printStackTrace(pw);
         }
         
@@ -469,19 +472,19 @@ public class App {
     private static Connection getConnection() throws Exception {
 		Connection retval = null;
 		String url = properties.getProperty("database-url");
-        String user = properties.getProperty("database-user");
-    	String pass = properties.getProperty("database-password");
 		
-        writeOut("");
+        Properties props = new Properties();
+        props.setProperty("user", properties.getProperty("database-user"));
+        props.setProperty("password", properties.getProperty("database-password"));
+        
         writeOut("Connecting to db " + properties.getProperty("database-name") + "...");
         writeOut("url=" + url);
 			
         Class.forName(properties.getProperty("database-driver"));
-		retval = DriverManager.getConnection(url, user, pass);
-			
+		retval = DriverManager.getConnection(url, props);
 		retval.setReadOnly(false);
         retval.setAutoCommit(false);
-			
+       
 		writeOut("connected to database " + properties.getProperty("database-name"));
 		writeOut("");
         
@@ -568,6 +571,7 @@ public class App {
                 stmt.execute("drop materialized view log on " + log);
                 writeOut("dropped materialized view log on " + log);
             }
+            
 
             retval = true;
         }
