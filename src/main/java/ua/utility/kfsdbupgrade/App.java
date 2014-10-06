@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,6 +77,8 @@ public class App {
                     
                     if (success) {
                         doCommit(conn);
+                        createIndexes(conn, stmt);
+                        createPublicSynonyms(conn, stmt);
                         writeOut("");
                         writeHeader1("upgrade completed successfully");
                     }
@@ -623,6 +626,318 @@ public class App {
             try {
                 if (pw != null) {
                     pw.close();
+                }
+            }
+            
+            catch (Exception ex) {};
+        }
+    }
+    
+    private static String getIndexTableName(String line) {
+        String retval = null;
+        int pos = line.indexOf(" ON ");
+
+        if (pos > -1) {
+            pos = line.indexOf(".", pos);
+            int pos2 = line.indexOf("(", pos);
+            
+            if ((pos > -1) && (pos2 > -1) && (pos2 > pos)) {
+                retval = line.substring(pos+1, pos2);
+            }
+        }
+        
+        return retval;
+    }
+    
+    private static String getIndexName(String line) {
+        String retval = null;
+        StringTokenizer st = new StringTokenizer(line);
+        if (st.countTokens() > 4) {
+            int cnt = 2;
+            if (line.contains(" UNIQUE ")) {
+                cnt = 3; 
+            }
+            
+            for (int i = 0; i < cnt; ++i) {
+                st.nextToken();
+            }
+            
+            retval = st.nextToken().substring("KULOWNER.".length());
+        }
+        return retval;
+    }
+
+    private static List<String> getIndexColumnNames(String line) {
+        List <String> retval = new ArrayList<>();
+        
+        int pos = line.indexOf("(");
+        int pos2 = line.indexOf(")");
+        
+        
+        if ((pos > -1) && (pos2 > -1) && (pos2 > pos)) {
+            StringTokenizer st = new StringTokenizer(line.substring(pos+1, pos2), ",");
+            
+            while (st.hasMoreTokens()) {
+                retval.add(st.nextToken());
+            }
+        }
+            
+        return retval;
+    }
+    
+    private static void createIndexes(Connection conn, Statement stmt) {
+        LineNumberReader lnr = null;
+        
+        try {
+            lnr = new LineNumberReader(new FileReader(properties.getProperty("index-file-name")));
+            
+            String line = null;
+            
+            while ((line = lnr.readLine()) != null) {
+                String tableName = getIndexTableName(line);
+                String indexName = getIndexName(line);
+                
+                if (StringUtils.isNoneBlank(tableName) && StringUtils.isNoneBlank(indexName)) {
+                    boolean unique = line.contains(" UNIQUE ");
+                    List <String> columnNames = getIndexColumnNames(line);
+                    
+                    if (!indexExists(conn, stmt, tableName, columnNames)) {
+                        if (indexNameExists(conn, stmt, tableName, indexName)) {
+                            indexName = getNextTableIndexName(conn, stmt, tableName);
+                        }
+
+                        StringBuilder sql = new StringBuilder(256);
+                        
+                        sql.append("CREATE ");
+            
+                        if (unique) {
+                            sql.append ("UNIQUE ");
+                        }
+
+                        sql.append("INDEX KULOWNER.");
+
+                        sql.append(indexName);
+                        sql.append(" ON KULOWNER.");
+                        sql.append(tableName);
+                        sql.append("(");
+
+                        String comma = "";
+                        for (String columnName : columnNames) {
+                            sql.append(comma);
+                            sql.append(columnName);
+                            comma = ",";
+                        }
+
+                        sql.append(")");
+                        
+                        try {
+                            stmt.execute(sql.toString());
+                        }
+                        
+                        catch (SQLException ex) {
+                            writeOut("failed to create index: " + sql.toString());
+                        }
+                    }
+                }
+            }
+        }
+        
+        catch (Exception ex) {
+            writeOut(ex);
+        }
+        
+        finally {
+            try {
+                if (lnr != null) {
+                    lnr.close();
+                }
+            }
+            
+            catch (Exception ex) {};
+        }
+    }
+
+    private static boolean indexExists(Connection conn, Statement stmt, String tableName, List <String> columnNames) throws Exception {
+        boolean retval = false;
+        ResultSet res = null;
+        
+        try {
+            StringBuilder sql = new StringBuilder(256);
+            
+            sql.append("select index_name, column_name, column_position ");
+            sql.append("from all_ind_columns ");
+            sql.append("where index_owner = 'KULOWNER' ");
+            sql.append("and table_owner = 'KULOWNER' ");
+            sql.append("and table_name = '");
+            sql.append(tableName);
+            sql.append("' order by index_name, column_position");
+            
+            Map<String, List<String>> map = new HashMap<>();
+            
+            res = stmt.executeQuery(sql.toString());
+            while (res.next()) {
+                String indexName = res.getString(1);
+                
+                List <String> columns = map.get(indexName);
+                
+                if (columns == null) {
+                    map.put(indexName, columns = new ArrayList<>());
+                }
+                
+                columns.add(res.getString(2));
+            }
+            
+            for (List <String> columns : map.values()) {
+                if (columns.size() == columnNames.size()) {
+                    boolean foundit = true;
+                    for (int i = 0; i < columns.size(); ++i) {
+                        if (!columns.get(i).equals(columnNames.get(i))) {
+                            foundit = false;
+                            break;
+                        }
+                    }
+                    
+                    if (foundit) {
+                        retval = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        finally {
+            closeDbObjects(null, null, res);
+        }
+        
+        return retval;
+    }
+    
+    private static boolean indexNameExists(Connection conn, Statement stmt, String tableName, String indexName) throws Exception {
+        boolean retval = false;
+        ResultSet res = null;
+        
+        try {
+            res = stmt.executeQuery("select count(*) from user_indexes where table_owner = 'KULOWNER' and table_name = '" + tableName + "' and index_name = '" + indexName + "'");
+            if (res.next()) {
+                retval = (res.getInt(1) > 0);
+            }
+        }
+        
+        finally {
+            closeDbObjects(null, null, res);
+        }
+        
+        return retval;
+    }
+    
+    private static String getNextTableIndexName(Connection conn, Statement stmt, String tableName) throws Exception {
+        String retval = null;
+
+        int maxIndex = -1;
+        ResultSet res = null;
+        
+        try {
+            res = stmt.executeQuery("select index_name from user_indexes where table_owner = 'KULOWNER' and table_name = '" + tableName + "'");
+            while (res.next()) {
+                String indexName = res.getString(1);
+                int pos = indexName.lastIndexOf("_");
+
+                if (pos > -1) {
+                    if (indexName.substring(pos+1).startsWith("TI")) {
+                        try {
+                            int i = Integer.parseInt(indexName.substring(pos+3));
+                            if (i > maxIndex) {
+                                maxIndex = i;
+                                
+                            }
+                        }
+                        
+                        catch (NumberFormatException ex) {};
+                    }
+                }
+            }
+            
+            retval = (tableName + "I" + (maxIndex+1));
+        }
+        
+        finally {
+            closeDbObjects(null, null, res);
+        }
+        
+        return retval;
+    }
+
+    private static String getSynonymName(String line) {
+        String retval = null;
+        StringTokenizer st = new StringTokenizer(line);
+        
+        st.nextToken();
+        st.nextToken();
+        st.nextToken();
+        String token = st.nextToken();
+        
+        int pos = token.lastIndexOf(";");
+        
+        if (pos > -1) {
+            retval = token.substring(0, pos).trim();
+        } else {
+            retval = token.trim();
+        }
+        
+        return retval;
+    }
+    
+    private static boolean synonymExists(Connection conn, Statement stmt, String synonymName) throws Exception {
+        boolean retval = false;
+        ResultSet res = null;
+        
+        try {
+            res = stmt.executeQuery("select count(*) from all_synonyms where owner = 'PUBLIC' and synonym_name = '" + synonymName + "'");
+            if (res.next()) {
+                retval = (res.getInt(1) > 0);
+            }
+        }
+        
+        finally {
+            closeDbObjects(null, null, res);
+        }
+        
+        return retval;
+    }
+    
+    
+    private static void createPublicSynonyms(Connection conn, Statement stmt) {
+        LineNumberReader lnr = null;
+        
+        try {
+            lnr = new LineNumberReader(new FileReader(properties.getProperty("synonym-file-name")));
+            
+            String line = null;
+            
+            while ((line = lnr.readLine()) != null) {
+                String synonymName = getSynonymName(line);
+                
+                if (!synonymExists(conn, stmt, synonymName)) {
+                    try {
+                        stmt.execute(line);
+                    }
+                    
+                    catch (SQLException ex) {
+                        writeOut("faled to create public synonym: " + line);
+                    }
+                }
+            }
+            
+        }
+        
+        catch (Exception ex) {
+            writeOut(ex);
+        }
+        
+        finally {
+            try {
+                if (lnr != null) {
+                    lnr.close();
                 }
             }
             
