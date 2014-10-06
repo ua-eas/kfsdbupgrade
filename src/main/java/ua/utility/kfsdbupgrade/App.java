@@ -71,6 +71,8 @@ public class App {
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
                     if (doInitialProcessing(stmt)) {
+                        conn.commit();
+                        
                         if (doUpgrade(conn, stmt)) {
                             success = true;
                         }
@@ -562,7 +564,7 @@ public class App {
             deleteFile(new File(properties.getProperty("processed-files-file-name")));
             
             writeHeader1("pre-upgrade processing");
-            writeHeader2("dropping materialized view logs..");
+            writeHeader2("dropping materialized view logs...");
             res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
             
             List <String> logs = new ArrayList<>();
@@ -576,7 +578,36 @@ public class App {
                 writeOut("dropped materialized view log on " + log);
             }
             
+            
+            res.close();
+            
+            List <String> updates = new ArrayList<>();
+            
+            writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
 
+            res = stmt.executeQuery("select count(*), NM, NMSPC_CD from KRIM_PERM_T group by NM, NMSPC_CD having count(*) > 1");
+
+            while (res.next()) {
+                String nm = res.getString(2);
+                String nmspccd = res.getString(3);
+                updates.add("update KRIM_PERM_T set nm = nm || '[' || perm_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
+            }
+            
+            res.close();
+
+            res = stmt.executeQuery("select count(*), NM, NMSPC_CD from  KRIM_RSP_T group by NM, NMSPC_CD having count(*) > 1");
+
+            while (res.next()) {
+                String nm = res.getString(2);
+                String nmspccd = res.getString(3);
+                updates.add("update KRIM_RSP_T set nm = nm || '[' || perm_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
+            }
+            
+            for (String sql : updates) {
+                writeOut("executing: " + sql);
+                stmt.executeUpdate(sql);
+            }
+            
             retval = true;
         }
         

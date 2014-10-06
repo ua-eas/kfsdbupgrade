@@ -38,6 +38,9 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <archive>
+                        <manifestEntries>
+                            <Class-Path>.</Class-Path>
+                        </manifestEntries>
                         <manifest>
                             <mainClass>ua.utility.kfsdbupgrade.App</mainClass>
                         </manifest>
@@ -45,9 +48,6 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <manifestEntries>
-                        <Class-Path>.</Class-Path>
-                    </manifestEntries>
                 </configuration>
                 <executions>
                     <execution>
