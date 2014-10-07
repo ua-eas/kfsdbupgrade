@@ -1,3 +1,5 @@
+-- data pulled from release-5-2-1/work/db/rice-data/bootstrap/krim_rsp_t.csv - new names to prevent duplicates
+
 UPDATE KULOWNER.KRIM_RSP_T SET NM = 'Review KFS OrganizationHierarchy' WHERE RSP_ID = '1';
 UPDATE KULOWNER.KRIM_RSP_T SET NM = 'Review CTRL ElectronicPayment' WHERE RSP_ID = '10';
 UPDATE KULOWNER.KRIM_RSP_T SET NM = 'Review ARM Management' WHERE RSP_ID = '100';

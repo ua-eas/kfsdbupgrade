@@ -75,7 +75,6 @@ public class App {
                     writeOut("");
                     if (doInitialProcessing(stmt)) {
                         doCommit(conn1);
-                        
                         if (doUpgrade(conn1, conn2, stmt)) {
                             success = true;
                         }
@@ -583,8 +582,10 @@ public class App {
             
             writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
 
+            // find duplicates
             res = stmt.executeQuery("select count(*), NM, NMSPC_CD from KRIM_PERM_T group by NM, NMSPC_CD having count(*) > 1");
 
+            //tack perm_id to name to make unique
             while (res.next()) {
                 String nm = res.getString(2);
                 String nmspccd = res.getString(3);
@@ -593,8 +594,10 @@ public class App {
             
             res.close();
 
+            // find duplicates
             res = stmt.executeQuery("select count(*), NM, NMSPC_CD from  KRIM_RSP_T group by NM, NMSPC_CD having count(*) > 1");
 
+            //tack rsp_id to name to make unique
             while (res.next()) {
                 String nm = res.getString(2);
                 String nmspccd = res.getString(3);

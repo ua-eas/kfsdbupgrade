@@ -1,3 +1,5 @@
+-- data pulled from release-5-2-1/work/db/rice-data/bootstrap/krim_perm_t.csv - new names to prevent duplicates
+
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Claim Electronic Payment CTRL' WHERE PERM_ID = '1';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Modify Maintenance Document Field Customer customerTaxNbr' WHERE PERM_ID = '10';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Edit Document REQS PreRoute' WHERE PERM_ID = '100';
