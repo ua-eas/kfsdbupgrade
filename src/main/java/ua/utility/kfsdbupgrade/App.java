@@ -62,26 +62,29 @@ public class App {
                 upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
                 upgradeFiles = loadFolderFileMap("files-");
                 
-                Connection conn = null;
+                Connection conn1 = null;
+                Connection conn2 = null;
                 Statement stmt = null;
                 boolean success = false;
                 try {
-                    conn = getConnection();
-                    stmt = conn.createStatement();
+                    conn1 = getConnection();
+                    conn2 = getConnection();
+                    conn2.setAutoCommit(true);
+                    stmt = conn1.createStatement();
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
                     if (doInitialProcessing(stmt)) {
-                        conn.commit();
+                        doCommit(conn1);
                         
-                        if (doUpgrade(conn, stmt)) {
+                        if (doUpgrade(conn1, conn2, stmt)) {
                             success = true;
                         }
                     }
                     
                     if (success) {
-                        doCommit(conn);
-                        createIndexes(conn, stmt);
-                        createPublicSynonyms(conn, stmt);
+                        doCommit(conn1);
+                        createIndexes(conn2, stmt);
+                        createPublicSynonyms(conn2, stmt);
                         writeOut("");
                         writeHeader1("upgrade completed successfully");
                     }
@@ -92,14 +95,15 @@ public class App {
                 }
 
                 finally {
-                    closeDbObjects(conn, stmt, null);
+                    closeDbObjects(conn1, stmt, null);
+                    closeDbObjects(conn2, null, null);
                 }
             } else {
                 System.out.println("invalid properties file: " + args[0]);
             }
             
         } else {
-            System.out.println("usage: java -Xmx250m -jar kfsdbupgrade.jar <property-file-path>");
+            System.out.println("usage: java -Xmx500m -jar kfsdbupgrade.jar <property-file-path>");
         }
     }
     
@@ -199,9 +203,7 @@ public class App {
             }
         
             if (retval) {
-                if ("file".equals(properties.getProperty("commit-level"))) {
-                    retval = doCommit(conn);
-                }
+                retval = doCommit(conn);
             } else {
                 doRollback(conn);
             }
@@ -334,7 +336,7 @@ public class App {
         return retval;
     }
     
-    private static boolean doUpgrade(Connection conn, Statement stmt) {
+    private static boolean doUpgrade(Connection conn1, Connection conn2, Statement stmt) {
         boolean retval = true;
         writeHeader1("upgrading kfs");
 
@@ -349,14 +351,14 @@ public class App {
                 File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
                 
                 if (f.getName().endsWith(".sql")) {
-                    if (!runSqlFile(conn, stmt, f, ";")) {
+                    if (!runSqlFile(conn1, stmt, f, ";")) {
                         retval = false;
                         writeProcessedFileInfo("[failure] " + f.getPath());
                     } else {
                         writeProcessedFileInfo("[success] " + f.getPath());
                     }
                 } else {
-                    if(!runLiquibase(conn, f)) {
+                    if(!runLiquibase(conn2, f)) {
                         retval = false;
                         writeProcessedFileInfo("[failure] " + f.getPath());
                     } else {
@@ -369,10 +371,6 @@ public class App {
                 } 
             }
             
-            if (retval && !"file".equals(properties.getProperty("commit-level"))) {
-                retval = doCommit(conn);
-            }
-
             if (!retval) {
                 break;
             }
@@ -600,7 +598,7 @@ public class App {
             while (res.next()) {
                 String nm = res.getString(2);
                 String nmspccd = res.getString(3);
-                updates.add("update KRIM_RSP_T set nm = nm || '[' || perm_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
+                updates.add("update KRIM_RSP_T set nm = nm || '[' || rsp_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
             }
             
             for (String sql : updates) {
