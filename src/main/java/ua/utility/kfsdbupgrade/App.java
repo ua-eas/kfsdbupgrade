@@ -384,6 +384,7 @@ public class App {
         PrintWriter pw = null;
         try {
             Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
+            liquibase.getDatabase().setAutoCommit(true);
             liquibase.reportStatus(true, null, pw = getOutputLogWriter());
             liquibase.update(null);
             retval = true;
