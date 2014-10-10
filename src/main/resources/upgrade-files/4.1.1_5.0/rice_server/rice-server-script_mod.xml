@@ -169,7 +169,7 @@
 			drop_cons( 'KREW_RULE_TMPL_OPTN_T' );
 			drop_cons( 'KREW_RULE_TMPL_T' );
             
-            		drop_synonyms(  );
+            		drop_synonyms();
 		END;
 		]]></sql>		
 
@@ -3055,6 +3055,24 @@
                 END LOOP;
             END;
 		]]></sql>
+	<sql splitStatements="false"><![CDATA[
+		DECLARE
+            	PROCEDURE drop_synonyms IS
+				CURSOR synonyms_cursor IS
+                                        SELECT synonym_name
+					FROM all_synonyms
+					WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+					  
+              BEGIN
+                    FOR syn IN synonyms_cursor LOOP
+                        EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                    END LOOP;
+                END;
+        BEGIN
+            		drop_synonyms();
+		END;
+		]]></sql>		
+         
 		<sql splitStatements="false"><![CDATA[
 		-- 
 		-- 2011-07-07-m6.sql

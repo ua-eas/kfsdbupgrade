@@ -107,7 +107,7 @@ public class App {
     }
     
     private static List <String> loadList(String input) {
-        List <String> retval = new ArrayList<>();
+        List <String> retval = new ArrayList<String>();
         if (StringUtils.isNotBlank(input)) {
             StringTokenizer st = new StringTokenizer(input, ",");
             
@@ -119,7 +119,7 @@ public class App {
     }
     
     private static Map<String, List<String>> loadFolderFileMap(String prefix) {
-        Map <String, List<String>> retval = new HashMap<>();
+        Map <String, List<String>> retval = new HashMap<String, List<String>>();
         
         for (Entry e : properties.entrySet()) {
             String key = (String)e.getKey();
@@ -215,7 +215,7 @@ public class App {
     }
     
     private static List <String> getSqlStatements(File f) {
-        List <String> retval = new ArrayList<>();
+        List <String> retval = new ArrayList<String>();
         LineNumberReader lnr = null;
         
         try {
@@ -290,7 +290,7 @@ public class App {
     }
     
     private static List <String> getFolders(String lastProcessedFile) {
-        List <String> retval = new ArrayList<>();
+        List <String> retval = new ArrayList<String>();
 
         if (StringUtils.isNotBlank(lastProcessedFile)) {
             String lastProcessedFolder = getLastProcessedFolder(lastProcessedFile);
@@ -312,7 +312,7 @@ public class App {
     }
     
     private static List <String> getFolderFiles(String folder, String lastProcessedFile) {
-        List <String> retval = new ArrayList<>();
+        List <String> retval = new ArrayList<String>();
         if (StringUtils.isBlank(lastProcessedFile)) {
             retval = upgradeFiles.get(folder);
         } else {
@@ -565,7 +565,7 @@ public class App {
             writeHeader2("dropping materialized view logs...");
             res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
             
-            List <String> logs = new ArrayList<>();
+            List <String> logs = new ArrayList<String>();
             
             while (res.next()) {
                 logs.add(res.getString(1));
@@ -579,7 +579,7 @@ public class App {
             
             res.close();
             
-            List <String> updates = new ArrayList<>();
+            List <String> updates = new ArrayList<String>();
             
             writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
 
@@ -702,7 +702,7 @@ public class App {
     }
 
     private static List<String> getIndexColumnNames(String line) {
-        List <String> retval = new ArrayList<>();
+        List <String> retval = new ArrayList<String>();
         
         int pos = line.indexOf("(");
         int pos2 = line.indexOf(")");
@@ -806,7 +806,7 @@ public class App {
             sql.append(tableName);
             sql.append("' order by index_name, column_position");
             
-            Map<String, List<String>> map = new HashMap<>();
+            Map<String, List<String>> map = new HashMap<String, List<String>>();
             
             res = stmt.executeQuery(sql.toString());
             while (res.next()) {
@@ -815,7 +815,7 @@ public class App {
                 List <String> columns = map.get(indexName);
                 
                 if (columns == null) {
-                    map.put(indexName, columns = new ArrayList<>());
+                    map.put(indexName, columns = new ArrayList<String>());
                 }
                 
                 columns.add(res.getString(2));
