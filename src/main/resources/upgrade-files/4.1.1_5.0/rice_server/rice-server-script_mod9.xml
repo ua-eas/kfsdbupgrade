@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2012 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
+
+	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod9" dbms="oracle">
+
+	<sql splitStatements="false"><![CDATA[
+	    DECLARE
+            	PROCEDURE drop_synonyms IS
+		    CURSOR synonyms_cursor IS
+                        SELECT synonym_name
+			FROM all_synonyms
+			WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+            BEGIN
+                FOR syn IN synonyms_cursor LOOP
+                    EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                END LOOP;
+            END;
+            BEGIN
+                drop_synonyms();
+	    END;
+	]]></sql>		
+                
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_EXT_T RENAME TO TEMP_KREW_DOC_HDR_EXT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_HDR_EXT_T
+		(
+		      DOC_HDR_EXT_ID VARCHAR2(40)
+		        , DOC_HDR_ID VARCHAR2(40) NOT NULL
+		        , KEY_CD VARCHAR2(256) NOT NULL
+		        , VAL VARCHAR2(2000)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_EXT_T
+		    ADD CONSTRAINT KREW_DOC_HDR_EXT_TP1
+		PRIMARY KEY (DOC_HDR_EXT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_TI1 
+		  ON KREW_DOC_HDR_EXT_T 
+		  (KEY_CD, VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_TI2 
+		  ON KREW_DOC_HDR_EXT_T 
+		  (DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_TI3 
+		  ON KREW_DOC_HDR_EXT_T 
+		  (VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_T
+		(DOC_HDR_EXT_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT 
+		CAST(DOC_HDR_EXT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DECLARE temp NUMBER;
+		BEGIN
+			SELECT COUNT(*) INTO temp FROM user_tables WHERE table_name = 'TEMP_KREW_DOC_HDR_EXT_T';
+			IF temp > 0 THEN EXECUTE IMMEDIATE 'DROP TABLE TEMP_KREW_DOC_HDR_EXT_T CASCADE CONSTRAINTS PURGE'; END IF;
+		END;
+		]]></sql> -->
+		<!-- JHK: removing since not in master datasource
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RTE_NODE_CFG_PARM_T
+		    ADD CONSTRAINT EN_RTE_NODE_CFG_PARM_TR1 FOREIGN KEY (RTE_NODE_ID)
+		    REFERENCES KREW_RTE_NODE_T (RTE_NODE_ID)
+		]]></sql>
+		 -->
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-07-11-m6.sql
+		-- 
+		
+		
+		--
+		-- NOTE: when assembling this script for release, please merge any table rebuilds with those from 2011-04-28.sql
+		--
+		
+		-----------------------------------------------------------------------------
+		-- KREW_RTE_NODE_LNK_T
+		-----------------------------------------------------------------------------
+		ALTER TABLE KREW_RTE_NODE_LNK_T RENAME TO TEMP_KREW_RTE_NODE_LNK_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_RTE_NODE_LNK_T
+		(
+			FROM_RTE_NODE_ID VARCHAR2(40)
+		    , TO_RTE_NODE_ID VARCHAR2(40)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RTE_NODE_LNK_T
+		    ADD CONSTRAINT KREW_RTE_NODE_LNK_TP1
+		PRIMARY KEY (FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_LNK_TI1 
+		  ON KREW_RTE_NODE_LNK_T 
+		  (FROM_RTE_NODE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_LNK_TI2 
+		  ON KREW_RTE_NODE_LNK_T 
+		  (TO_RTE_NODE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_RTE_NODE_LNK_T
+		(FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
+		SELECT CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
+		FROM TEMP_KREW_RTE_NODE_LNK_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DECLARE temp NUMBER;
+		BEGIN
+			SELECT COUNT(*) INTO temp FROM user_tables WHERE table_name = 'TEMP_KREW_RTE_NODE_LNK_T';
+			IF temp > 0 THEN EXECUTE IMMEDIATE 'DROP TABLE TEMP_KREW_RTE_NODE_LNK_T CASCADE CONSTRAINTS PURGE'; END IF;
+		END;
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-07-13.sql
+		-- 
+		
+		
+		--KRCR_PARM_T
+		ALTER TABLE KRCR_PARM_T RENAME column PARM_DTL_TYP_CD to CMPNT_CD
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRCR_PARM_T RENAME column TXT to VAL
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRCR_PARM_T RENAME column CONS_CD to EVAL_OPRTR_CD
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		--KRCR_PARM_DTL_TYP_T to KRCR_CMPNT_T
+		ALTER TABLE KRCR_PARM_DTL_TYP_T RENAME TO KRCR_CMPNT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRCR_CMPNT_T RENAME COLUMN PARM_DTL_TYP_CD TO CMPNT_CD
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		--KRLC_CMP_TYP_T
+		ALTER TABLE KRLC_CMP_TYP_T DROP COLUMN DOBJ_MAINT_CD_ACTV_IND
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-07-22.sql
+		-- 
+		
+		
+		-- Oracle sql for KULRICE-5419:
+		alter table krms_cntxt_t add desc_txt varchar2(255) default null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table krms_term_spec_t add desc_txt varchar2(255) default null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table krms_term_t add desc_txt varchar2(255) default null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table krms_attr_defn_t add desc_txt varchar2(255) default null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-07-24-m7.sql
+		-- 
+		
+		
+		drop sequence KREW_HLP_S 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop table KREW_HLP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop table KREW_RMV_RPLC_DOC_T 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop table KREW_RMV_RPLC_GRP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop table KREW_RMV_RPLC_RULE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		-----------------------------------------------------------------------------
+		-- KREW_INIT_RTE_NODE_INSTN_T
+		-----------------------------------------------------------------------------
+			DECLARE
+				TableName VARCHAR2(30) := 'KREW_INIT_RTE_NODE_INSTN_T';
+				CURSOR tab_cons IS
+					SELECT constraint_name
+						FROM user_constraints
+						WHERE table_name = TableName 
+						  AND constraint_type IN ( 'P', 'U', 'R' );
+                CURSOR tab_ind IS
+                    SELECT index_name
+                        FROM user_indexes
+                        WHERE table_name = TableName
+                          AND index_type != 'LOB';
+            BEGIN
+                FOR cons IN tab_cons LOOP
+                    EXECUTE IMMEDIATE 'ALTER TABLE '||TableName||' DROP CONSTRAINT '||cons.constraint_name;
+                END LOOP;
+                FOR ind IN tab_ind LOOP
+                    EXECUTE IMMEDIATE 'DROP INDEX '||ind.index_name;
+                END LOOP;
+            END;
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T RENAME TO TEMP_KREW_INIT_RTE_NODE
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_INIT_RTE_NODE_INSTN_T
+		(
+		         DOC_HDR_ID VARCHAR2(40) NOT NULL
+		        , RTE_NODE_INSTN_ID VARCHAR2(40) NOT NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T
+		    ADD CONSTRAINT KREW_INIT_RTE_NODE_INSTN_TP1
+		PRIMARY KEY (DOC_HDR_ID, RTE_NODE_INSTN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI1
+		  ON KREW_INIT_RTE_NODE_INSTN_T
+		  (DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI2
+		  ON KREW_INIT_RTE_NODE_INSTN_T
+		  (RTE_NODE_INSTN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_INIT_RTE_NODE_INSTN_T
+		(DOC_HDR_ID, RTE_NODE_INSTN_ID)
+		SELECT DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
+		FROM TEMP_KREW_INIT_RTE_NODE
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DECLARE temp NUMBER;
+		BEGIN
+			SELECT COUNT(*) INTO temp FROM user_tables WHERE table_name = 'TEMP_KREW_INIT_RTE_NODE';
+			IF temp > 0 THEN EXECUTE IMMEDIATE 'DROP TABLE TEMP_KREW_INIT_RTE_NODE CASCADE CONSTRAINTS PURGE'; END IF;
+		END;
+		]]></sql> -->
+</changeSet>
+</databaseChangeLog>

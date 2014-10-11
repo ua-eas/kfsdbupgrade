@@ -1,0 +1,720 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2012 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
+
+	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod3" dbms="oracle">
+
+	<sql splitStatements="false"><![CDATA[
+	    DECLARE
+            	PROCEDURE drop_synonyms IS
+		    CURSOR synonyms_cursor IS
+                        SELECT synonym_name
+			FROM all_synonyms
+			WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+            BEGIN
+                FOR syn IN synonyms_cursor LOOP
+                    EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                END LOOP;
+            END;
+            BEGIN
+                drop_synonyms();
+	    END;
+	]]></sql>		
+		<sql splitStatements="false"><![CDATA[
+		-- 
+		-- 2011-04-28.sql
+		-- 
+		--
+		-- KULRICE-4794
+		-- The following statements will change the DOC_HDR_ID from a decimal to a VARCHAR(40) on various tables. 
+		--
+		-- NOTE:  If a table is empty, one statement can be used to convert the DOC_HDR_ID as follows:
+		-- ALTER TABLE TABLE_NAME_HERE MODIFY (DOC_HDR_ID VARCHAR2(40))
+		--
+		--
+		-- KREW_ACTN_ITM_T 
+		--
+		
+		ALTER TABLE KREW_ACTN_ITM_T RENAME TO OLD_KREW_ACTN_ITM_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_ACTN_ITM_T ( 
+		    ACTN_ITM_ID   	NUMBER(14,0),
+		    PRNCPL_ID     	VARCHAR2(40) NOT NULL,
+		    ASND_DT       	DATE NOT NULL,
+		    RQST_CD       	CHAR(1) NOT NULL,
+		    ACTN_RQST_ID  	NUMBER(14,0) NOT NULL,
+		    DOC_HDR_ID     	VARCHAR2(40) NOT NULL,
+		    ROLE_NM       	VARCHAR2(2000) NULL,
+		    DLGN_PRNCPL_ID	VARCHAR2(40) NULL,
+		    DOC_HDR_TTL   	VARCHAR2(255) NULL,
+		    DOC_TYP_LBL   	VARCHAR2(128) NOT NULL,
+		    DOC_HDLR_URL  	VARCHAR2(255) NOT NULL,
+		    DOC_TYP_NM    	VARCHAR2(64) NOT NULL,
+		    RSP_ID        	NUMBER(14,0) NOT NULL,
+		    DLGN_TYP      	VARCHAR2(1) NULL,
+		    VER_NBR       	NUMBER(8,0) DEFAULT 0 NULL,
+		    DTYPE         	VARCHAR2(50) NULL,
+		    GRP_ID        	VARCHAR2(40) NULL,
+		    DLGN_GRP_ID   	VARCHAR2(40) NULL,
+		    RQST_LBL      	VARCHAR2(255) NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_ACTN_ITM_T SELECT * FROM OLD_KREW_ACTN_ITM_T
+		]]></sql>
+		<!-- 
+		<sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_ACTN_ITM_T
+		]]></sql>
+		 -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_ACTN_ITM_T ADD CONSTRAINT KREW_ACTN_ITM_TP1 PRIMARY KEY (ACTN_ITM_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_ITM_TI1 ON KREW_ACTN_ITM_T(PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_ITM_TI2 ON KREW_ACTN_ITM_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_ITM_TI3 ON KREW_ACTN_ITM_T(ACTN_RQST_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_ITM_TI5 ON KREW_ACTN_ITM_T(PRNCPL_ID, DLGN_TYP, DOC_HDR_ID)
+		]]></sql>
+
+
+		<sql splitStatements="false"><![CDATA[
+		--
+		-- KREW_ACTN_RQST_T 
+		-- Depending on the size of the table, this conversion can take a long time.  Example - takes 90 minutes for 38 million rows. 
+		--
+		ALTER TABLE KREW_ACTN_RQST_T RENAME TO OLD_KREW_ACTN_RQST_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_ACTN_RQST_T ( 
+		    ACTN_RQST_ID        	NUMBER(14,0),
+		    PARNT_ID            	NUMBER(14,0) NULL,
+		    ACTN_RQST_CD        	CHAR(1) NOT NULL,
+		    DOC_HDR_ID          	VARCHAR2(40) NOT NULL,
+		    RULE_ID             	NUMBER(19,0) NULL,
+		    STAT_CD             	CHAR(1) NOT NULL,
+		    RSP_ID              	NUMBER(14,0) NOT NULL,
+		    PRNCPL_ID           	VARCHAR2(40) NULL,
+		    ROLE_NM             	VARCHAR2(2000) NULL,
+		    QUAL_ROLE_NM        	VARCHAR2(2000) NULL,
+		    QUAL_ROLE_NM_LBL_TXT	VARCHAR2(2000) NULL,
+		    RECIP_TYP_CD        	CHAR(1) NULL,
+		    PRIO_NBR            	NUMBER(8,0) NOT NULL,
+		    RTE_TYP_NM          	VARCHAR2(255) NULL,
+		    RTE_LVL_NBR         	NUMBER(8,0) NOT NULL,
+		    RTE_NODE_INSTN_ID   	NUMBER(19,0) NULL,
+		    ACTN_TKN_ID         	NUMBER(14,0) NULL,
+		    DOC_VER_NBR         	NUMBER(8,0) NOT NULL,
+		    CRTE_DT             	DATE NOT NULL,
+		    RSP_DESC_TXT        	VARCHAR2(200) NULL,
+		    FRC_ACTN            	NUMBER(1,0) DEFAULT 0,
+		    ACTN_RQST_ANNOTN_TXT	VARCHAR2(2000) NULL,
+		    DLGN_TYP            	CHAR(1) NULL,
+		    APPR_PLCY           	CHAR(1) NULL,
+		    CUR_IND             	NUMBER(1,0) DEFAULT 1,
+		    VER_NBR             	NUMBER(8,0) DEFAULT 0,
+		    GRP_ID              	VARCHAR2(40) NULL,
+		    RQST_LBL            	VARCHAR2(255) NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_ACTN_RQST_T SELECT * FROM OLD_KREW_ACTN_RQST_T
+		]]></sql>
+		<!-- 
+		<sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_ACTN_RQST_T
+		]]></sql>
+		 -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_ACTN_RQST_T ADD CONSTRAINT KREW_ACTN_RQST_TP1 PRIMARY KEY (ACTN_RQST_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T11 ON KREW_ACTN_RQST_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T12 ON KREW_ACTN_RQST_T(PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T13 ON KREW_ACTN_RQST_T(ACTN_TKN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T14 ON KREW_ACTN_RQST_T(PARNT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T15 ON KREW_ACTN_RQST_T(RSP_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T16 ON KREW_ACTN_RQST_T(STAT_CD, RSP_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T17 ON KREW_ACTN_RQST_T(RTE_NODE_INSTN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_RQST_T19 ON KREW_ACTN_RQST_T(STAT_CD, DOC_HDR_ID)
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_ACTN_TKN_T 
+		-- Depending on the size of the table, this conversion can take a long time.  Example - takes 10 minutes for 18 million rows. 
+		--
+		
+		ALTER TABLE KREW_ACTN_TKN_T RENAME TO OLD_KREW_ACTN_TKN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_ACTN_TKN_T ( 
+		    ACTN_TKN_ID    	NUMBER(14,0),
+		    DOC_HDR_ID      VARCHAR2(40) NOT NULL,
+		    PRNCPL_ID      	VARCHAR2(40) NOT NULL,
+		    DLGTR_PRNCPL_ID	VARCHAR2(40),
+		    ACTN_CD        	CHAR(1) NOT NULL,
+		    ACTN_DT        	DATE NOT NULL,
+		    DOC_VER_NBR    	NUMBER(8,0) NOT NULL,
+		    ANNOTN         	VARCHAR2(2000),
+		    CUR_IND        	NUMBER(1,0) DEFAULT 1,
+		    VER_NBR        	NUMBER(8,0) DEFAULT 0,
+		    DLGTR_GRP_ID   	VARCHAR2(40)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_ACTN_TKN_T SELECT * FROM OLD_KREW_ACTN_TKN_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_ACTN_TKN_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_ACTN_TKN_T ADD CONSTRAINT KREW_ACTN_TKN_TP1 PRIMARY KEY (ACTN_TKN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_TKN_TI1 ON KREW_ACTN_TKN_T(DOC_HDR_ID, PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_TKN_TI2 ON KREW_ACTN_TKN_T(DOC_HDR_ID, PRNCPL_ID, ACTN_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_TKN_TI3 ON KREW_ACTN_TKN_T(PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_TKN_TI4 ON KREW_ACTN_TKN_T(DLGTR_PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_ACTN_TKN_TI5 ON KREW_ACTN_TKN_T(DOC_HDR_ID)
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_APP_DOC_STAT_TRAN_T
+		(
+		      APP_DOC_STAT_TRAN_ID NUMBER(19),
+		      DOC_HDR_ID VARCHAR2(40),
+		      APP_DOC_STAT_FROM VARCHAR2(64),
+		      APP_DOC_STAT_TO VARCHAR2(64),
+		      STAT_TRANS_DATE DATE,
+		      VER_NBR NUMBER(8) default 0,
+		      OBJ_ID VARCHAR2(36) NOT NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_APP_DOC_STAT_TRAN_T ADD CONSTRAINT KREW_APP_DOC_STAT_TRAN_TP1 PRIMARY KEY(APP_DOC_STAT_TRAN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_APP_DOC_STAT_TRAN_T ADD CONSTRAINT KREW_APP_DOC_STAT_TRAN_TC0 UNIQUE (OBJ_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_APP_DOC_STAT_TI1 ON KREW_APP_DOC_STAT_TRAN_T (DOC_HDR_ID, STAT_TRANS_DATE)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_APP_DOC_STAT_TI2 ON KREW_APP_DOC_STAT_TRAN_T (DOC_HDR_ID, APP_DOC_STAT_FROM)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_APP_DOC_STAT_TI3 ON KREW_APP_DOC_STAT_TRAN_T (DOC_HDR_ID, APP_DOC_STAT_TO)
+		]]></sql>
+
+		<sql><![CDATA[		
+		--
+		-- KREW_DOC_HDR_CNTNT_T 
+		-- Depending on the size of the table, this conversion can take a long time.  Example - takes 45 minutes for 8 million rows 
+		-- 
+		ALTER TABLE KREW_DOC_HDR_CNTNT_T RENAME TO OLD_KREW_DOC_HDR_CNTNT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_HDR_CNTNT_T ( 
+		    DOC_HDR_ID   	VARCHAR2(40),
+		    DOC_CNTNT_TXT	CLOB NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_CNTNT_T SELECT * FROM OLD_KREW_DOC_HDR_CNTNT_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_HDR_CNTNT_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_CNTNT_T ADD CONSTRAINT KREW_DOC_HDR_CNTNT_TP1 PRIMARY KEY (DOC_HDR_ID)
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_HDR_EXT_DT_T 
+		-- 
+		
+		ALTER TABLE KREW_DOC_HDR_EXT_DT_T RENAME TO OLD_KREW_DOC_HDR_EXT_DT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_HDR_EXT_DT_T ( 
+		    DOC_HDR_EXT_DT_ID	NUMBER(19,0),
+		    DOC_HDR_ID   		VARCHAR2(40) NOT NULL,
+		    KEY_CD           	VARCHAR2(256) NOT NULL,
+		    VAL              	DATE NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_DT_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_DT_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_HDR_EXT_DT_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_EXT_DT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_DT_TP1 PRIMARY KEY (DOC_HDR_EXT_DT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI1 ON KREW_DOC_HDR_EXT_DT_T(KEY_CD, VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI2 ON KREW_DOC_HDR_EXT_DT_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI3 ON KREW_DOC_HDR_EXT_DT_T(VAL)
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_HDR_EXT_LONG_T 
+		-- 
+		
+		ALTER TABLE KREW_DOC_HDR_EXT_LONG_T RENAME TO OLD_KREW_DOC_HDR_EXT_LONG_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_HDR_EXT_LONG_T ( 
+		    DOC_HDR_EXT_LONG_ID	NUMBER(19,0),
+		    DOC_HDR_ID   		VARCHAR2(40) NOT NULL,
+		    KEY_CD             	VARCHAR2(256) NOT NULL,
+		    VAL                	NUMBER(22,0) NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_LONG_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_LONG_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_HDR_EXT_LONG_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_EXT_LONG_T ADD CONSTRAINT KREW_DOC_HDR_EXT_LONG_TP1 PRIMARY KEY (DOC_HDR_EXT_LONG_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI1 ON KREW_DOC_HDR_EXT_LONG_T(KEY_CD, VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI2 ON KREW_DOC_HDR_EXT_LONG_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI3 ON KREW_DOC_HDR_EXT_LONG_T(VAL)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_HDR_EXT_FLT_T 
+		-- 
+		
+		ALTER TABLE KREW_DOC_HDR_EXT_FLT_T RENAME TO OLD_KREW_DOC_HDR_EXT_FLT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_HDR_EXT_FLT_T ( 
+		    DOC_HDR_EXT_FLT_ID	NUMBER(19,0),
+			DOC_HDR_ID    		VARCHAR2(40) NOT NULL,
+		    KEY_CD            	VARCHAR2(256) NOT NULL,
+		    VAL               	NUMBER(30,15) NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_FLT_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_FLT_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_HDR_EXT_FLT_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_EXT_FLT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_FLT_TP1 PRIMARY KEY (DOC_HDR_EXT_FLT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI1 ON KREW_DOC_HDR_EXT_FLT_T(KEY_CD, VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI2 ON KREW_DOC_HDR_EXT_FLT_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI3 ON KREW_DOC_HDR_EXT_FLT_T(VAL)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_HDR_EXT_T 
+		-- 
+		
+		ALTER TABLE KREW_DOC_HDR_EXT_T RENAME TO OLD_KREW_DOC_HDR_EXT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_HDR_EXT_T ( 
+		    DOC_HDR_EXT_ID	NUMBER(19,0),
+			DOC_HDR_ID    	VARCHAR2(40) NOT NULL,
+		    KEY_CD        	VARCHAR2(256) NOT NULL,
+		    VAL           	VARCHAR2(2000)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_HDR_EXT_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_EXT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_TP1 PRIMARY KEY (DOC_HDR_EXT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_TI1 ON KREW_DOC_HDR_EXT_T(KEY_CD, VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_TI2 ON KREW_DOC_HDR_EXT_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_HDR_EXT_TI3 ON KREW_DOC_HDR_EXT_T(VAL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_HDR_T 
+		-- This SQL works in such a way that the column does not change positions in the table.
+		-- Done this way to limit disruption to existing indexes.
+		--
+		
+		ALTER TABLE KREW_DOC_HDR_T ADD DOC_HDR_ID_TEMP VARCHAR2(40)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		UPDATE KREW_DOC_HDR_T SET DOC_HDR_ID_TEMP = DOC_HDR_ID
+		]]></sql>
+
+                <sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_T MODIFY DOC_HDR_ID NUMBER(14, 0) NULL
+		]]></sql>
+
+                <sql splitStatements="false"><![CDATA[
+		UPDATE KREW_DOC_HDR_T SET DOC_HDR_ID = NULL
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_T MODIFY (DOC_HDR_ID VARCHAR2(40))
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		UPDATE KREW_DOC_HDR_T SET DOC_HDR_ID = DOC_HDR_ID_TEMP
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_T MODIFY DOC_HDR_ID VARCHAR2(40)  NOT NULL
+		]]></sql>
+
+                <sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_T DROP COLUMN DOC_HDR_ID_TEMP
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_NTE_T 
+		--
+		
+		ALTER TABLE KREW_DOC_NTE_T RENAME TO OLD_KREW_DOC_NTE_T
+		]]></sql>
+                
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_NTE_T ( 
+		    DOC_NTE_ID    	NUMBER(19,0),
+			DOC_HDR_ID    	VARCHAR2(40) NOT NULL,
+		    AUTH_PRNCPL_ID	VARCHAR2(40) NOT NULL,
+		    CRT_DT        	DATE NOT NULL,
+		    TXT           	VARCHAR2(4000) NULL,
+		    VER_NBR       	NUMBER(8,0) DEFAULT 0 NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_NTE_T SELECT * FROM OLD_KREW_DOC_NTE_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_NTE_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_NTE_T ADD CONSTRAINT KREW_DOC_NTE_TP1 PRIMARY KEY (DOC_NTE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_NTE_TI1 ON KREW_DOC_NTE_T (DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_DOC_TYP_T 
+		-- After this conversion, the doc_hdr_id column will be at the end of the table. 
+		-- Done this way to limit disruption to existing indexes.
+		--
+		
+		ALTER TABLE KREW_DOC_TYP_T RENAME COLUMN DOC_HDR_ID TO DOC_HDR_ID_OLD
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_TYP_T ADD DOC_HDR_ID VARCHAR2(40)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		UPDATE KREW_DOC_TYP_T SET DOC_HDR_ID = DOC_HDR_ID_OLD
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_TYP_T DROP COLUMN DOC_HDR_ID_OLD
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_EDL_DMP_T 
+		-- 
+		
+		ALTER TABLE KREW_EDL_DMP_T RENAME TO OLD_KREW_EDL_DMP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_EDL_DMP_T ( 
+		    DOC_HDR_ID             	VARCHAR2(40),
+		    DOC_TYP_NM             	VARCHAR2(64) NOT NULL,
+		    DOC_HDR_STAT_CD        	CHAR(1) NOT NULL,
+		    DOC_HDR_MDFN_DT        	DATE NOT NULL,
+		    DOC_HDR_CRTE_DT        	DATE NOT NULL,
+		    DOC_HDR_TTL            	VARCHAR2(255) NULL,
+		    DOC_HDR_INITR_PRNCPL_ID	VARCHAR2(40) NOT NULL,
+		    CRNT_NODE_NM           	VARCHAR2(30) NOT NULL,
+		    VER_NBR                	NUMBER(8,0) DEFAULT 0 NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_EDL_DMP_T SELECT * FROM OLD_KREW_EDL_DMP_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_EDL_DMP_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_EDL_DMP_T ADD CONSTRAINT KREW_EDL_DMP_TP1 PRIMARY KEY (DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_EDL_DMP_TI1 ON KREW_EDL_DMP_T(DOC_TYP_NM, DOC_HDR_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_EDL_FLD_DMP_T 
+		--
+		
+		ALTER TABLE KREW_EDL_FLD_DMP_T RENAME TO OLD_KREW_EDL_FLD_DMP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_EDL_FLD_DMP_T ( 
+		    EDL_FIELD_DMP_ID	NUMBER(14,0),
+		    DOC_HDR_ID      	VARCHAR2(40) NOT NULL,
+		    FLD_NM          	VARCHAR2(255) NOT NULL,
+		    FLD_VAL         	VARCHAR2(4000) NULL,
+		    VER_NBR         	NUMBER(8,0) DEFAULT 0 NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_EDL_FLD_DMP_T SELECT * FROM OLD_KREW_EDL_FLD_DMP_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_EDL_FLD_DMP_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_EDL_FLD_DMP_T ADD CONSTRAINT KREW_EDL_FLD_DMP_TP1 PRIMARY KEY (EDL_FIELD_DMP_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_INIT_RTE_NODE_INSTN_T 
+		-- 
+		
+		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T RENAME TO OLD_INIT_RTE_NODE_INSTN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_INIT_RTE_NODE_INSTN_T ( 
+		    DOC_HDR_ID       	VARCHAR2(40),
+		    RTE_NODE_INSTN_ID	NUMBER(19,0)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_INIT_RTE_NODE_INSTN_T SELECT * FROM OLD_INIT_RTE_NODE_INSTN_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_INIT_RTE_NODE_INSTN_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T ADD CONSTRAINT KREW_INIT_RTE_NODE_INSTN_TP1 PRIMARY KEY (DOC_HDR_ID, RTE_NODE_INSTN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI1 ON KREW_INIT_RTE_NODE_INSTN_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI2 ON KREW_INIT_RTE_NODE_INSTN_T(RTE_NODE_INSTN_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_OUT_BOX_ITM_T 
+		-- 
+		
+		ALTER TABLE KREW_OUT_BOX_ITM_T RENAME TO OLD_KREW_OUT_BOX_ITM_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_OUT_BOX_ITM_T ( 
+		    ACTN_ITM_ID   	NUMBER(14,0),
+		    PRNCPL_ID     	VARCHAR2(40) NOT NULL,
+		    ASND_DT       	DATE NOT NULL,
+		    RQST_CD       	CHAR(1) NOT NULL,
+		    ACTN_RQST_ID  	NUMBER(14,0) NOT NULL,
+		    DOC_HDR_ID    	VARCHAR2(40) NOT NULL,
+		    ROLE_NM       	VARCHAR2(2000) NULL,
+		    DLGN_PRNCPL_ID	VARCHAR2(40) NULL,
+		    DOC_HDR_TTL   	VARCHAR2(255) NULL,
+		    DOC_TYP_LBL   	VARCHAR2(128) NOT NULL,
+		    DOC_HDLR_URL  	VARCHAR2(255) NOT NULL,
+		    DOC_TYP_NM    	VARCHAR2(64) NOT NULL,
+		    RSP_ID        	NUMBER(14,0) NOT NULL,
+		    DLGN_TYP      	VARCHAR2(1) NULL,
+		    VER_NBR       	NUMBER(8,0) DEFAULT 0 NULL,
+		    GRP_ID        	VARCHAR2(40) NULL,
+		    DLGN_GRP_ID   	VARCHAR2(40) NULL,
+		    RQST_LBL      	VARCHAR2(255) NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_OUT_BOX_ITM_T SELECT * FROM OLD_KREW_OUT_BOX_ITM_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_OUT_BOX_ITM_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_OUT_BOX_ITM_T ADD CONSTRAINT KREW_OUT_BOX_ITM_TP1 PRIMARY KEY (ACTN_ITM_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_OUT_BOX_ITM_TI1 ON KREW_OUT_BOX_ITM_T(PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_OUT_BOX_ITM_TI2 ON KREW_OUT_BOX_ITM_T(DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_OUT_BOX_ITM_TI3 ON KREW_OUT_BOX_ITM_T(ACTN_RQST_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_RMV_RPLC_DOC_T 
+		--
+		
+		ALTER TABLE KREW_RMV_RPLC_DOC_T RENAME TO OLD_KREW_RMV_RPLC_DOC_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_RMV_RPLC_DOC_T ( 
+		    DOC_HDR_ID  	VARCHAR2(40),
+		    OPRN          	CHAR(1) NOT NULL,
+		    PRNCPL_ID     	VARCHAR2(40) NOT NULL,
+		    RPLC_PRNCPL_ID	VARCHAR2(40) NULL,
+		    VER_NBR       	NUMBER(8,0) DEFAULT 0 NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_RMV_RPLC_DOC_T SELECT * FROM OLD_KREW_RMV_RPLC_DOC_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_RMV_RPLC_DOC_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RMV_RPLC_DOC_T ADD CONSTRAINT KREW_RMV_RPLC_DOC_TP1 PRIMARY KEY (DOC_HDR_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_RMV_RPLC_GRP_T 
+		--
+		
+		ALTER TABLE KREW_RMV_RPLC_GRP_T RENAME TO OLD_KREW_RMV_RPLC_GRP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_RMV_RPLC_GRP_T ( 
+		    DOC_HDR_ID  VARCHAR2(40),
+		    GRP_ID    	NUMBER(14,0)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_RMV_RPLC_GRP_T SELECT * FROM OLD_KREW_RMV_RPLC_GRP_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_RMV_RPLC_GRP_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RMV_RPLC_GRP_T ADD CONSTRAINT KREW_RMV_RPLC_GRP_TP1 PRIMARY KEY (DOC_HDR_ID, GRP_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_RMV_RPLC_RULE_T 
+		--
+		
+		ALTER TABLE KREW_RMV_RPLC_RULE_T RENAME TO OLD_KREW_RMV_RPLC_RULE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_RMV_RPLC_RULE_T ( 
+		    DOC_HDR_ID  VARCHAR2(40),
+		    RULE_ID   	NUMBER(19,0)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_RMV_RPLC_RULE_T SELECT * FROM OLD_KREW_RMV_RPLC_RULE_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_RMV_RPLC_RULE_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RMV_RPLC_RULE_T ADD CONSTRAINT KREW_RMV_RPLC_RULE_TP1 PRIMARY KEY (DOC_HDR_ID, RULE_ID)
+		]]></sql>
+</changeSet>
+</databaseChangeLog>

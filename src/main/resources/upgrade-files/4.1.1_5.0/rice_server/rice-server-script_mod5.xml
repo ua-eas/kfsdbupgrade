@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2012 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
+
+	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod5" dbms="oracle">
+
+	<sql splitStatements="false"><![CDATA[
+	    DECLARE
+            	PROCEDURE drop_synonyms IS
+		    CURSOR synonyms_cursor IS
+                        SELECT synonym_name
+			FROM all_synonyms
+			WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+            BEGIN
+                FOR syn IN synonyms_cursor LOOP
+                    EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                END LOOP;
+            END;
+            BEGIN
+                drop_synonyms();
+	    END;
+	]]></sql>		
+		
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_HDR_T RENAME TO OLD_KREW_DOC_HDR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KREW_DOC_HDR_T
+		(
+		      DOC_HDR_ID VARCHAR2(40)
+		        , DOC_TYP_ID VARCHAR2(40)
+		        , DOC_HDR_STAT_CD CHAR(1) NOT NULL
+		        , RTE_LVL NUMBER(8) NOT NULL
+		        , STAT_MDFN_DT DATE NOT NULL
+		        , CRTE_DT DATE NOT NULL
+		        , APRV_DT DATE
+		        , FNL_DT DATE
+		        , RTE_STAT_MDFN_DT DATE
+		        , RTE_LVL_MDFN_DT DATE
+		        , TTL VARCHAR2(255)
+		        , APP_DOC_ID VARCHAR2(255)
+		        , DOC_VER_NBR NUMBER(8) NOT NULL
+		        , INITR_PRNCPL_ID VARCHAR2(40) NOT NULL
+		        , VER_NBR NUMBER(8) default 0
+		        , RTE_PRNCPL_ID VARCHAR2(40)
+		        , DTYPE VARCHAR2(50)
+		        , OBJ_ID VARCHAR2(36) NOT NULL
+		        , APP_DOC_STAT VARCHAR2(64)
+		        , APP_DOC_STAT_MDFN_DT DATE
+		    , CONSTRAINT KREW_DOC_HDR_TC0 UNIQUE (OBJ_ID)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		INSERT INTO KREW_DOC_HDR_T(DOC_HDR_ID, DOC_TYP_ID, DOC_HDR_STAT_CD, RTE_LVL, STAT_MDFN_DT, CRTE_DT, APRV_DT, FNL_DT, RTE_STAT_MDFN_DT, RTE_LVL_MDFN_DT, TTL, APP_DOC_ID, DOC_VER_NBR, INITR_PRNCPL_ID, VER_NBR, RTE_PRNCPL_ID, DTYPE, OBJ_ID, APP_DOC_STAT, APP_DOC_STAT_MDFN_DT)
+		SELECT DOC_HDR_ID, DOC_TYP_ID, DOC_HDR_STAT_CD, RTE_LVL, STAT_MDFN_DT, CRTE_DT, APRV_DT, FNL_DT, RTE_STAT_MDFN_DT, RTE_LVL_MDFN_DT, TTL, APP_DOC_ID, DOC_VER_NBR, INITR_PRNCPL_ID, VER_NBR, RTE_PRNCPL_ID, DTYPE, OBJ_ID, null, null
+		FROM OLD_KREW_DOC_HDR_T
+		]]></sql>
+		<!-- 
+		<sql splitStatements="false"><![CDATA[
+		
+		DROP TABLE OLD_KREW_DOC_HDR_T CASCADE CONSTRAINTS PURGE
+		]]></sql>
+		 -->
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KREW_DOC_HDR_T
+		    ADD CONSTRAINT KREW_DOC_HDR_TP1
+		PRIMARY KEY (DOC_HDR_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KREW_DOC_HDR_T10 
+		  ON KREW_DOC_HDR_T 
+		  (APP_DOC_STAT)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_T12 
+		  ON KREW_DOC_HDR_T 
+		  (APP_DOC_STAT_MDFN_DT)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI1 
+		  ON KREW_DOC_HDR_T 
+		  (DOC_TYP_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI2 
+		  ON KREW_DOC_HDR_T 
+		  (INITR_PRNCPL_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI3 
+		  ON KREW_DOC_HDR_T 
+		  (DOC_HDR_STAT_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI4 
+		  ON KREW_DOC_HDR_T 
+		  (TTL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI5 
+		  ON KREW_DOC_HDR_T 
+		  (CRTE_DT)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI6 
+		  ON KREW_DOC_HDR_T 
+		  (RTE_STAT_MDFN_DT)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI7 
+		  ON KREW_DOC_HDR_T 
+		  (APRV_DT)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI8 
+		  ON KREW_DOC_HDR_T 
+		  (FNL_DT)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		  
+		CREATE INDEX KREW_DOC_HDR_TI9 
+		  ON KREW_DOC_HDR_T 
+		  (APP_DOC_ID)
+		]]></sql>
+
+		
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_TYP_PLCY_RELN_T RENAME TO OLD_KREW_DOC_TYP_PLCY_RELN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KREW_DOC_TYP_PLCY_RELN_T
+		(
+		      DOC_TYP_ID VARCHAR2(40)
+		        , DOC_PLCY_NM VARCHAR2(255)
+		        , PLCY_NM NUMBER(1) NOT NULL
+		        , VER_NBR NUMBER(8) default 0
+		        , OBJ_ID VARCHAR2(36) NOT NULL
+		        , PLCY_VAL VARCHAR2(64)
+		
+		    , CONSTRAINT KREW_DOC_TYP_PLCY_RELN_TC0 UNIQUE (OBJ_ID)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		INSERT INTO KREW_DOC_TYP_PLCY_RELN_T(
+		DOC_TYP_ID
+		        , DOC_PLCY_NM
+		        , PLCY_NM
+		        , VER_NBR
+		        , OBJ_ID
+		        , PLCY_VAL
+		)
+		SELECT DOC_TYP_ID
+		        , DOC_PLCY_NM
+		        , PLCY_NM
+		        , VER_NBR
+		        , OBJ_ID
+		        , null
+		FROM OLD_KREW_DOC_TYP_PLCY_RELN_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		
+		DROP TABLE OLD_KREW_DOC_TYP_PLCY_RELN_T CASCADE CONSTRAINTS PURGE
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KREW_DOC_TYP_PLCY_RELN_T
+		    ADD CONSTRAINT KREW_DOC_TYP_PLCY_RELN_TP1
+		PRIMARY KEY (DOC_TYP_ID,DOC_PLCY_NM)
+		]]></sql>
+
+
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KREW_DOC_TYP_APP_DOC_STAT_T
+		(
+		      DOC_TYP_ID VARCHAR2(40)
+		        , DOC_STAT_NM VARCHAR2(64)
+		        , VER_NBR NUMBER(8) default 0
+		        , OBJ_ID VARCHAR2(36) NOT NULL
+		    , CONSTRAINT KREW_DOC_TYP_APP_DOC_STAT_TC0 UNIQUE (OBJ_ID)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KREW_DOC_TYP_APP_DOC_STAT_T
+		    ADD CONSTRAINT KREW_DOC_TYP_APP_DOC_STAT_TP1
+		PRIMARY KEY (DOC_TYP_ID,DOC_STAT_NM)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KREW_DOC_TYP_APP_DOC_STAT_T1 
+		  ON KREW_DOC_TYP_APP_DOC_STAT_T 
+		  (DOC_TYP_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		-----------------------------------------------------------------------------
+		-- KREW_DOC_TYP_ATTR_T
+		-----------------------------------------------------------------------------
+		
+		ALTER TABLE KREW_DOC_TYP_ATTR_T RENAME TO OLD_KREW_DOC_TYP_ATTR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_DOC_TYP_ATTR_T
+		(
+		      DOC_TYP_ATTRIB_ID NUMBER(19)
+		        , DOC_TYP_ID VARCHAR2(40) NOT NULL
+		        , RULE_ATTR_ID NUMBER(19) NOT NULL
+		        , ORD_INDX NUMBER(4) default 0
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		INSERT INTO KREW_DOC_TYP_ATTR_T(
+		DOC_TYP_ATTRIB_ID
+		        , DOC_TYP_ID
+		        , RULE_ATTR_ID
+		        , ORD_INDX
+		)
+		SELECT DOC_TYP_ATTRIB_ID
+		        , DOC_TYP_ID
+		        , RULE_ATTR_ID
+		        , ORD_INDX
+		FROM OLD_KREW_DOC_TYP_ATTR_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		
+		DROP TABLE OLD_KREW_DOC_TYP_ATTR_T CASCADE CONSTRAINTS PURGE
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KREW_DOC_TYP_ATTR_T
+		    ADD CONSTRAINT KREW_DOC_TYP_ATTR_TP1
+		PRIMARY KEY (DOC_TYP_ATTRIB_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KREW_DOC_TYP_ATTR_TI1 
+		  ON KREW_DOC_TYP_ATTR_T 
+		  (DOC_TYP_ID)
+		]]></sql>
+</changeSet>
+</databaseChangeLog>

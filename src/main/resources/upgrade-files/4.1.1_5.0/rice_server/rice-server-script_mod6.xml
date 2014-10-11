@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2012 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
+
+	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod6" dbms="oracle">
+
+	<sql splitStatements="false"><![CDATA[
+	    DECLARE
+            	PROCEDURE drop_synonyms IS
+		    CURSOR synonyms_cursor IS
+                        SELECT synonym_name
+			FROM all_synonyms
+			WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+            BEGIN
+                FOR syn IN synonyms_cursor LOOP
+                    EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                END LOOP;
+            END;
+            BEGIN
+                drop_synonyms();
+	    END;
+	]]></sql>		
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		-----------------------------------------------------------------------------
+		-- KREW_RTE_NODE_T
+		-----------------------------------------------------------------------------
+		
+		ALTER TABLE KREW_RTE_NODE_T RENAME TO OLD_KREW_RTE_NODE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KREW_RTE_NODE_T
+		(
+		      RTE_NODE_ID NUMBER(19)
+		        , DOC_TYP_ID VARCHAR2(40)
+		        , NM VARCHAR2(255) NOT NULL
+		        , TYP VARCHAR2(255) NOT NULL
+		        , RTE_MTHD_NM VARCHAR2(255)
+		        , RTE_MTHD_CD VARCHAR2(2)
+		        , FNL_APRVR_IND NUMBER(1)
+		        , MNDTRY_RTE_IND NUMBER(1)
+		        , ACTVN_TYP VARCHAR2(250)
+		        , BRCH_PROTO_ID NUMBER(19)
+		        , VER_NBR NUMBER(8) default 0
+		        , CONTENT_FRAGMENT VARCHAR2(4000)
+		        , GRP_ID VARCHAR2(40)
+		        , NEXT_DOC_STAT VARCHAR2(64)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		INSERT INTO KREW_RTE_NODE_T(
+		RTE_NODE_ID
+		        , DOC_TYP_ID
+		        , NM
+		        , TYP
+		        , RTE_MTHD_NM
+		        , RTE_MTHD_CD
+		        , FNL_APRVR_IND
+		        , MNDTRY_RTE_IND
+		        , ACTVN_TYP
+		        , BRCH_PROTO_ID
+		        , VER_NBR
+		        , CONTENT_FRAGMENT
+		        , GRP_ID
+		        , NEXT_DOC_STAT
+		)
+		SELECT RTE_NODE_ID
+		        , DOC_TYP_ID
+		        , NM
+		        , TYP
+		        , RTE_MTHD_NM
+		        , RTE_MTHD_CD
+		        , FNL_APRVR_IND
+		        , MNDTRY_RTE_IND
+		        , ACTVN_TYP
+		        , BRCH_PROTO_ID
+		        , VER_NBR
+		        , CONTENT_FRAGMENT
+		        , GRP_ID
+		        , null
+		FROM OLD_KREW_RTE_NODE_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		
+		DROP TABLE OLD_KREW_RTE_NODE_T CASCADE CONSTRAINTS PURGE
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KREW_RTE_NODE_T
+		    ADD CONSTRAINT KREW_RTE_NODE_TP1
+		PRIMARY KEY (RTE_NODE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KREW_RTE_NODE_TI1 
+		  ON KREW_RTE_NODE_T 
+		  (NM, DOC_TYP_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_TI2 
+		  ON KREW_RTE_NODE_T 
+		  (DOC_TYP_ID, FNL_APRVR_IND)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_TI3 
+		  ON KREW_RTE_NODE_T 
+		  (BRCH_PROTO_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_TI4 
+		  ON KREW_RTE_NODE_T 
+		  (DOC_TYP_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		  
+		-----------------------------------------------------------------------------
+		-- KREW_DOC_TYP_PROC_T
+		-----------------------------------------------------------------------------
+		
+		ALTER TABLE KREW_DOC_TYP_PROC_T RENAME TO OLD_KREW_DOC_TYP_PROC_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KREW_DOC_TYP_PROC_T
+		(
+		      DOC_TYP_PROC_ID NUMBER(19)
+		        , DOC_TYP_ID VARCHAR2(40) NOT NULL
+		        , INIT_RTE_NODE_ID VARCHAR2(40)
+		        , NM VARCHAR2(255) NOT NULL
+		        , INIT_IND NUMBER(1) default 0 NOT NULL
+		        , VER_NBR NUMBER(8) default 0
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		INSERT INTO KREW_DOC_TYP_PROC_T(
+		DOC_TYP_PROC_ID
+		        , DOC_TYP_ID
+		        , INIT_RTE_NODE_ID
+		        , NM
+		        , INIT_IND
+		        , VER_NBR
+		)
+		SELECT DOC_TYP_PROC_ID
+		        , DOC_TYP_ID
+		        , INIT_RTE_NODE_ID
+		        , NM
+		        , INIT_IND
+		        , VER_NBR
+		FROM OLD_KREW_DOC_TYP_PROC_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		
+		DROP TABLE OLD_KREW_DOC_TYP_PROC_T CASCADE CONSTRAINTS PURGE
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KREW_DOC_TYP_PROC_T
+		    ADD CONSTRAINT KREW_DOC_TYP_PROC_TP1
+		PRIMARY KEY (DOC_TYP_PROC_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KREW_DOC_TYP_PROC_TI1 
+		  ON KREW_DOC_TYP_PROC_T 
+		  (DOC_TYP_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_TYP_PROC_TI2 
+		  ON KREW_DOC_TYP_PROC_T 
+		  (INIT_RTE_NODE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_TYP_PROC_TI3 
+		  ON KREW_DOC_TYP_PROC_T 
+		  (NM)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		-- 
+		-- 2011-06-21.sql
+		-- 
+		alter table KRIM_PERM_TMPL_T modify NMSPC_CD varchar2(40) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_PERM_TMPL_T modify NM varchar2(100) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_PERM_TMPL_T add constraint KRIM_PERM_TMPL_TC1 unique (NM, NMSPC_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		alter table KRIM_RSP_TMPL_T modify NMSPC_CD varchar2(40) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_RSP_TMPL_T modify NM varchar2(100) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_RSP_TMPL_T add constraint KRIM_RSP_TMPL_TC1 unique (NM, NMSPC_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-06-23.sql
+		-- 
+		
+		
+		CREATE SEQUENCE KRMS_CTGRY_S INCREMENT BY 1 START WITH 1 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KRMS_CTGRY_T
+		(
+		    CTGRY_ID VARCHAR2(40) NOT NULL
+		      , NM VARCHAR2(255) NOT NULL
+		      , NMSPC_CD VARCHAR2(40) NOT NULL
+		      , VER_NBR NUMBER(8) DEFAULT 0
+		    , PRIMARY KEY (CTGRY_ID)
+		    , CONSTRAINT KRMS_CTGRY_TC0 UNIQUE (NM, NMSPC_CD)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KRMS_TERM_SPEC_CTGRY_T
+		(
+		  TERM_SPEC_ID VARCHAR2(40) NOT NULL
+		      , CTGRY_ID VARCHAR2(40) NOT NULL
+		  , PRIMARY KEY (TERM_SPEC_ID, CTGRY_ID)
+		  , CONSTRAINT KRMS_TERM_SPEC_CTGRY_FK1 FOREIGN KEY (TERM_SPEC_ID) REFERENCES KRMS_TERM_SPEC_T (TERM_SPEC_ID)
+		  , CONSTRAINT KRMS_TERM_SPEC_CTGRY_FK2 FOREIGN KEY (CTGRY_ID) REFERENCES KRMS_CTGRY_T (CTGRY_ID)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KRMS_FUNC_CTGRY_T
+		(
+		  FUNC_ID VARCHAR2(40) NOT NULL
+		  , CTGRY_ID VARCHAR2(40) NOT NULL
+		  , PRIMARY KEY (FUNC_ID, CTGRY_ID)
+		  , CONSTRAINT KRMS_FUNC_CTGRY_FK1 FOREIGN KEY (FUNC_ID) REFERENCES KRMS_FUNC_T (FUNC_ID)
+		  , CONSTRAINT KRMS_FUNC_CTGRY_FK2 FOREIGN KEY (CTGRY_ID) REFERENCES KRMS_CTGRY_T (CTGRY_ID)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-06-29.sql
+		-- 
+		
+		
+		update KRIM_PERM_T t set NM='Use Document Operation Screen' where PERM_ID = '140'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Java Security Management Screen' where PERM_ID = '141'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Message Queue Screen' where PERM_ID = '142'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Service Registry Screen' where PERM_ID = '143'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Thread Pool Screen' where PERM_ID = '144'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Quartz Queue Screen' where PERM_ID = '145'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Ad Hoc Review RICE Document' where PERM_ID = '146'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Administer Routing RICE Document' where PERM_ID = '147'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Blanket Approve RICE Document'	where PERM_ID = '148'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Initiate RICE Document' where PERM_ID = '149'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Assign Role' where PERM_ID = '150'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Grant Permission' where PERM_ID = '151'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Grant Responsibility' where PERM_ID = '152'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Populate Group' where PERM_ID = '155'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Copy RICE Document' where PERM_ID = '156'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into RICE Records' where PERM_ID = '161'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up RICE Records' where PERM_ID = '162'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Maintain System Parameter' where PERM_ID = '163'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Modify Batch Job' where PERM_ID = '164'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Open RICE Document' where PERM_ID = '165'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use all RICE Screen' where PERM_ID = '166'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Cancel Document' where PERM_ID = '167'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Route Document' where PERM_ID = '168'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Take Requested Apprive Action' where PERM_ID = '170'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Take Requested FYI Action' where PERM_ID = '172'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Take Requested Acknowledge Action' where PERM_ID = '173'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Log In Kuali Portal' where PERM_ID = '174'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Edit Kuali ENROUTE Document Node Name PreRoute' where PERM_ID = '180'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Edit Kuali ENROUTE Document Route Status Code R' where PERM_ID = '181'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Full Unmask Tax Identification Number Payee ACH Document'	where PERM_ID = '183'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Add Note  Attachment Kuali Document' where PERM_ID = '259'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='View Note  Attachment Kuali Document' where PERM_ID = '261'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Delete Note  Attachment Kuali Document' where PERM_ID = '264'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Screen XML Ingester Screen' where PERM_ID = '265'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Administer Pessimistic Locking' where PERM_ID = '289'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Save RICE Document' where PERM_ID = '290'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='View Other Action List' where PERM_ID = '298'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Unrestricted Document Search' where PERM_ID = '299'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Full Unmask Tax Identification Number Person Document'	where PERM_ID = '306'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Modify Entity' where PERM_ID = '307'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Send FYI Request Kuali Document' where PERM_ID = '332'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Send Acknowledge Request Kuali Document' where PERM_ID = '333'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Send Approve Request Kuali Document' where PERM_ID = '334'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Override Entity Privacy Preferences' where PERM_ID = '378'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up Rule Template'	where PERM_ID = '701'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up Stylesheet' where PERM_ID = '702'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up eDocLite' where PERM_ID = '703'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up Rule Attribute' where PERM_ID = '707'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up Parameter Component' where PERM_ID = '719'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up Namespace'	where PERM_ID = '720'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Look Up Parameter Type' where PERM_ID = '721'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Rule Template' where PERM_ID = '801'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Stylesheet' where PERM_ID = '802'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into eDocLite' where PERM_ID = '803'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Rule Attribute' where PERM_ID = '807'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Pessimistic' where PERM_ID = '814'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Parameter Component' where PERM_ID = '819'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Namespace' where PERM_ID = '820'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Inquire Into Parameter Type' where PERM_ID = '821'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Populate Group KUALI Namespace' where PERM_ID = '833'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Assign Role KUALI Namespace' where PERM_ID = '834'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Grant Permission KUALI Namespace' where PERM_ID = '835'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Grant Responsibility KUALI Namespace' where PERM_ID = '836'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Use Configuration Viewer Screen' where PERM_ID = '840'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update KRIM_PERM_T t set NM='Add Message to Route Log'	where PERM_ID = '841'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_PERM_T modify NMSPC_CD varchar2(40) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_PERM_T modify NM varchar2(100) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_PERM_T add constraint KRIM_PERM_T_TC1 unique (NM, NMSPC_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_RSP_T modify NMSPC_CD varchar2(40) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_RSP_T modify NM varchar2(100) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		alter table KRIM_RSP_T add constraint KRIM_RSP_T_TC1 unique (NM, NMSPC_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+			DECLARE
+				TableName VARCHAR2(30) := 'KREW_DOC_NTE_T';
+				CURSOR tab_cons IS
+					SELECT constraint_name
+						FROM user_constraints
+						WHERE table_name = TableName 
+						  AND constraint_type IN ( 'P', 'U', 'R' );
+                CURSOR tab_ind IS
+                    SELECT index_name
+                        FROM user_indexes
+                        WHERE table_name = TableName
+                          AND index_type != 'LOB';
+            BEGIN
+                FOR cons IN tab_cons LOOP
+                    EXECUTE IMMEDIATE 'ALTER TABLE '||TableName||' DROP CONSTRAINT '||cons.constraint_name;
+                END LOOP;
+                FOR ind IN tab_ind LOOP
+                    EXECUTE IMMEDIATE 'DROP INDEX '||ind.index_name;
+                END LOOP;
+            END;
+		]]></sql>
+	<sql splitStatements="false"><![CDATA[
+		DECLARE
+            	PROCEDURE drop_synonyms IS
+				CURSOR synonyms_cursor IS
+                                        SELECT synonym_name
+					FROM all_synonyms
+					WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+					  
+              BEGIN
+                    FOR syn IN synonyms_cursor LOOP
+                        EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                    END LOOP;
+                END;
+        BEGIN
+            		drop_synonyms();
+		END;
+		]]></sql>		
+</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,1437 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright 2012 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
+
+	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod4" dbms="oracle">
+
+	<sql splitStatements="false"><![CDATA[
+	    DECLARE
+            	PROCEDURE drop_synonyms IS
+		    CURSOR synonyms_cursor IS
+                        SELECT synonym_name
+			FROM all_synonyms
+			WHERE owner = 'PUBLIC' AND (substr(synonym_name, 1, 4) = 'KREW' or substr(synonym_name, 1, 4) = 'KRNS' or substr(synonym_name, 1, 4) = 'KRMS');
+            BEGIN
+                FOR syn IN synonyms_cursor LOOP
+                    EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM ' || syn.synonym_name;
+                END LOOP;
+            END;
+            BEGIN
+                drop_synonyms();
+	    END;
+	]]></sql>		
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_RTE_NODE_INSTN_T 
+		-- 
+		
+		ALTER TABLE KREW_RTE_NODE_INSTN_T RENAME TO OLD_KREW_RTE_NODE_INSTN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_RTE_NODE_INSTN_T ( 
+		    RTE_NODE_INSTN_ID     	NUMBER(19,0),
+		    DOC_HDR_ID            	VARCHAR2(40) NOT NULL,
+		    RTE_NODE_ID           	NUMBER(19,0) NOT NULL,
+		    BRCH_ID               	NUMBER(19,0) NULL,
+		    PROC_RTE_NODE_INSTN_ID	NUMBER(19,0) NULL,
+		    ACTV_IND              	NUMBER(1,0) DEFAULT 0 NOT NULL,
+		    CMPLT_IND             	NUMBER(1,0) DEFAULT 0 NOT NULL,
+		    INIT_IND              	NUMBER(1,0) DEFAULT 0 NOT NULL,
+		    VER_NBR               	NUMBER(8,0) DEFAULT 0 NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_RTE_NODE_INSTN_T SELECT * FROM OLD_KREW_RTE_NODE_INSTN_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_RTE_NODE_INSTN_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RTE_NODE_INSTN_T ADD CONSTRAINT KREW_RTE_NODE_INSTN_TP1 PRIMARY KEY (RTE_NODE_INSTN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_INSTN_TI1 ON KREW_RTE_NODE_INSTN_T(DOC_HDR_ID, ACTV_IND, CMPLT_IND)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_INSTN_TI2 ON KREW_RTE_NODE_INSTN_T(RTE_NODE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_INSTN_TI3 ON KREW_RTE_NODE_INSTN_T(BRCH_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_RTE_NODE_INSTN_TI4 ON KREW_RTE_NODE_INSTN_T(PROC_RTE_NODE_INSTN_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		
+		--
+		-- KREW_RULE_T
+		--
+		
+		ALTER TABLE KREW_RULE_T RENAME TO OLD_KREW_RULE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KREW_RULE_T ( 
+		    RULE_ID           	NUMBER(19,0),
+		    NM                	VARCHAR2(256) NULL,
+		    RULE_TMPL_ID      	NUMBER(19,0) NULL,
+		    RULE_EXPR_ID      	NUMBER(19,0) NULL,
+		    ACTV_IND          	NUMBER(1,0) NOT NULL,
+		    RULE_BASE_VAL_DESC	VARCHAR2(2000) NULL,
+		    FRC_ACTN          	NUMBER(1,0) NOT NULL,
+		    DOC_TYP_NM        	VARCHAR2(64) NOT NULL,
+		    DOC_HDR_ID          VARCHAR2(40) NULL,
+		    TMPL_RULE_IND     	NUMBER(1,0) NULL,
+		    FRM_DT            	DATE NULL,
+		    TO_DT             	DATE NULL,
+		    DACTVN_DT         	DATE NULL,
+		    CUR_IND           	NUMBER(1,0) DEFAULT 0 NULL,
+		    RULE_VER_NBR      	NUMBER(8,0) DEFAULT 0 NULL,
+		    DLGN_IND          	NUMBER(1,0) NULL,
+		    PREV_RULE_VER_NBR 	NUMBER(19,0) NULL,
+		    ACTVN_DT          	DATE NULL,
+		    VER_NBR           	NUMBER(8,0) DEFAULT 0 NULL,
+		    OBJ_ID            	VARCHAR2(36) NOT NULL
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_RULE_T SELECT * FROM OLD_KREW_RULE_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_RULE_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RULE_T ADD CONSTRAINT KREW_RULE_TP1 PRIMARY KEY (RULE_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RULE_T ADD CONSTRAINT KREW_RULE_TC0 UNIQUE (OBJ_ID)
+		]]></sql>
+		
+		<sql splitStatements="false"><![CDATA[
+		create table KREW_DOC_LNK_T(
+		           DOC_LNK_ID NUMBER(19),
+		           ORGN_DOC_ID VARCHAR2(40) NOT NULL,
+		           DEST_DOC_ID VARCHAR2(40) NOT NULL
+		)
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		DROP TABLE OLD_KREW_DOC_LNK_T
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_LNK_T ADD CONSTRAINT KREW_DOC_LNK_TP1 PRIMARY KEY (DOC_LNK_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		create INDEX KREW_DOC_LNK_TI1 on krew_doc_lnk_t(ORGN_DOC_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		-- 
+		-- 2011-05-09.sql
+		-- 
+		--
+		--
+		-- DDL for KRMS repository
+		--
+		--
+		-- -----------------------------------------------------
+		-- Table krms_typ_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_typ_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_typ_t (
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  srvc_nm VARCHAR2(200) NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (typ_id) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_attr_defn_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_attr_defn_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_attr_defn_t (
+		  attr_defn_id VARCHAR2(255)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  lbl VARCHAR2(40) NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  cmpnt_nm VARCHAR2(100) NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (attr_defn_id) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_typ_attr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_typ_attr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_typ_attr_t (
+		  typ_attr_id VARCHAR2(40)  NOT NULL ,
+		  seq_no NUMBER(5)  NOT NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  attr_defn_id VARCHAR2(255)  NOT NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (typ_attr_id) ,
+		  -- CREATE INDEX krms_typ_attr_ti1 (attr_defn_id ASC) ,
+		  -- CREATE INDEX krms_typ_attr_ti2 (typ_id ASC) ,
+		  CONSTRAINT krms_typ_attr_tc1 UNIQUE (typ_id, attr_defn_id) ,
+		  CONSTRAINT krms_typ_attr_fk1
+		    FOREIGN KEY (attr_defn_id )
+		    REFERENCES krms_attr_defn_t (attr_defn_id ),
+		  CONSTRAINT krms_typ_attr_fk2
+		    FOREIGN KEY (typ_id )
+		    REFERENCES krms_typ_t (typ_id ))
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_typ_attr_ti1 on krms_typ_attr_t (attr_defn_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_typ_attr_ti2 on krms_typ_attr_t (typ_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_rule_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_rule_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_rule_t (
+		  rule_id VARCHAR2(40)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  prop_id VARCHAR2(40)  NOT NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  descr_txt VARCHAR2(4000) NULL ,
+		  PRIMARY KEY (rule_id) 
+		  -- CREATE INDEX krms_rule_ti1 (prop_id ASC) ,
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_rule_ti1 on krms_rule_t (prop_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- -----------------------------------------------------
+		-- Table krms_prop_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_prop_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_prop_t (
+		  prop_id VARCHAR2(40)  NOT NULL ,
+		  desc_txt VARCHAR2(100) NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  dscrm_typ_cd VARCHAR2(10)  NOT NULL ,
+		  cmpnd_op_cd VARCHAR2(40) NULL ,
+		  rule_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (prop_id) ,
+		  -- CREATE INDEX krms_prop_ti1 (rule_id ASC) ,
+		  -- CREATE INDEX krms_prop_fk2 (typ_id ASC) ,
+		  CONSTRAINT krms_prop_fk1
+		    FOREIGN KEY (rule_id )
+		    REFERENCES krms_rule_t (rule_id ) ,
+		  CONSTRAINT krms_prop_fk2
+		    FOREIGN KEY (typ_id )
+		    REFERENCES krms_typ_t (typ_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_prop_ti1 on krms_prop_t (rule_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_prop_fk2 on krms_prop_t (typ_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		ALTER TABLE krms_rule_t ADD CONSTRAINT krms_rule_fk1
+		    FOREIGN KEY (prop_id )
+		    REFERENCES krms_prop_t (prop_id )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_rule_attr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_rule_attr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_rule_attr_t (
+		  rule_attr_id VARCHAR2(40)  NOT NULL ,
+		  rule_id VARCHAR2(40)  NOT NULL ,
+		  attr_defn_id VARCHAR2(40)  NOT NULL ,
+		  attr_val VARCHAR2(400) NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (rule_attr_id) ,
+		  -- CREATE INDEX krms_rule_attr_ti1 (rule_id ASC) ,
+		  -- CREATE INDEX krms_rule_attr_ti2 (attr_defn_id ASC) ,
+		  CONSTRAINT krms_rule_attr_fk1
+		    FOREIGN KEY (rule_id )
+		    REFERENCES krms_rule_t (rule_id ) ,
+		  CONSTRAINT krms_rule_attr_fk2
+		    FOREIGN KEY (attr_defn_id )
+		    REFERENCES krms_attr_defn_t (attr_defn_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_rule_attr_ti1 on krms_rule_attr_t (rule_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_rule_attr_ti2 on krms_rule_attr_t (attr_defn_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_actn_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_actn_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_actn_t (
+		  actn_id VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(40) NULL ,
+		  desc_txt VARCHAR2(4000) NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  rule_id VARCHAR2(40) NULL ,
+		  seq_no NUMBER(5) NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (actn_id) ,
+		  -- CREATE INDEX KRMS_ACTN_TI2 (rule_id ASC) ,
+		  -- CREATE INDEX KRMS_ACTN_TI1 (typ_id ASC) ,
+		  CONSTRAINT KRMS_ACTN_TC2 UNIQUE (actn_id, rule_id, seq_no) ,
+		  -- CREATE INDEX KRMS_ACTN_TI3 (rule_id ASC, seq_no ASC) ,
+		  CONSTRAINT KRMS_ACTN_FK1
+		    FOREIGN KEY (rule_id )
+		    REFERENCES krms_rule_t (rule_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KRMS_ACTN_TI2 on krms_actn_t (rule_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KRMS_ACTN_TI1 on krms_actn_t (typ_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KRMS_ACTN_TI3 on krms_actn_t (rule_id ASC, seq_no ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_actn_attr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_actn_attr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_actn_attr_t (
+		  actn_attr_data_id VARCHAR2(40)  NOT NULL ,
+		  actn_id VARCHAR2(40)  NOT NULL ,
+		  attr_defn_id VARCHAR2(40)  NOT NULL ,
+		  attr_val VARCHAR2(400) NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (actn_attr_data_id) ,
+		  -- CREATE INDEX krms_actn_attr_ti1 (actn_id ASC) ,
+		  -- CREATE INDEX krms_actn_attr_ti2 (attr_defn_id ASC) ,
+		  CONSTRAINT krms_actn_attr_fk1
+		    FOREIGN KEY (actn_id )
+		    REFERENCES krms_actn_t (actn_id ) ,
+		  CONSTRAINT krms_actn_attr_fk2
+		    FOREIGN KEY (attr_defn_id )
+		    REFERENCES krms_attr_defn_t (attr_defn_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_actn_attr_ti1 on krms_actn_attr_t (actn_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_actn_attr_ti2 on krms_actn_attr_t (attr_defn_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_cmpnd_prop_props_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cmpnd_prop_props_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cmpnd_prop_props_t (
+		  cmpnd_prop_id VARCHAR2(40)  NOT NULL ,
+		  prop_id VARCHAR2(40)  NOT NULL ,
+		  seq_no NUMBER(5)  NOT NULL ,
+		  PRIMARY KEY (cmpnd_prop_id, prop_id) ,
+		  -- CREATE INDEX krms_cmpnd_prop_props_ti1 (prop_id ASC) ,
+		  -- CREATE INDEX krms_cmpnd_prop_props_fk2 (cmpnd_prop_id ASC) ,
+		  CONSTRAINT krms_cmpnd_prop_props_fk1
+		    FOREIGN KEY (prop_id )
+		    REFERENCES krms_prop_t (prop_id ) ,
+		  CONSTRAINT krms_cmpnd_prop_props_fk2
+		    FOREIGN KEY (cmpnd_prop_id )
+		    REFERENCES krms_prop_t (prop_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cmpnd_prop_props_ti1 on krms_cmpnd_prop_props_t (prop_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_cmpnd_prop_props_fk2 on krms_cmpnd_prop_props_t (cmpnd_prop_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_prop_parm_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_prop_parm_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_prop_parm_t (
+		  prop_parm_id VARCHAR2(40)  NOT NULL ,
+		  prop_id VARCHAR2(40)  NOT NULL ,
+		  parm_val VARCHAR2(255) NULL ,
+		  parm_typ_cd VARCHAR2(1)  NOT NULL ,
+		  seq_no NUMBER(5)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (prop_parm_id) ,
+		  -- CREATE INDEX krms_prop_parm_ti1 (prop_id ASC) ,
+		  CONSTRAINT krms_prop_parm_fk1
+		    FOREIGN KEY (prop_id )
+		    REFERENCES krms_prop_t (prop_id ))
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_prop_parm_ti1 ON krms_prop_parm_t (prop_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_t (
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (cntxt_id) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_agenda_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_agenda_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_agenda_t (
+		  agenda_id VARCHAR2(40)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  init_agenda_itm_id VARCHAR2(40) NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (agenda_id) ,
+		  -- CREATE INDEX krms_agenda_ti1 (cntxt_id ASC) ,
+		  CONSTRAINT krms_agenda_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_agenda_ti1 on krms_agenda_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_agenda_attr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_agenda_attr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_agenda_attr_t (
+		  agenda_attr_id VARCHAR2(40)  NOT NULL ,
+		  agenda_id VARCHAR2(40)  NOT NULL ,
+		  attr_val VARCHAR2(400) NULL ,
+		  attr_defn_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (agenda_attr_id) ,
+		  -- CREATE INDEX krms_agenda_attr_ti1 (agenda_id ASC) ,
+		  -- CREATE INDEX krms_agenda_attr_t12 (attr_defn_id ASC) ,
+		  CONSTRAINT krms_agenda_attr_fk1
+		    FOREIGN KEY (agenda_id )
+		    REFERENCES krms_agenda_t (agenda_id ),
+		  CONSTRAINT krms_agenda_attr_fk2
+		    FOREIGN KEY (attr_defn_id )
+		    REFERENCES krms_attr_defn_t (attr_defn_id ))
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_agenda_attr_ti1 on krms_agenda_attr_t (agenda_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_agenda_attr_t12 on krms_agenda_attr_t (attr_defn_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_agenda_itm_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_agenda_itm_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_agenda_itm_t (
+		  agenda_itm_id VARCHAR2(40)  NOT NULL ,
+		  rule_id VARCHAR2(40) NULL ,
+		  sub_agenda_id VARCHAR2(40) NULL ,
+		  agenda_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  when_true VARCHAR2(40) NULL ,
+		  when_false VARCHAR2(40) NULL ,
+		  always VARCHAR2(40) NULL ,
+		  PRIMARY KEY (agenda_itm_id) ,
+		  -- CREATE INDEX krms_agenda_itm_ti1 (rule_id ASC) ,
+		  -- CREATE INDEX krms_agenda_itm_ti2 (agenda_id ASC) ,
+		  -- CREATE INDEX krms_agenda_itm_ti3 (sub_agenda_id ASC) ,
+		  -- CREATE INDEX krms_agenda_itm_ti4 (when_true ASC) ,
+		  -- CREATE INDEX krms_agenda_itm_ti5 (when_false ASC) ,
+		  -- CREATE INDEX krms_agenda_itm_ti6 (always ASC) ,
+		  CONSTRAINT krms_agenda_itm_fk1
+		    FOREIGN KEY (rule_id )
+		    REFERENCES krms_rule_t (rule_id ) ,
+		  CONSTRAINT krms_agenda_itm_fk2
+		    FOREIGN KEY (agenda_id )
+		    REFERENCES krms_agenda_t (agenda_id ) ,
+		  CONSTRAINT krms_agenda_itm_fk3
+		    FOREIGN KEY (sub_agenda_id )
+		    REFERENCES krms_agenda_t (agenda_id ) ,
+		  CONSTRAINT krms_agenda_itm_fk4
+		    FOREIGN KEY (when_true )
+		    REFERENCES krms_agenda_itm_t (agenda_itm_id ) ,
+		  CONSTRAINT krms_agenda_itm_fk5
+		    FOREIGN KEY (when_false )
+		    REFERENCES krms_agenda_itm_t (agenda_itm_id ) ,
+		  CONSTRAINT krms_agenda_itm_fk6
+		    FOREIGN KEY (always )
+		    REFERENCES krms_agenda_itm_t (agenda_itm_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_agenda_itm_ti1 on krms_agenda_itm_t (rule_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_agenda_itm_ti2 on krms_agenda_itm_t (agenda_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_agenda_itm_ti3 on krms_agenda_itm_t (sub_agenda_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_agenda_itm_ti4 on krms_agenda_itm_t (when_true ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_agenda_itm_ti5 on krms_agenda_itm_t (when_false ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_agenda_itm_ti6 on krms_agenda_itm_t (always ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_func_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_func_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_func_t (
+		  func_id VARCHAR2(40)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  desc_txt VARCHAR2(255) NULL ,
+		  rtrn_typ VARCHAR2(255)  NOT NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (func_id) ,
+		  -- CREATE INDEX krms_func_ti1 (typ_id ASC) ,
+		  CONSTRAINT krms_func_fk1
+		    FOREIGN KEY (typ_id )
+		    REFERENCES krms_typ_t (typ_id ))
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_func_ti1 on krms_func_t (typ_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_func_parm_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_func_parm_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_func_parm_t (
+		  func_parm_id VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  desc_txt VARCHAR2(255) NULL ,
+		  typ VARCHAR2(255)  NOT NULL ,
+		  func_id VARCHAR2(40)  NOT NULL ,
+		  seq_no NUMBER(5)  NOT NULL ,
+		  PRIMARY KEY (func_parm_id) ,
+		  -- CREATE INDEX krms_func_parm_ti1 (func_id ASC) ,
+		  CONSTRAINT krms_func_parm_fk1
+		    FOREIGN KEY (func_id )
+		    REFERENCES krms_func_t (func_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_func_parm_ti1 on krms_func_parm_t (func_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_spec_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_spec_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_spec_t (
+		  term_spec_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40) NULL ,
+		  nm VARCHAR2(255)  NOT NULL ,
+		  typ VARCHAR2(255)  NOT NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8)  NOT NULL ,
+		  PRIMARY KEY (term_spec_id) ,
+		  CONSTRAINT krms_asset_tc1 UNIQUE (nm, cntxt_id) ,
+		  -- CREATE INDEX krms_asset_ti1 (cntxt_id ASC) ,
+		  CONSTRAINT krms_asset_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_asset_ti1 on krms_term_spec_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_t (
+		  term_id VARCHAR2(40)  NOT NULL ,
+		  term_spec_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8)  NOT NULL ,
+		  PRIMARY KEY (term_id) ,
+		  -- CREATE INDEX krms_term_ti1 (term_spec_id ASC) ,
+		  CONSTRAINT krms_term_t__fk1
+		    FOREIGN KEY (term_spec_id )
+		    REFERENCES krms_term_spec_t (term_spec_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_term_ti1 on krms_term_t (term_spec_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_parm_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_parm_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_parm_t (
+		  term_parm_id VARCHAR2(40)  NOT NULL ,
+		  term_id VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(255)  NOT NULL ,
+		  val VARCHAR2(255) NULL ,
+		  ver_nbr NUMBER(8)  NOT NULL ,
+		  PRIMARY KEY (term_parm_id) ,
+		  -- CREATE INDEX krms_term_parm_ti1 (term_id ASC) ,
+		  CONSTRAINT krms_term_parm_fk1
+		    FOREIGN KEY (term_id )
+		    REFERENCES krms_term_t (term_id ))
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_term_parm_ti1 on krms_term_parm_t (term_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_term_spec_prereq_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_term_spec_prereq_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_term_spec_prereq_t (
+		  cntxt_term_spec_prereq_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  term_spec_id VARCHAR2(40)  NOT NULL ,
+		  PRIMARY KEY (cntxt_term_spec_prereq_id) ,
+		  -- CREATE INDEX krms_cntxt_asset_prereq_ti1 (cntxt_id ASC) ,
+		  -- CREATE INDEX krms_cntxt_asset_prereq_ti2 (term_spec_id ASC) ,
+		  CONSTRAINT krms_cntxt_asset_prereq_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) ,
+		  CONSTRAINT krms_cntxt_asset_prereq_fk2
+		    FOREIGN KEY (term_spec_id )
+		    REFERENCES krms_term_spec_t (term_spec_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cntxt_asset_prereq_ti1 on krms_cntxt_term_spec_prereq_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_cntxt_asset_prereq_ti2 on krms_cntxt_term_spec_prereq_t (term_spec_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_rslvr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_rslvr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_rslvr_t (
+		  term_rslvr_id VARCHAR2(40)  NOT NULL ,
+		  nmspc_cd VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(100)  NOT NULL ,
+		  typ_id VARCHAR2(40)  NOT NULL ,
+		  output_term_spec_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40) NULL ,
+		  actv VARCHAR2(1) DEFAULT 'Y'  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (term_rslvr_id) ,
+		  -- CREATE INDEX krms_term_rslvr_ti1 (cntxt_id ASC) ,
+		  -- CREATE INDEX krms_term_rslvr_ti2 (typ_id ASC) ,
+		  CONSTRAINT krms_term_rslvr_tc1 UNIQUE (nmspc_cd, nm, cntxt_id) ,
+		  CONSTRAINT krms_term_rslvr_fk1
+		    FOREIGN KEY (output_term_spec_id )
+		    REFERENCES krms_term_spec_t (term_spec_id ) ,
+		  CONSTRAINT krms_term_rslvr_fk2
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) ,
+		  CONSTRAINT krms_term_rslvr_fk3
+		    FOREIGN KEY (typ_id )
+		    REFERENCES krms_typ_t (typ_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_term_rslvr_ti1 on krms_term_rslvr_t (cntxt_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_term_rslvr_ti2 on krms_term_rslvr_t (typ_id ASC) 
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		     --
+		     ----
+		------------
+		---------------
+		------------
+		     ----
+		     --
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_attr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_attr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_attr_t (
+		  cntxt_attr_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  attr_val VARCHAR2(400) NULL ,
+		  attr_defn_id VARCHAR2(40) NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (cntxt_attr_id) ,
+		  -- CREATE INDEX krms_cntxt_attr_ti1 (cntxt_id ASC) ,
+		  -- CREATE INDEX krms_cntxt_attr_ti2 (attr_defn_id ASC) ,
+		  CONSTRAINT krms_cntxt_attr_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) ,
+		  CONSTRAINT krms_cntxt_attr_fk2
+		    FOREIGN KEY (attr_defn_id )
+		    REFERENCES krms_attr_defn_t (attr_defn_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cntxt_attr_ti1 on krms_cntxt_attr_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_cntxt_attr_ti2 on krms_cntxt_attr_t (attr_defn_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_vld_actn_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_vld_actn_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_vld_actn_t (
+		  cntxt_vld_actn_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  actn_typ_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (cntxt_vld_actn_id) ,
+		  -- CREATE INDEX krms_cntxt_vld_actn_ti1 (cntxt_id ASC) ,
+		  CONSTRAINT krms_cntxt_vld_actn_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cntxt_vld_actn_ti1 on krms_cntxt_vld_actn_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_rslvr_attr_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_rslvr_attr_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_rslvr_attr_t (
+		  term_rslvr_attr_id VARCHAR2(40)  NOT NULL ,
+		  term_rslvr_id VARCHAR2(40)  NOT NULL ,
+		  attr_defn_id VARCHAR2(40)  NOT NULL ,
+		  attr_val VARCHAR2(400) NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (term_rslvr_attr_id) ,
+		  -- CREATE INDEX krms_asset_rslvr_attr_ti1 (term_rslvr_id ASC) ,
+		  -- CREATE INDEX krms_asset_rslvr_attr_ti2 (attr_defn_id ASC) ,
+		  CONSTRAINT krms_asset_rslvr_attr_fk1
+		    FOREIGN KEY (term_rslvr_id )
+		    REFERENCES krms_term_rslvr_t (term_rslvr_id ) ,
+		  CONSTRAINT krms_asset_rslvr_attr_fk2
+		    FOREIGN KEY (attr_defn_id )
+		    REFERENCES krms_attr_defn_t (attr_defn_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_asset_rslvr_attr_ti1 on krms_term_rslvr_attr_t (term_rslvr_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_asset_rslvr_attr_ti2 on krms_term_rslvr_attr_t (attr_defn_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_rslvr_input_spec_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_rslvr_input_spec_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_rslvr_input_spec_t (
+		  term_spec_id VARCHAR2(40)  NOT NULL ,
+		  term_rslvr_id VARCHAR2(40)  NOT NULL ,
+		  -- CREATE INDEX krms_input_asset_ti1 (term_spec_id ASC) ,
+		  -- CREATE INDEX krms_input_asset_ti2 (term_rslvr_id ASC) ,
+		  PRIMARY KEY (term_spec_id, term_rslvr_id) ,
+		  CONSTRAINT krms_input_asset_fk2
+		    FOREIGN KEY (term_spec_id )
+		    REFERENCES krms_term_spec_t (term_spec_id ) ,
+		  CONSTRAINT krms_input_asset_fk1
+		    FOREIGN KEY (term_rslvr_id )
+		    REFERENCES krms_term_rslvr_t (term_rslvr_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_input_asset_ti1 on krms_term_rslvr_input_spec_t (term_spec_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX krms_input_asset_ti2 on krms_term_rslvr_input_spec_t (term_rslvr_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_term_rslvr_parm_spec_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_term_rslvr_parm_spec_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_term_rslvr_parm_spec_t (
+		  term_rslvr_parm_spec_id VARCHAR2(40)  NOT NULL ,
+		  term_rslvr_id VARCHAR2(40)  NOT NULL ,
+		  nm VARCHAR2(45)  NOT NULL ,
+		  ver_nbr NUMBER(8)  NOT NULL ,
+		  PRIMARY KEY (term_rslvr_parm_spec_id) ,
+		  -- CREATE INDEX krms_term_reslv_parm_fk1 (term_rslvr_id ASC) ,
+		  CONSTRAINT krms_term_reslv_parm_fk1
+		    FOREIGN KEY (term_rslvr_id )
+		    REFERENCES krms_term_rslvr_t (term_rslvr_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_term_reslv_parm_fk1 on krms_term_rslvr_parm_spec_t (term_rslvr_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_vld_func_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_vld_func_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_vld_func_t (
+		  cntxt_vld_func_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  func_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (cntxt_vld_func_id) ,
+		  -- CREATE INDEX krms_cntxt_vld_func_ti1 (cntxt_id ASC) ,
+		  CONSTRAINT krms_cntxt_vld_func_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cntxt_vld_func_ti1 on krms_cntxt_vld_func_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_vld_rule_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_vld_rule_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_vld_rule_t (
+		  cntxt_vld_rule_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  rule_id VARCHAR2(40)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (cntxt_vld_rule_id) ,
+		  -- CREATE INDEX krms_cntxt_vld_rule_ti1 (cntxt_id ASC) ,
+		  CONSTRAINT krms_cntxt_vld_rule_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cntxt_vld_rule_ti1 on krms_cntxt_vld_rule_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- -----------------------------------------------------
+		-- Table krms_cntxt_vld_event_t
+		-- -----------------------------------------------------
+		-- begin execute immediate 'drop table krms_cntxt_vld_event_t'; exception when others then null; end;
+		
+		CREATE  TABLE  krms_cntxt_vld_event_t (
+		  cntxt_vld_event_id VARCHAR2(40)  NOT NULL ,
+		  cntxt_id VARCHAR2(40)  NOT NULL ,
+		  event_nm VARCHAR2(255)  NOT NULL ,
+		  ver_nbr NUMBER(8) DEFAULT 0  NOT NULL ,
+		  PRIMARY KEY (cntxt_vld_event_id) ,
+		  -- CREATE INDEX krms_cntxt_vld_event_ti1 (cntxt_id ASC) ,
+		  CONSTRAINT krms_cntxt_vld_event_fk1
+		    FOREIGN KEY (cntxt_id )
+		    REFERENCES krms_cntxt_t (cntxt_id ) )
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX krms_cntxt_vld_event_ti1 on krms_cntxt_vld_event_t (cntxt_id ASC)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		--
+		--
+		-- sequences
+		--
+		--
+		
+		
+		CREATE SEQUENCE krms_typ_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_prop_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_rule_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_agenda_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_attr_defn_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_typ_attr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_actn_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_actn_attr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_agenda_itm_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_rule_attr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_attr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_vld_actn_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_agenda_attr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cmpnd_prop_props_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_prop_parm_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_spec_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_rslvr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_rslvr_attr_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_rslvr_input_spec_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_term_spec_prereq_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_rslvr_parm_spec_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_term_parm_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_func_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_func_parm_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_vld_func_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_vld_rule_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE SEQUENCE krms_cntxt_vld_event_s INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-05-13.sql
+		-- 
+		
+		
+		drop table KRSB_SVC_DEF_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop table KRSB_FLT_SVC_DEF_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop sequence KRSB_SVC_DEF_S
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		drop sequence KRSB_FLT_SVC_DEF_S
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KRSB_SVC_DSCRPTR_T (
+		  SVC_DSCRPTR_ID varchar2(40) NOT NULL,
+		  DSCRPTR clob NOT NULL,
+		  PRIMARY KEY (SVC_DSCRPTR_ID)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE SEQUENCE KRSB_SVC_DSCRPTR_S INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE TABLE KRSB_SVC_DEF_T (
+		  SVC_DEF_ID varchar2(40) NOT NULL,
+		  SVC_NM varchar2(255) NOT NULL,
+		  SVC_URL varchar2(500) NOT NULL,
+		  INSTN_ID varchar2(255) NOT NULL,
+		  APPL_NMSPC varchar2(255) NOT NULL,
+		  SRVR_IP varchar2(40) NOT NULL,
+		  TYP_CD varchar2(40) NOT NULL,
+		  SVC_VER varchar2(40) NOT NULL,
+		  STAT_CD varchar2(1) NOT NULL,
+		  SVC_DSCRPTR_ID varchar2(40) NOT NULL,
+		  CHKSM varchar2(30) NOT NULL,
+		  VER_NBR number(8) DEFAULT 0 NOT NULL,
+		  PRIMARY KEY (SVC_DEF_ID),
+		  CONSTRAINT KRSB_SVC_DEF_FK1
+		    FOREIGN KEY (SVC_DSCRPTR_ID)
+		    REFERENCES KRSB_SVC_DSCRPTR_T(SVC_DSCRPTR_ID) ON DELETE CASCADE
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE SEQUENCE KRSB_SVC_DEF_S INCREMENT BY 1 START WITH 10000 NOMAXVALUE NOCYCLE NOCACHE ORDER
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KRSB_SVC_DEF_TI1 on KRSB_SVC_DEF_T (INSTN_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KRSB_SVC_DEF_TI2 on KRSB_SVC_DEF_T (SVC_NM, STAT_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KRSB_SVC_DEF_TI3 on KRSB_SVC_DEF_T (STAT_CD)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-06-06.sql
+		-- 
+		
+		
+		ALTER TABLE KREW_DOC_TYP_T RENAME COLUMN SVC_NMSPC TO APPL_ID
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_RULE_ATTR_T RENAME COLUMN SVC_NMSPC TO APPL_ID
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRSB_SVC_DEF_T RENAME COLUMN APPL_NMSPC TO APPL_ID
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRSB_MSG_QUE_T RENAME COLUMN SVC_NMSPC TO APPL_ID
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRNS_NMSPC_T RENAME COLUMN APPL_NMSPC_CD TO APPL_ID
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRNS_PARM_T RENAME COLUMN APPL_NMSPC_CD TO APPL_ID
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KRNS_NMSPC_T RENAME TO KRCR_NMSPC_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRNS_PARM_TYP_T RENAME TO KRCR_PARM_TYP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRNS_PARM_DTL_TYP_T RENAME TO KRCR_PARM_DTL_TYP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRNS_PARM_T RENAME TO KRCR_PARM_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		ALTER TABLE KRNS_CAMPUS_T RENAME TO KRLC_CMP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KRNS_CMP_TYP_T RENAME TO KRLC_CMP_TYP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KR_COUNTRY_T RENAME TO KRLC_CNTRY_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KR_STATE_T RENAME TO KRLC_ST_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KR_POSTAL_CODE_T RENAME TO KRLC_PSTL_CD_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KR_COUNTY_T RENAME TO KRLC_CNTY_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-06-08.sql
+		-- 
+		
+		
+		-- make krms_rule_t.prop_id nullable
+		alter table krms_rule_t modify (prop_id NULL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- add krms_actn_t.nmspc_cd
+		alter table krms_actn_t add nmspc_cd varchar2(40) not null
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- make krms_agenda_t default to 'Y'
+		alter table krms_agenda_t modify actv varchar2(1) DEFAULT 'Y'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- make krms_prop_t.typ_id nullable 
+		alter table krms_prop_t modify (typ_id NULL)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		-- change krms_rule_t.descr_txt to desc_t for consistency
+		alter table krms_rule_t rename column descr_txt to desc_txt
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-06-13-m6.sql
+		-- 
+		
+		
+		update krew_doc_typ_t set post_prcsr = 'org.kuali.rice.krad.workflow.postprocessor.KualiPostProcessor' where post_prcsr = 'org.kuali.rice.kns.workflow.postprocessor.KualiPostProcessor'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update krew_rule_attr_t set cls_nm = 'org.kuali.rice.krad.workflow.attribute.KualiXmlSearchableAttributeImpl' where cls_nm = 'org.kuali.rice.kns.workflow.attribute.KualiXmlSearchableAttributeImpl'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update krew_rule_attr_t set cls_nm = 'org.kuali.rice.kns.workflow.attribute.KualiXMLBooleanTranslatorSearchableAttributeImpl' where cls_nm = 'org.kuali.rice.kns.workflow.attribute.KualiXMLBooleanTranslatorSearchableAttributeImpl'
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		update krew_rule_attr_t set cls_nm = 'org.kuali.rice.kns.workflow.attribute.KualiXmlRuleAttributeImpl' where cls_nm = 'org.kuali.rice.kns.workflow.attribute.KualiXmlRuleAttributeImpl'
+		]]></sql>
+
+
+
+		
+		<sql splitStatements="false"><![CDATA[
+		ALTER TABLE KREW_DOC_TYP_T RENAME TO OLD_KREW_DOC_TYP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE TABLE KREW_DOC_TYP_T
+		(
+		      DOC_TYP_ID VARCHAR2(40)
+		        , PARNT_ID VARCHAR2(40)
+		        , DOC_TYP_NM VARCHAR2(64)
+		        , DOC_TYP_VER_NBR NUMBER(10) default 0
+		        , ACTV_IND NUMBER(1)
+		        , CUR_IND NUMBER(1)
+		        , LBL VARCHAR2(128)
+		        , PREV_DOC_TYP_VER_NBR VARCHAR2(40)
+		        , DOC_TYP_DESC VARCHAR2(4000)
+		        , DOC_HDLR_URL VARCHAR2(255)
+		        , POST_PRCSR VARCHAR2(255)
+		        , JNDI_URL VARCHAR2(255)
+		        , BLNKT_APPR_PLCY VARCHAR2(10)
+		        , ADV_DOC_SRCH_URL VARCHAR2(255)
+		        , CSTM_ACTN_LIST_ATTRIB_CLS_NM VARCHAR2(255)
+		        , CSTM_ACTN_EMAIL_ATTRIB_CLS_NM VARCHAR2(255)
+		        , CSTM_DOC_NTE_ATTRIB_CLS_NM VARCHAR2(255)
+		        , RTE_VER_NBR VARCHAR2(2) default '1'
+		        , NOTIFY_ADDR VARCHAR2(255)
+		        , APPL_ID VARCHAR2(255)
+		        , EMAIL_XSL VARCHAR2(255)
+		        , SEC_XML CLOB
+		        , VER_NBR NUMBER(8) default 0
+		        , BLNKT_APPR_GRP_ID VARCHAR2(40)
+		        , RPT_GRP_ID VARCHAR2(40)
+		        , GRP_ID VARCHAR2(40)
+		        , HELP_DEF_URL VARCHAR2(4000)
+		        , OBJ_ID VARCHAR2(36) NOT NULL
+		        , DOC_SEARCH_HELP_URL VARCHAR2(4000)
+		        , DOC_HDR_ID VARCHAR2(40)
+		    , CONSTRAINT KREW_DOC_TYP_TC0 UNIQUE (OBJ_ID)
+		    , CONSTRAINT KREW_DOC_TYP_TI1 UNIQUE (DOC_TYP_NM, DOC_TYP_VER_NBR)
+		)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		INSERT INTO KREW_DOC_TYP_T(
+				DOC_TYP_ID
+		        , PARNT_ID
+		        , DOC_TYP_NM
+		        , DOC_TYP_VER_NBR
+		        , ACTV_IND
+		        , CUR_IND
+		        , LBL
+		        , PREV_DOC_TYP_VER_NBR
+		        , DOC_TYP_DESC
+		        , DOC_HDLR_URL
+		        , POST_PRCSR
+		        , JNDI_URL
+		        , BLNKT_APPR_PLCY
+		        , ADV_DOC_SRCH_URL
+		        , CSTM_ACTN_LIST_ATTRIB_CLS_NM
+		        , CSTM_ACTN_EMAIL_ATTRIB_CLS_NM
+		        , CSTM_DOC_NTE_ATTRIB_CLS_NM
+		        , RTE_VER_NBR
+		        , NOTIFY_ADDR
+		        , APPL_ID
+		        , EMAIL_XSL
+		        , SEC_XML
+		        , VER_NBR
+		        , BLNKT_APPR_GRP_ID
+		        , RPT_GRP_ID
+		        , GRP_ID
+		        , HELP_DEF_URL
+		        , OBJ_ID
+		        , DOC_SEARCH_HELP_URL
+		        , DOC_HDR_ID
+		)
+		SELECT DOC_TYP_ID
+		        , PARNT_ID
+		        , DOC_TYP_NM
+		        , DOC_TYP_VER_NBR
+		        , ACTV_IND
+		        , CUR_IND
+		        , LBL
+		        , PREV_DOC_TYP_VER_NBR
+		        , DOC_TYP_DESC
+		        , DOC_HDLR_URL
+		        , POST_PRCSR
+		        , JNDI_URL
+		        , BLNKT_APPR_PLCY
+		        , ADV_DOC_SRCH_URL
+		        , CSTM_ACTN_LIST_ATTRIB_CLS_NM
+		        , CSTM_ACTN_EMAIL_ATTRIB_CLS_NM
+		        , CSTM_DOC_NTE_ATTRIB_CLS_NM
+		        , RTE_VER_NBR
+		        , NOTIFY_ADDR
+		        , APPL_ID
+		        , EMAIL_XSL
+		        , SEC_XML
+		        , VER_NBR
+		        , BLNKT_APPR_GRP_ID
+		        , RPT_GRP_ID
+		        , GRP_ID
+		        , HELP_DEF_URL
+		        , OBJ_ID
+		        , DOC_SEARCH_HELP_URL
+		        , DOC_HDR_ID
+		FROM OLD_KREW_DOC_TYP_T
+		]]></sql>
+		<!-- <sql splitStatements="false"><![CDATA[
+		
+		DROP TABLE OLD_KREW_DOC_TYP_T CASCADE CONSTRAINTS PURGE
+		]]></sql> -->
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		ALTER TABLE KREW_DOC_TYP_T
+		    ADD CONSTRAINT KREW_DOC_TYP_TP1
+		PRIMARY KEY (DOC_TYP_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		CREATE INDEX KREW_DOC_TYP_TI2 
+		  ON KREW_DOC_TYP_T 
+		  (PARNT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_TYP_TI3 
+		  ON KREW_DOC_TYP_T 
+		  (DOC_TYP_ID, PARNT_ID)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_TYP_TI4 
+		  ON KREW_DOC_TYP_T 
+		  (PREV_DOC_TYP_VER_NBR)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_TYP_TI5 
+		  ON KREW_DOC_TYP_T 
+		  (CUR_IND)
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		CREATE INDEX KREW_DOC_TYP_TI6 
+		  ON KREW_DOC_TYP_T 
+		  (DOC_TYP_NM)
+		]]></sql>
+</changeSet>
+</databaseChangeLog>
