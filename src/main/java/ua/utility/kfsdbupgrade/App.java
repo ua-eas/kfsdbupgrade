@@ -391,7 +391,9 @@ public class App {
         
         catch (Exception ex) {
             retval= false;
-            pw.close();
+            if (pw != null) {
+                pw.close();
+            }
             pw = null;
             writeOut(ex);
         }
@@ -721,6 +723,8 @@ public class App {
     private static void createIndexes(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
         
+        writeHeader2("creating KFS indexes ");
+
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql"));
             
@@ -730,7 +734,7 @@ public class App {
                 String tableName = getIndexTableName(line);
                 String indexName = getIndexName(line);
                 
-                if (StringUtils.isNoneBlank(tableName) && StringUtils.isNoneBlank(indexName)) {
+                if (StringUtils.isNotBlank(tableName) && StringUtils.isNotBlank(indexName)) {
                     boolean unique = line.contains(" UNIQUE ");
                     List <String> columnNames = getIndexColumnNames(line);
                     
@@ -942,6 +946,8 @@ public class App {
     private static void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
         
+        writeHeader2("creating KFS public synonyms ");
+
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql"));
             
