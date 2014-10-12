@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -723,7 +722,7 @@ public class App {
         LineNumberReader lnr = null;
         
         try {
-            lnr = new LineNumberReader(new InputStreamReader(App.class.getResourceAsStream("kfs-indexes.sql")));
+            lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql"));
             
             String line = null;
             
@@ -944,7 +943,7 @@ public class App {
         LineNumberReader lnr = null;
         
         try {
-            lnr = new LineNumberReader(new InputStreamReader(App.class.getResourceAsStream("kfs-public-synonyms.sql")));
+            lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql"));
             
             String line = null;
             
