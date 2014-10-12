@@ -333,6 +333,7 @@
 			<column name="KIM_ATTR_DEFN_ID" valueNumeric=" (select kim_attr_defn_id from KRIM_ATTR_DEFN_T where nm = 'editMode') "/>
 			<column name="ATTR_VAL" value="immediateDisbursementEntryMode"/>
 		</insert>
+                <!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSSYS6007-1"/>
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -349,9 +350,7 @@
 			<column name="PERM_ID" value="KFSSYS6007"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
-	    <modifySql dbms="mysql">
-	      <replace replace="sys_guid()" with="uuid()" />
-	    </modifySql>
+                -->
 	</changeSet>
 
 	<changeSet author="KFS50" id="KFSMI4553_NEW_ROLE_FOR_VENDOR_REVIEWER">
@@ -701,6 +700,8 @@
 			<column name="PERM_ID" value="KFSMI6886-PRM3" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+                
+                <!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSMI6886-RLPRM4" />
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -709,9 +710,7 @@
 			<column name="PERM_ID" value="KFSMI6886-PRM3" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-	    <modifySql dbms='mysql'>
-	      <replace replace="sys_guid()" with="uuid()" />
-	    </modifySql>
+                -->
 	</changeSet>
 	
 	<changeSet author="KFS50" id="KFSMI7041_PERM_TO_USE_FRINGE_BENEFIT_INQUIRY_ACTION">
@@ -1012,6 +1011,7 @@
 		
 	<changeSet author="KFS50" id="RESTORE_INQUIRY_ON_RICE_OBJECTS">
 		<comment>Restore a few permissions which were lost from Rice objects between KFS versions.</comment>
+                <!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS50-2" />
 			<column name="OBJ_ID" value="KFS50-2" />
@@ -1060,6 +1060,7 @@
 			<column name="PERM_ID" valueNumeric=" (select perm_id from krim_perm_t WHERE nmspc_cd = 'KR-NS' AND NM = 'Inquire Into Parameter Type') " />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+                -->
 	</changeSet>
 	<changeSet author="KFS50" id="AUTHORIZE_ICR_USERS_TO_EDIT">
 		<comment>Authorizes Contracts and Grants Processors to edit the IndirectCostRecoveryAccounts section on the Sub-Account document</comment>
@@ -1329,5 +1330,4 @@
 			<column name="ATTR_VAL" value="C" />
 		</insert>
 	</changeSet>
-		
 </databaseChangeLog>

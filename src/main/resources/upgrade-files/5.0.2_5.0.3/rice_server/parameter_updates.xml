@@ -40,10 +40,6 @@
 			<column name="EVAL_OPRTR_CD" value="A" />
 			<column name="APPL_ID" value="KFS" />
 		</insert>
-
-		<modifySql dbms="mysql">
-	      <replace replace="sys_guid()" with="uuid()" />
-	    </modifySql>
 	</changeSet>
 
 	<changeSet author="KFS503" id="KFSCNTRB-990">

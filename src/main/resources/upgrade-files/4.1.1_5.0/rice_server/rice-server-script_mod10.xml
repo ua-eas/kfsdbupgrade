@@ -102,11 +102,6 @@
 		alter table krms_term_spec_t drop column cntxt_id
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		--
-		-- refactor krms_cntxt_term_spec_prereq_t to be a valid term specs table instead
-		--
-		-- rename krms_cntxt_term_spec_prereq_t to krms_cntxt_vld_term_spec_t
-		-- and add prereq column
 		alter table krms_cntxt_term_spec_prereq_t drop constraint KRMS_CNTXT_ASSET_PREREQ_FK1
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
@@ -1391,9 +1386,6 @@
 		CREATE INDEX KRIM_PERM_TMPL_TI1 ON KRIM_PERM_TMPL_T (NMSPC_CD, NM)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KRIM_ROLE_MBR_TI2 ON KRIM_ROLE_MBR_T (role_id, mbr_id, mbr_typ_cd)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KRIM_ROLE_MBR_TI3 ON KRIM_ROLE_MBR_T (mbr_id, mbr_typ_cd)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
@@ -1684,6 +1676,12 @@
 		insert into krms_typ_attr_t (typ_attr_id, seq_no, typ_id, attr_defn_id, actv, ver_nbr)
 		values ('1008', 3, '1001', '1006', 'Y', 1)
 		]]></sql>
+                
+                
+		<sql splitStatements="false"><![CDATA[
+                update KRIM_ROLE_PERM_T set role_id = 'RICE_KRMS_4' where role_id is null and perm_id = 'RICE_20_1'
+		]]></sql>
+                
 		<sql splitStatements="false"><![CDATA[
 		
 		
@@ -1806,9 +1804,6 @@
 		ALTER TABLE KREW_RULE_T
 		    ADD CONSTRAINT KREW_RULE_TR1 FOREIGN KEY (RULE_EXPR_ID)
 		    REFERENCES KREW_RULE_EXPR_T (RULE_EXPR_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-			CREATE INDEX KRNS_NTE_TI1 ON KRNS_NTE_T ( RMT_OBJ_ID )
 		]]></sql>
 	</changeSet>
         <!--
