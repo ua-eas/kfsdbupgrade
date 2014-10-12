@@ -72,6 +72,7 @@ public class App {
                     stmt = conn1.createStatement();
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
+
                     if (doInitialProcessing(stmt)) {
                         doCommit(conn1);
                         if (doUpgrade(conn1, conn2, stmt)) {
@@ -733,48 +734,55 @@ public class App {
             while ((line = lnr.readLine()) != null) {
                 String tableName = getIndexTableName(line);
                 String indexName = getIndexName(line);
-                
                 if (StringUtils.isNotBlank(tableName) && StringUtils.isNotBlank(indexName)) {
-                    boolean unique = line.contains(" UNIQUE ");
-                    List <String> columnNames = getIndexColumnNames(line);
-                    
-                    if (!indexExists(conn, stmt, tableName, columnNames)) {
-                        if (indexNameExists(conn, stmt, tableName, indexName)) {
-                            indexName = getNextTableIndexName(conn, stmt, tableName);
-                        }
+                    if (tableExists(conn, stmt, tableName)) {
+                        boolean unique = line.contains(" UNIQUE ");
+                        List <String> columnNames = getIndexColumnNames(line);
 
-                        StringBuilder sql = new StringBuilder(256);
-                        
-                        sql.append("CREATE ");
-            
-                        if (unique) {
-                            sql.append ("UNIQUE ");
-                        }
+                        if (!indexExists(conn, stmt, tableName, columnNames)) {
+                            if (indexNameExists(conn, stmt, tableName, indexName)) {
+                                indexName = getNextTableIndexName(conn, stmt, tableName);
+                            }
 
-                        sql.append("INDEX KULOWNER.");
+                            StringBuilder sql = new StringBuilder(256);
 
-                        sql.append(indexName);
-                        sql.append(" ON KULOWNER.");
-                        sql.append(tableName);
-                        sql.append("(");
+                            sql.append("CREATE ");
 
-                        String comma = "";
-                        for (String columnName : columnNames) {
-                            sql.append(comma);
-                            sql.append(columnName);
-                            comma = ",";
-                        }
+                            if (unique) {
+                                sql.append ("UNIQUE ");
+                            }
 
-                        sql.append(")");
-                        
-                        try {
-                            stmt.execute(sql.toString());
-                        }
-                        
-                        catch (SQLException ex) {
-                            writeOut("failed to create index: " + sql.toString());
+                            sql.append("INDEX KULOWNER.");
+
+                            sql.append(indexName);
+                            sql.append(" ON KULOWNER.");
+                            sql.append(tableName);
+                            sql.append("(");
+
+                            String comma = "";
+                            for (String columnName : columnNames) {
+                                sql.append(comma);
+                                sql.append(columnName);
+                                comma = ",";
+                            }
+
+                            sql.append(")");
+
+                            try {
+                                writeOut("attempting to create index " + indexName + " on table " + tableName + "...");
+                                stmt.execute(sql.toString());
+                                writeOut("index " + indexName + " created on table " + tableName);
+                            }
+
+                            catch (SQLException ex) {
+                                writeOut("failed to create index: " + sql.toString());
+                            }
+                        } else {
+                            writeOut("index " + indexName + " exists on table " + tableName);
                         }
                     }
+                } else {
+                    writeOut("index " + indexName + " not created - table " + tableName + " no longer exists");
                 }
             }
         }
@@ -792,6 +800,26 @@ public class App {
             
             catch (Exception ex) {};
         }
+    }
+
+    private static boolean tableExists(Connection conn, Statement stmt, String tableName) throws Exception {
+        boolean retval = false;
+        ResultSet res = null;
+        
+        try {
+            res = stmt.executeQuery("select count(*) from user_tables where table_name = '" + tableName + "'");
+            
+            if (res.next()) {
+                retval = (res.getInt(1) > 0);
+            }
+        }
+
+        finally {
+            closeDbObjects(null, null, res);
+        }
+        
+        return retval;
+ 
     }
 
     private static boolean indexExists(Connection conn, Statement stmt, String tableName, List <String> columnNames) throws Exception {
@@ -964,6 +992,8 @@ public class App {
                     catch (SQLException ex) {
                         writeOut("faled to create public synonym: " + line);
                     }
+                } else {
+                    writeOut("synonym " + synonymName + " exists");
                 }
             }
         }
