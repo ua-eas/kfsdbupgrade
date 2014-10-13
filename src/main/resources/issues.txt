@@ -1,10 +1,19 @@
-1. added following to 4.1.1_5.0/rice-server-script_mod10.xml at line 1681 to prevent failure of next sql adding constraint "role_id not null"
+1. KFS entries in SYS.user_mview_logs prevent some upgrade operations. Ran following to drop:
+    dropped materialized view log on <kfs-materialized-view-log>
+
+2. Scripts attempt to insert new KRIM_PERM_T entries with hard coded ids that already exist (based at 1100), 
+   changed base to 12000
+
+3. added following to 4.1.1_5.0/rice-server-script_mod10.xml at line 1681 to prevent failure of next sql adding constraint "role_id not null"
    
 		<sql splitStatements="false"><![CDATA[
                 update KRIM_ROLE_PERM_T set role_id = 'RICE_KRMS_4' where role_id is null and perm_id = 'RICE_20_1'
 		]]></sql>
 
-2. commented out the following from 4.1.1_5.0/kim_upgrade_mod.xml at line 336 because inner selects returned null and column is not nullable
+4. New unique contrainst on KRIM_PERM_T and KRIM_RSP_T fields NM, NMSPC_CD faild because of duplicate entries. Tacked PERM_ID/RSP_ID
+   onto NM field of offending table entries to make unique
+
+5. commented out the following from 4.1.1_5.0/kim_upgrade_mod.xml at line 336 because inner selects returned null and column is not nullable
             <insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSSYS6007-1"/>
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -21,7 +30,7 @@
 			<column name="PERM_ID" value="KFSSYS6007"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
-3. commented out the following from 4.1.1_5.0/kim_upgrade_mod.xml at line 704 because inner selects returned null and column is not nullable
+6. commented out the following from 4.1.1_5.0/kim_upgrade_mod.xml at line 704 because inner selects returned null and column is not nullable
 
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSMI6886-RLPRM4" />
@@ -32,7 +41,7 @@
 			<column name="ACTV_IND" value="Y" />
 		</insert>
 
-4. commented out the following from 4.1.1_5.0/kim_upgrade_mod.xml at line 1012 because inner selects returned null and column is not nullable
+7. commented out the following from 4.1.1_5.0/kim_upgrade_mod.xml at line 1012 because inner selects returned null and column is not nullable
 
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS50-2" />
@@ -83,7 +92,7 @@
 			<column name="ACTV_IND" value="Y" />
 		</insert>
 
-5. commented out the following from 5.0.2_5.0.3/kim_upgrade_mod.xml at line 7 because inner selects returned null and column is not nullable
+8. commented out the following from 5.0.2_5.0.3/kim_upgrade_mod.xml at line 7 because inner selects returned null and column is not nullable
                 <insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB1343-PRM1" />
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -113,4 +122,8 @@
 			<column name="ACTV_IND" value="Y" />
 		</insert>
 
+9. failure occured while tring to run update sql ALTER TABLE KRIM_ROLE_PERM_T MODIFY (ROLE_ID NOT NULL)
+   because role_id on KRIM_ROLE_PERM_T entry with perm_id RICE_20_1 was null. ADded following to prevent
+   error:
 
+    update KRIM_ROLE_PERM_T set role_id = 'RICE_KRMS_4' where role_id is null and perm_id = 'RICE_20_1'
