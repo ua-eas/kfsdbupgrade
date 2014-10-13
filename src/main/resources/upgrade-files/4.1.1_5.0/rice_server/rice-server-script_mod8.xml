@@ -1358,6 +1358,13 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_LONG_T
+		(DOC_HDR_EXT_LONG_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT 
+		CAST(DOC_HDR_EXT_LONG_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_LONG_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_LONG_T
 		    ADD CONSTRAINT KREW_DOC_HDR_EXT_LONG_TP1
 		PRIMARY KEY (DOC_HDR_EXT_LONG_ID)
@@ -1377,14 +1384,8 @@
 		  ON KREW_DOC_HDR_EXT_LONG_T 
 		  (VAL)
 		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_LONG_T
-		(DOC_HDR_EXT_LONG_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(DOC_HDR_EXT_LONG_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
-		FROM TEMP_KREW_DOC_HDR_EXT_LONG_T
-		]]></sql>
-		<!-- <sql splitStatements="false"><![CDATA[
+
+                <!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
 		BEGIN
 			SELECT COUNT(*) INTO temp FROM user_tables WHERE table_name = 'TEMP_KREW_DOC_HDR_EXT_LONG_T';
@@ -1455,6 +1456,13 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT INTO KREW_DOC_HDR_EXT_FLT_T
+		(DOC_HDR_EXT_FLT_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT 
+		CAST(DOC_HDR_EXT_FLT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_FLT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_FLT_T
 		    ADD CONSTRAINT KREW_DOC_HDR_EXT_FLT_TP1
 		PRIMARY KEY (DOC_HDR_EXT_FLT_ID)
@@ -1474,14 +1482,8 @@
 		  ON KREW_DOC_HDR_EXT_FLT_T 
 		  (VAL)
 		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_FLT_T
-		(DOC_HDR_EXT_FLT_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(DOC_HDR_EXT_FLT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
-		FROM TEMP_KREW_DOC_HDR_EXT_FLT_T
-		]]></sql>
-		<!-- <sql splitStatements="false"><![CDATA[
+
+                <!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
 		BEGIN
 			SELECT COUNT(*) INTO temp FROM user_tables WHERE table_name = 'TEMP_KREW_DOC_HDR_EXT_FLT_T';
