@@ -24,18 +24,23 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
@@ -48,6 +53,7 @@ public class App {
     private static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
     private static final String ERROR = "************************************************* error *************************************************";
     private static final String HEADER1 = "================================================ ? ================================================";
+    private static final String INDEX_NAME_TEMPLATE = "[table-name]I{index}";
     private static String upgradeRoot;
     private static List<String> upgradeFolders;
     private static Properties properties;
@@ -82,9 +88,12 @@ public class App {
                     
                     if (success) {
                         doCommit(conn1);
+                        stmt.close();
+                        stmt = conn2.createStatement();
                         dropTempTables(conn2, stmt);
                         createIndexes(conn2, stmt);
                         createPublicSynonyms(conn2, stmt);
+                        createForeignKeyIndexes(conn2, stmt);
                         writeOut("");
                         writeHeader1("upgrade completed successfully");
                     }
@@ -1043,6 +1052,217 @@ public class App {
             }
             
             catch (Exception ex) {};
+        }
+    }
+    
+    private static Set <String> loadForeignKeyIndexInformation(Connection conn) {
+        Set <String> retval = new HashSet<String>();
+        
+		ResultSet res = null;
+		ResultSet res2 = null;
+		try {
+			conn = getConnection();
+
+			Map <String, ForeignKeyReference> fkeys = new HashMap<String, ForeignKeyReference>();
+			Map <String, TableIndexInfo> tindexes = new HashMap<String, TableIndexInfo>();
+			
+			DatabaseMetaData dmd = conn.getMetaData();
+			res = dmd.getTables(null, getSchema(), null, new String[] {"TABLE"});
+			
+			while (res.next()) {
+				String tname = res.getString(3);
+                
+                writeOut("processing table " + tname);
+                
+				res2 = dmd.getImportedKeys(null, getSchema(), tname);
+				boolean foundfk = false;
+				
+				while (res2.next()) {
+					foundfk = true;
+					String fcname = res2.getString(8);
+					int seq = res2.getInt(9);
+					String fkname = res2.getString(12);
+					
+					ForeignKeyReference fkref = fkeys.get(fkname);
+					
+					if (fkref == null) {
+						fkeys.put(fkname, fkref = new ForeignKeyReference(getSchema(), tname, fkname, INDEX_NAME_TEMPLATE));
+					}
+					
+					ColumnInfo cinfo = new ColumnInfo(fcname, seq); 
+					
+					cinfo.setNumeric(isNumericColumn(dmd, getSchema(), tname, fcname));
+					
+					fkref.addColumn(cinfo);
+				}
+				
+				res2.close();
+				
+				if (foundfk) {
+					tindexes.put(tname, loadTableIndexInfo(dmd, tname));
+				}
+			}
+			
+			res.close();
+			
+			List <ForeignKeyReference> l = new ArrayList<ForeignKeyReference>(fkeys.values());
+			
+			Collections.sort(l);
+			
+			Iterator<ForeignKeyReference> it = l.iterator();
+
+			while (it.hasNext()) {
+				ForeignKeyReference fkref = it.next();
+				if (hasIndex(tindexes.get(fkref.getTableName()).getIndexes(), fkref)) {
+					it.remove();
+				} else {
+					String s = fkref.getCreateIndexString(tindexes.get(fkref.getTableName()));
+					if (StringUtils.isNotBlank(fkref.getIndexName())) {
+						retval.add(s);
+					}
+				}
+			}
+		}
+		
+        catch (Exception ex) {
+            writeOut(ex);
+        }
+        
+		finally {
+			closeDbObjects(null, null, res2);
+			closeDbObjects(null, null, res);
+		}
+        
+        return retval;
+	}
+
+	private static TableIndexInfo loadTableIndexInfo(DatabaseMetaData dmd, String tname) throws Exception {
+		TableIndexInfo retval = new TableIndexInfo(tname);
+		ResultSet res = null;
+		
+		try {
+			Map <String, IndexInfo> imap = new HashMap<String, IndexInfo>();
+			
+			res = dmd.getIndexInfo(null, getSchema(), tname, false, true);
+			
+			while (res.next()) {
+				String iname = res.getString(6);
+				
+				if (iname != null) {
+					String cname = res.getString(9);
+					
+					IndexInfo i = imap.get(iname);
+					
+					if (i == null) {
+						imap.put(iname,  i = new IndexInfo(iname));
+					}
+					
+					i.addColumn(cname);
+				}
+			}
+			
+			retval.getIndexes().addAll(imap.values());
+			
+			for (IndexInfo i : retval.getIndexes()) {
+				String indexName = i.getIndexName();
+                
+                int indx = 1;
+                for (int j = indexName.length()-1; j >= 0; --j) {
+                    if (!Character.isDigit(indexName.charAt(j))) {
+                        try {
+                            indx = Integer.parseInt(indexName.substring(j+1));
+                        }
+                        
+                        catch (NumberFormatException ex) {};
+                        
+                        break;
+                    }
+                }
+            
+                if (retval.getMaxIndexSuffix() < indx) {
+                    retval.setMaxIndexSuffix(indx);
+                }
+			}
+		}
+		
+		finally {
+			closeDbObjects(null, null, res);
+		}
+
+		return retval;
+	}
+	
+	
+	private static boolean hasIndex(List <IndexInfo> indexes, ForeignKeyReference fkref) throws Exception {
+		boolean retval = false;
+
+		for (IndexInfo i : indexes) {
+			if (fkref.getColumns().size() == i.getIndexColumns().size()) {
+				boolean foundit = true;
+				for (ColumnInfo cinfo : fkref.getColumns()) {
+					if (!i.getIndexColumns().contains(cinfo.getColumnName())) {
+						foundit = false;
+					}
+				}
+				
+				if (foundit) {
+					retval = true;
+					break;
+				}
+			} 
+		}
+		
+		return retval;
+	}
+    
+    private static String getSchema() {
+        return properties.getProperty("database-schema");
+    }
+
+	private static boolean isNumericColumn(DatabaseMetaData dmd, String schema, String tname, String cname) throws Exception {
+		boolean retval = false;
+		
+		ResultSet res = null;
+		
+		try {
+			res = dmd.getColumns(null, schema, tname, cname);
+			
+			if (res.next()) {
+				retval = isNumericJavaType(res.getInt(5));
+				
+			}
+		}
+		
+		finally {
+			closeDbObjects(null, null, res);
+		}
+		
+		return retval;
+	}
+	
+	private static boolean isNumericJavaType(int type) {
+		return ((type == java.sql.Types.BIGINT)
+				|| (type == java.sql.Types.BINARY)
+				|| (type == java.sql.Types.DECIMAL)
+				|| (type == java.sql.Types.DOUBLE)
+				|| (type == java.sql.Types.FLOAT)
+				|| (type == java.sql.Types.INTEGER)
+				|| (type == java.sql.Types.NUMERIC)
+				|| (type == java.sql.Types.REAL)
+				|| (type == java.sql.Types.SMALLINT)
+				|| (type == java.sql.Types.TINYINT));
+	}
+    
+    private static void createForeignKeyIndexes(Connection conn, Statement stmt) {
+        writeHeader2("creating indexes on foreign keys where required...");
+        for (String sql : loadForeignKeyIndexInformation(conn)) {
+            try {
+                stmt.executeQuery(sql);
+            }
+            
+            catch (Exception ex) {
+                writeOut("create index failed: " + sql);
+            }
         }
     }
 }
