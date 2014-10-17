@@ -82,6 +82,7 @@ public class App {
                     
                     if (success) {
                         doCommit(conn1);
+                        dropTempTables(conn2, stmt);
                         createIndexes(conn2, stmt);
                         createPublicSynonyms(conn2, stmt);
                         writeOut("");
@@ -116,6 +117,38 @@ public class App {
             }
         }
         return retval;
+    }
+    
+    private static void dropTempTables(Connection conn, Statement stmt) {
+        writeHeader2("Dropping temporary tables");
+
+        List <String> tables = new ArrayList<String>();
+        ResultSet res = null;
+        try {
+            res = stmt.executeQuery("select table_name from user_tables where table_name like 'OLD_%' or table_name like 'TEMP_%'");
+            
+            while (res.next()) {
+                tables.add(res.getString(1));
+            }
+            
+            for (String t : tables) {
+                try {
+                    stmt.execute("drop table " + t);
+                }
+                
+                catch (Exception ex) {
+                    writeLog("failed to drop temp table " + t);
+                }
+            }
+        }
+        
+        catch (Exception ex) {
+            writeLog(ex);
+        }
+        
+        finally {
+            closeDbObjects(null, null, res);
+        }
     }
     
     private static Map<String, List<String>> loadFolderFileMap(String prefix) {
