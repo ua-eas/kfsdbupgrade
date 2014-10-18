@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -79,7 +80,7 @@ public class App {
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
 
-                    if (doInitialProcessing(stmt)) {
+                    if (doInitialProcessing(conn1, stmt)) {
                         doCommit(conn1);
                         if (doUpgrade(conn1, conn2, stmt)) {
                             success = true;
@@ -388,28 +389,33 @@ public class App {
         for (String folder : folders) {
             writeHeader2("processing folder " + folder);
             
-            for (String fname : getFolderFiles(folder, lastProcessedFile)) {
-                File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
-                
-                if (f.getName().endsWith(".sql")) {
-                    if (!runSqlFile(conn1, stmt, f, ";")) {
-                        retval = false;
-                        writeProcessedFileInfo("[failure] " + f.getPath());
-                    } else {
-                        writeProcessedFileInfo("[success] " + f.getPath());
-                    }
-                } else {
-                    if(!runLiquibase(conn2, f)) {
-                        retval = false;
-                        writeProcessedFileInfo("[failure] " + f.getPath());
-                    } else {
-                        writeProcessedFileInfo("[success] " + f.getPath());
-                    }
-                }
+            List <String> folderFiles = getFolderFiles(folder, lastProcessedFile);
+            if (folderFiles != null) {
+                for (String fname : folderFiles) {
+                    File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
 
-                if (!retval) {
-                    break;
-                } 
+                    if (f.getName().endsWith(".sql")) {
+                        if (!runSqlFile(conn1, stmt, f, ";")) {
+                            retval = false;
+                            writeProcessedFileInfo("[failure] " + f.getPath());
+                        } else {
+                            writeProcessedFileInfo("[success] " + f.getPath());
+                        }
+                    } else {
+                        if(!runLiquibase(conn2, f)) {
+                            retval = false;
+                            writeProcessedFileInfo("[failure] " + f.getPath());
+                        } else {
+                            writeProcessedFileInfo("[success] " + f.getPath());
+                        }
+                    }
+
+                    if (!retval) {
+                        break;
+                    } 
+                }
+            } else {
+                retval = true;
             }
             
             if (!retval) {
@@ -598,9 +604,11 @@ public class App {
         catch (FileNotFoundException ex) {};
     }
     
-    private static boolean doInitialProcessing(Statement stmt) {
+    private static boolean doInitialProcessing(Connection conn, Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
+        ResultSet res2 = null;
+        PreparedStatement stmt2 = null;
         try {
             deleteFile(new File(properties.getProperty("output-log-file-name")));
             deleteFile(new File(properties.getProperty("processed-files-file-name")));
@@ -654,6 +662,39 @@ public class App {
                 stmt.executeUpdate(sql);
             }
             
+            res.close();
+            
+            writeHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
+            
+            StringBuilder sql = new StringBuilder(256);
+            sql.append("select count(*), SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
+            sql.append("from KRIM_TYP_ATTR_T group by SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
+            sql.append("having count(*) > 1");
+            res = stmt.executeQuery(sql.toString());
+            
+            while (res.next()) {
+                if (stmt2 == null) {
+                    stmt2 = conn.prepareStatement("select KIM_TYP_ATTR_ID from KRIM_TYP_ATTR_T where sort_cd = ? and KIM_TYP_ID = ? and  KIM_ATTR_DEFN_ID = ? and ACTV_IND = ? order by KIM_TYP_ATTR_ID");
+                }
+                String sortCd = res.getString(1);
+                stmt2.setString(1, sortCd);                    
+                stmt2.setString(2, res.getString(2));
+                stmt2.setString(3, res.getString(3));
+                stmt2.setString(4, res.getString(4));
+
+                res2 = stmt2.executeQuery();
+                
+                int indx = 0;
+                while (res2.next()) {
+                    if (indx > 0) {
+                        indx++;
+                        if (sortCd.length() == 1) {
+                            stmt.executeUpdate("update KRIM_TYP_ATTR_T set sort_cd = '" + (sortCd + indx) + "' where KIM_TYP_ATTR_ID = '" + res2.getString(1) + "'");
+                        }
+                    }
+                }
+            }
+
             retval = true;
         }
         
@@ -663,6 +704,7 @@ public class App {
         
         finally {
             closeDbObjects(null, null, res);
+            closeDbObjects(null, stmt2, res2);
         }
         
         return retval;
@@ -1061,8 +1103,6 @@ public class App {
 		ResultSet res = null;
 		ResultSet res2 = null;
 		try {
-			conn = getConnection();
-
 			Map <String, ForeignKeyReference> fkeys = new HashMap<String, ForeignKeyReference>();
 			Map <String, TableIndexInfo> tindexes = new HashMap<String, TableIndexInfo>();
 			
@@ -1072,7 +1112,7 @@ public class App {
 			while (res.next()) {
 				String tname = res.getString(3);
                 
-                writeOut("processing table " + tname);
+                writeOut("processing table " + tname + " for foreign key index creation");
                 
 				res2 = dmd.getImportedKeys(null, getSchema(), tname);
 				boolean foundfk = false;
@@ -1257,6 +1297,7 @@ public class App {
         writeHeader2("creating indexes on foreign keys where required...");
         for (String sql : loadForeignKeyIndexInformation(conn)) {
             try {
+                writeOut(sql);
                 stmt.executeQuery(sql);
             }
             
