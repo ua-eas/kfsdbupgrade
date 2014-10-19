@@ -1,0 +1,35 @@
+To build the application download maven project from https://github.com/ua-eas/kfsdbupgrade and build.
+
+1. create upgrade work directory and copy the following files/directories from project above
+   into work directory:
+
+   <kfsdbupgrade-project-directory>/target/kfsdbupgrade-jar-with-dependencies.jar
+   <kfsdbupgrade-project-directory>/src/main/resources/kfsdbupgrade.properties
+   <kfsdbupgrade-project-directory>/src/main/resources/runupgrade.sh
+   <kfsdbupgrade-project-directory>/src/main/resources/upgrade-files
+   
+2. Edit kfsdbupgrade.properties and fill in entries below with the correct information
+   # database information
+   database-user=dbuser
+   database-password=dbpass
+   database-schema=dbschema
+   database-driver=dbdriver
+   database-name=dbname
+   database-url=dburl
+
+   # upgrade information
+   upgrade-base-directory=[upgrade-work-directory]
+
+   # logging information
+   output-log-file-name=[my-output-log-path]
+   processed-files-file-name=[my-processed-files-file-output-path]
+
+3. Edit runupgrade.sh and replace [upgrade-work-directory] with current work directory
+
+4. from the upgrade work execute runupgrade.sh from the command line to run upgrade.
+   The upgrade script is written for linux and starts a background java process. 
+
+5. If the upgrade fails it can be restarted from the last successfully processed file by 
+   modifying the failed file to fix the issue, setting the "last-processed-file" entry 
+   in kfsdbupgrade.properties to the last successfully processed file (get information from logs) 
+   and re-running runupgrade.sh. 
