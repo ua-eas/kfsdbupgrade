@@ -416,38 +416,6 @@
 		CREATE INDEX KREW_DOC_HDR_EXT_TI3 ON KREW_DOC_HDR_EXT_T(VAL)  PARALLEL 4
 		]]></sql>
                 
-                
-		<sql splitStatements="false"><![CDATA[
-                   DROP INDEX KREW_DOC_HDR_TC0
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI1
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI2
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI3
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI5
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI6
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI7
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI8
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    DROP INDEX KREW_DOC_HDR_TI9
-		]]></sql>
-                
 		<sql splitStatements="false"><![CDATA[
 		
 		--
@@ -484,37 +452,6 @@
 		ALTER TABLE KREW_DOC_HDR_T DROP COLUMN DOC_HDR_ID_TEMP
 		]]></sql>
 		
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TC0 ON KREW_DOC_HDR_T(OBJ_ID)   PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI1 ON KREW_DOC_HDR_T(DOC_TYP_ID)   PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI2 ON KREW_DOC_HDR_T(INITR_PRNCPL_ID)   PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI3 ON KREW_DOC_HDR_T(DOC_HDR_STAT_CD)  PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI4 ON KREW_DOC_HDR_T(TTL)  PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI5 ON KREW_DOC_HDR_T(CRTE_DT)  PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI6 ON KREW_DOC_HDR_T(RTE_STAT_MDFN_DT)  PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI7 ON KREW_DOC_HDR_T(APRV_DT)  PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI8 ON KREW_DOC_HDR_T(FNL_DT)  PARALLEL 4
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-                    CREATE INDEX KREW_DOC_HDR_TI9 ON KREW_DOC_HDR_T(APP_DOC_ID)  PARALLEL 4
-		]]></sql>
-
                 <sql splitStatements="false"><![CDATA[
 		
 		--
