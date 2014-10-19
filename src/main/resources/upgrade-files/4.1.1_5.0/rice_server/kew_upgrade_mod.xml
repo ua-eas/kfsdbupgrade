@@ -111,7 +111,7 @@
 	<changeSet author="KFS50" id="KFSMI_7568_FIX_DOC_OPENING_IN_EMBEDDED_RICE_MODE">
 		<comment>Updates all the KFS document types to use the new "kfs.url" instead of "application.url".</comment>
 		<update tableName="KREW_DOC_TYP_T">
-			<column name="doc_hdlr_url" valueNumeric=" REPLACE( DOC_HDLR_URL, 'application.url', 'kfs.url' ) " />
+			<column name="doc_hdlr_url" valueNumeric="(REPLACE( DOC_HDLR_URL, 'application.url', 'kfs.url' ) )" />
 			<where>doc_typ_nm IN ( 'KFS','GLCP','AD','CMD','CR','CCR','JV','SB','AV','BA','DI','GEC','ICA','ND','PE','PCDO','TF','IB','DV','YEBA','YEDI','YEGE','YETF','CLOS','ECD','ST','LLJV','BT','LLCP','YEBT','YEST','ACM','REQS','PO','POA','POC','POPH','PORH','POR','PORT','POSP','POV','EIRT','CM','PREQ','RCVB','RCVC','RCVL','ECA','EUSA','EHVA','ELD','ELI','EST','GLET','ECR','EGLT','EHA','EAD','EAI','ECDD','ECI','ECT','FSDT','CTRL','APP','INVW','CRM','INV','BC','MPAY','AT','ELR','BCIE', 'KFST', 'RCV', 'PRPL', 'CAMM' )
 				AND DOC_HDLR_URL LIKE '%application.url%'
 			</where>
@@ -121,7 +121,7 @@
 	<changeSet author="KFS50" id="FIX_FOR_DOC_SEARCH_URL_IN_EMBEDDED_RICE_MODE">
 		<comment>Updates all the KFS document types to Add the necessary prefix for the document search URL.</comment>
 		<update tableName="KREW_DOC_TYP_T">
-			<column name="DOC_SEARCH_HELP_URL" valueNumeric=" REPLACE( DOC_SEARCH_HELP_URL, 'default.htm?', '${kfs.externalizable.help.url}/default.htm?' ) " />
+			<column name="DOC_SEARCH_HELP_URL" valueNumeric="REPLACE( DOC_SEARCH_HELP_URL, 'default.htm?', '${kfs.externalizable.help.url}/default.htm?')  " />
 			<where>doc_typ_nm IN ( 'KFS','GLCP','AD','CMD','CR','CCR','JV','SB','AV','BA','DI','GEC','ICA','ND','PE','PCDO','TF','IB','DV','YEBA','YEDI','YEGE','YETF','CLOS','ECD','ST','LLJV','BT','LLCP','YEBT','YEST','ACM','REQS','PO','POA','POC','POPH','PORH','POR','PORT','POSP','POV','EIRT','CM','PREQ','RCVB','RCVC','RCVL','ECA','EUSA','EHVA','ELD','ELI','EST','GLET','ECR','EGLT','EHA','EAD','EAI','ECDD','ECI','ECT','FSDT','CTRL','APP','INVW','CRM','INV','BC','MPAY','AT','ELR','BCIE', 'KFST', 'RCV', 'PRPL', 'CAMM' )
 				AND DOC_SEARCH_HELP_URL LIKE 'default.htm%'
 			</where>
@@ -130,13 +130,13 @@
 	
 	<changeSet id="FIX_KIM_DOC_QUALIFIER_RESOLVER" author="KFS50">
 		<update tableName="KREW_RTE_NODE_CFG_PARM_T">
-			<column name="VAL" valueNumeric="REPLACE( VAL, 'org.kuali.rice.kim.workflow.attribute.KimTypeQualifierResolver', 'org.kuali.rice.kim.impl.type.KimTypeQualifierResolver' )" />		
+			<column name="VAL" valueNumeric="REPLACE( VAL, 'org.kuali.rice.kim.workflow.attribute.KimTypeQualifierResolver', 'org.kuali.rice.kim.impl.type.KimTypeQualifierResolver')  " />		
 			<where>
 				val LIKE '%KimTypeQualifierResolver%'
 			</where>
 		</update>
 		<update tableName="KREW_RTE_NODE_CFG_PARM_T">
-			<column name="VAL" valueNumeric="REPLACE( VAL, 'org.kuali.rice.kns.workflow.attribute.DataDictionaryQualifierResolver', 'org.kuali.rice.krad.workflow.attribute.DataDictionaryQualifierResolver' )" />		
+			<column name="VAL" valueNumeric="REPLACE(VAL, 'org.kuali.rice.kns.workflow.attribute.DataDictionaryQualifierResolver', 'org.kuali.rice.krad.workflow.attribute.DataDictionaryQualifierResolver')  " />		
 			<where>
 				val LIKE '%DataDictionaryQualifierResolver%'
 			</where>

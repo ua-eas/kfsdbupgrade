@@ -93,7 +93,7 @@ public class ForeignKeyReference implements Comparable <ForeignKeyReference> {
 				comma = ", ";
 			}
 			
-			buf.append(")");
+			buf.append(")  PARALLEL 4");
 			
 			createIndexString = buf.toString();
 		}

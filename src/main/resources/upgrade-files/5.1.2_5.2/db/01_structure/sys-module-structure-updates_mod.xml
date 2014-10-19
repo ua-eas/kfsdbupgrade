@@ -35,7 +35,7 @@
 		<addForeignKeyConstraint constraintName="FP_DV_DOC_TR2"
 			baseTableName="FP_DV_DOC_T" baseColumnNames="DV_DOC_LOC_CD"
 			referencedTableName="FS_PMT_DOC_LOC_T" referencedColumnNames="PMT_DOC_LOC_CD" />
-		<dropUniqueConstraint tableName="FP_DV_WIRE_CHRG_T" constraintName="FP_DV_DOC_LOC_TUOID"/>
+		<dropUniqueConstraint tableName="FP_DV_WIRE_CHRG_T" constraintName="FP_DV_WIRE_CHRG_TUOID"/>
 		<dropForeignKeyConstraint baseTableName="FP_DV_WIRE_CHRG_T" constraintName="FP_DV_WIRE_CHRG_TR1"/>
 		<dropForeignKeyConstraint baseTableName="FP_DV_WIRE_CHRG_T" constraintName="FP_DV_WIRE_CHRG_TR2"/>
 		<dropForeignKeyConstraint baseTableName="FP_DV_WIRE_CHRG_T" constraintName="FP_DV_WIRE_CHRG_TR3"/>

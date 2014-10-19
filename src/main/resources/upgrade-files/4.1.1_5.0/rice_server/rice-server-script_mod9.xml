@@ -50,9 +50,9 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_T
+		INSERT /*+ PARALLEL(KREW_DOC_HDR_EXT_T,4) */ INTO KREW_DOC_HDR_EXT_T
 		(DOC_HDR_EXT_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
+		SELECT /*+ PARALLEL(TEMP_KREW_DOC_HDR_EXT_T,4) */
 		CAST(DOC_HDR_EXT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
 		FROM TEMP_KREW_DOC_HDR_EXT_T
 		]]></sql>
@@ -64,17 +64,17 @@
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_DOC_HDR_EXT_TI1 
 		  ON KREW_DOC_HDR_EXT_T 
-		  (KEY_CD, VAL)
+		  (KEY_CD, VAL)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_DOC_HDR_EXT_TI2 
 		  ON KREW_DOC_HDR_EXT_T 
-		  (DOC_HDR_ID)
+		  (DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_DOC_HDR_EXT_TI3 
 		  ON KREW_DOC_HDR_EXT_T 
-		  (VAL)
+		  (VAL)  PARALLEL 4
 		]]></sql>
 
                 <!-- <sql splitStatements="false"><![CDATA[
@@ -119,9 +119,9 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_LNK_T
+		INSERT /*+ PARALLEL(KREW_RTE_NODE_LNK_T,4) */ INTO KREW_RTE_NODE_LNK_T
 		(FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
-		SELECT CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
+		SELECT /*+ PARALLEL(TEMP_KREW_RTE_NODE_LNK_T,4) */ CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
 		FROM TEMP_KREW_RTE_NODE_LNK_T
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
@@ -132,12 +132,12 @@
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_RTE_NODE_LNK_TI1 
 		  ON KREW_RTE_NODE_LNK_T 
-		  (FROM_RTE_NODE_ID)
+		  (FROM_RTE_NODE_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_RTE_NODE_LNK_TI2 
 		  ON KREW_RTE_NODE_LNK_T 
-		  (TO_RTE_NODE_ID)
+		  (TO_RTE_NODE_ID)  PARALLEL 4
 		]]></sql>
 
                 <!-- <sql splitStatements="false"><![CDATA[
@@ -264,6 +264,12 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ PARALLEL(KREW_INIT_RTE_NODE_INSTN_T,4) */ INTO KREW_INIT_RTE_NODE_INSTN_T
+		(DOC_HDR_ID, RTE_NODE_INSTN_ID)
+		SELECT /*+ PARALLEL(TEMP_KREW_INIT_RTE_NODE_INSTN_T,4) */ DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
+		FROM TEMP_KREW_INIT_RTE_NODE
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T
 		    ADD CONSTRAINT KREW_INIT_RTE_NODE_INSTN_TP1
 		PRIMARY KEY (DOC_HDR_ID, RTE_NODE_INSTN_ID)
@@ -271,18 +277,12 @@
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI1
 		  ON KREW_INIT_RTE_NODE_INSTN_T
-		  (DOC_HDR_ID)
+		  (DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI2
 		  ON KREW_INIT_RTE_NODE_INSTN_T
-		  (RTE_NODE_INSTN_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_INIT_RTE_NODE_INSTN_T
-		(DOC_HDR_ID, RTE_NODE_INSTN_ID)
-		SELECT DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
-		FROM TEMP_KREW_INIT_RTE_NODE
+		  (RTE_NODE_INSTN_ID)  PARALLEL 4
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;

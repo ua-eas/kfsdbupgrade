@@ -77,7 +77,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ACTN_ITM_T SELECT * FROM OLD_KREW_ACTN_ITM_T
+		INSERT /*+ PARALLEL(KREW_ACTN_ITM_T,4) */ INTO KREW_ACTN_ITM_T SELECT /*+ PARALLEL(OLD_KREW_ACTN_ITM_T,4) */ * FROM OLD_KREW_ACTN_ITM_T
 		]]></sql>
 		<!-- 
 		<sql splitStatements="false"><![CDATA[
@@ -141,7 +141,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ACTN_RQST_T SELECT * FROM OLD_KREW_ACTN_RQST_T
+		INSERT /*+ PARALLEL(KREW_ACTN_RQST_T,4) */ INTO KREW_ACTN_RQST_T SELECT /*+ PARALLEL(OLD_KREW_ACTN_RQST_T,4) */ * FROM OLD_KREW_ACTN_RQST_T
 		]]></sql>
 		<!-- 
 		<sql splitStatements="false"><![CDATA[
@@ -152,28 +152,28 @@
 		ALTER TABLE KREW_ACTN_RQST_T ADD CONSTRAINT KREW_ACTN_RQST_TP1 PRIMARY KEY (ACTN_RQST_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T11 ON KREW_ACTN_RQST_T(DOC_HDR_ID)
+		CREATE INDEX KREW_ACTN_RQST_T11 ON KREW_ACTN_RQST_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T12 ON KREW_ACTN_RQST_T(PRNCPL_ID)
+		CREATE INDEX KREW_ACTN_RQST_T12 ON KREW_ACTN_RQST_T(PRNCPL_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T13 ON KREW_ACTN_RQST_T(ACTN_TKN_ID)
+		CREATE INDEX KREW_ACTN_RQST_T13 ON KREW_ACTN_RQST_T(ACTN_TKN_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T14 ON KREW_ACTN_RQST_T(PARNT_ID)
+		CREATE INDEX KREW_ACTN_RQST_T14 ON KREW_ACTN_RQST_T(PARNT_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T15 ON KREW_ACTN_RQST_T(RSP_ID)
+		CREATE INDEX KREW_ACTN_RQST_T15 ON KREW_ACTN_RQST_T(RSP_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T16 ON KREW_ACTN_RQST_T(STAT_CD, RSP_ID)
+		CREATE INDEX KREW_ACTN_RQST_T16 ON KREW_ACTN_RQST_T(STAT_CD, RSP_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T17 ON KREW_ACTN_RQST_T(RTE_NODE_INSTN_ID)
+		CREATE INDEX KREW_ACTN_RQST_T17 ON KREW_ACTN_RQST_T(RTE_NODE_INSTN_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_RQST_T19 ON KREW_ACTN_RQST_T(STAT_CD, DOC_HDR_ID)
+		CREATE INDEX KREW_ACTN_RQST_T19 ON KREW_ACTN_RQST_T(STAT_CD, DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 
 		<sql splitStatements="false"><![CDATA[
@@ -201,28 +201,28 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ACTN_TKN_T SELECT * FROM OLD_KREW_ACTN_TKN_T
+		INSERT /*+ PARALLEL(KREW_ACTN_TKN_T,4) */ INTO KREW_ACTN_TKN_T SELECT /*+ PARALLEL(OLD_KREW_ACTN_TKN_T,4) */ * FROM OLD_KREW_ACTN_TKN_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_ACTN_TKN_T
 		]]></sql> -->
 		<sql splitStatements="false"><![CDATA[
-		ALTER TABLE KREW_ACTN_TKN_T ADD CONSTRAINT KREW_ACTN_TKN_TP1 PRIMARY KEY (ACTN_TKN_ID)
+		ALTER TABLE KREW_ACTN_TKN_T ADD CONSTRAINT KREW_ACTN_TKN_TP1 PRIMARY KEY (ACTN_TKN_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_TKN_TI1 ON KREW_ACTN_TKN_T(DOC_HDR_ID, PRNCPL_ID)
+		CREATE INDEX KREW_ACTN_TKN_TI1 ON KREW_ACTN_TKN_T(DOC_HDR_ID, PRNCPL_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_TKN_TI2 ON KREW_ACTN_TKN_T(DOC_HDR_ID, PRNCPL_ID, ACTN_CD)
+		CREATE INDEX KREW_ACTN_TKN_TI2 ON KREW_ACTN_TKN_T(DOC_HDR_ID, PRNCPL_ID, ACTN_CD)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_TKN_TI3 ON KREW_ACTN_TKN_T(PRNCPL_ID)
+		CREATE INDEX KREW_ACTN_TKN_TI3 ON KREW_ACTN_TKN_T(PRNCPL_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_TKN_TI4 ON KREW_ACTN_TKN_T(DLGTR_PRNCPL_ID)
+		CREATE INDEX KREW_ACTN_TKN_TI4 ON KREW_ACTN_TKN_T(DLGTR_PRNCPL_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_ACTN_TKN_TI5 ON KREW_ACTN_TKN_T(DOC_HDR_ID)
+		CREATE INDEX KREW_ACTN_TKN_TI5 ON KREW_ACTN_TKN_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 
 		<sql splitStatements="false"><![CDATA[
@@ -267,7 +267,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_CNTNT_T SELECT * FROM OLD_KREW_DOC_HDR_CNTNT_T
+		INSERT /*+ PARALLEL(KREW_DOC_HDR_CNTNT_T,4) */ INTO KREW_DOC_HDR_CNTNT_T SELECT /*+ PARALLEL(OLD_KREW_DOC_HDR_CNTNT_T,4) */ * FROM OLD_KREW_DOC_HDR_CNTNT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_DOC_HDR_CNTNT_T
@@ -293,7 +293,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_DT_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_DT_T
+		INSERT /*+ PARALLEL(KREW_DOC_HDR_EXT_DT_T,4) */  INTO KREW_DOC_HDR_EXT_DT_T SELECT /*+ PARALLEL(OLD_KREW_DOC_HDR_EXT_DT_T,4) */  * FROM OLD_KREW_DOC_HDR_EXT_DT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_DOC_HDR_EXT_DT_T
@@ -302,13 +302,13 @@
 		ALTER TABLE KREW_DOC_HDR_EXT_DT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_DT_TP1 PRIMARY KEY (DOC_HDR_EXT_DT_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI1 ON KREW_DOC_HDR_EXT_DT_T(KEY_CD, VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI1 ON KREW_DOC_HDR_EXT_DT_T(KEY_CD, VAL)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI2 ON KREW_DOC_HDR_EXT_DT_T(DOC_HDR_ID)
+		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI2 ON KREW_DOC_HDR_EXT_DT_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI3 ON KREW_DOC_HDR_EXT_DT_T(VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI3 ON KREW_DOC_HDR_EXT_DT_T(VAL)  PARALLEL 4
 		]]></sql>
 
 		<sql splitStatements="false"><![CDATA[
@@ -337,13 +337,13 @@
 		ALTER TABLE KREW_DOC_HDR_EXT_LONG_T ADD CONSTRAINT KREW_DOC_HDR_EXT_LONG_TP1 PRIMARY KEY (DOC_HDR_EXT_LONG_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI1 ON KREW_DOC_HDR_EXT_LONG_T(KEY_CD, VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI1 ON KREW_DOC_HDR_EXT_LONG_T(KEY_CD, VAL)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI2 ON KREW_DOC_HDR_EXT_LONG_T(DOC_HDR_ID)
+		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI2 ON KREW_DOC_HDR_EXT_LONG_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI3 ON KREW_DOC_HDR_EXT_LONG_T(VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI3 ON KREW_DOC_HDR_EXT_LONG_T(VAL)  PARALLEL 4
 		]]></sql>
 		
 		<sql splitStatements="false"><![CDATA[
@@ -363,7 +363,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_FLT_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_FLT_T
+		INSERT /*+ PARALLEL(KREW_DOC_HDR_EXT_FLT_T,4) */ INTO KREW_DOC_HDR_EXT_FLT_T SELECT /*+ PARALLEL(OLD_KREW_DOC_HDR_EXT_FLT_T,4) */ * FROM OLD_KREW_DOC_HDR_EXT_FLT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_DOC_HDR_EXT_FLT_T
@@ -372,13 +372,13 @@
 		ALTER TABLE KREW_DOC_HDR_EXT_FLT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_FLT_TP1 PRIMARY KEY (DOC_HDR_EXT_FLT_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI1 ON KREW_DOC_HDR_EXT_FLT_T(KEY_CD, VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI1 ON KREW_DOC_HDR_EXT_FLT_T(KEY_CD, VAL)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI2 ON KREW_DOC_HDR_EXT_FLT_T(DOC_HDR_ID)
+		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI2 ON KREW_DOC_HDR_EXT_FLT_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI3 ON KREW_DOC_HDR_EXT_FLT_T(VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI3 ON KREW_DOC_HDR_EXT_FLT_T(VAL)  PARALLEL 4
 		]]></sql>
 		
 		<sql splitStatements="false"><![CDATA[
@@ -398,23 +398,56 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_T SELECT * FROM OLD_KREW_DOC_HDR_EXT_T
+		INSERT /*+ PARALLEL(KREW_DOC_HDR_EXT_T,4) */ INTO KREW_DOC_HDR_EXT_T SELECT /*+ PARALLEL(OLD_KREW_DOC_HDR_EXT_T,4) */ * FROM OLD_KREW_DOC_HDR_EXT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_DOC_HDR_EXT_T
 		]]></sql> -->
 		<sql splitStatements="false"><![CDATA[
-		ALTER TABLE KREW_DOC_HDR_EXT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_TP1 PRIMARY KEY (DOC_HDR_EXT_ID)
+		ALTER TABLE KREW_DOC_HDR_EXT_T ADD CONSTRAINT KREW_DOC_HDR_EXT_TP1 PRIMARY KEY (DOC_HDR_EXT_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_TI1 ON KREW_DOC_HDR_EXT_T(KEY_CD, VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_TI1 ON KREW_DOC_HDR_EXT_T(KEY_CD, VAL)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_TI2 ON KREW_DOC_HDR_EXT_T(DOC_HDR_ID)
+		CREATE INDEX KREW_DOC_HDR_EXT_TI2 ON KREW_DOC_HDR_EXT_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_DOC_HDR_EXT_TI3 ON KREW_DOC_HDR_EXT_T(VAL)
+		CREATE INDEX KREW_DOC_HDR_EXT_TI3 ON KREW_DOC_HDR_EXT_T(VAL)  PARALLEL 4
 		]]></sql>
+                
+                
+		<sql splitStatements="false"><![CDATA[
+                   DROP INDEX KREW_DOC_HDR_TC0
+		]]></sq l>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI1
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI2
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI3
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI5
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI6
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI7
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI8
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    DROP INDEX KREW_DOC_HDR_TI9
+		]]></sql>
+                
 		<sql splitStatements="false"><![CDATA[
 		
 		--
@@ -452,6 +485,37 @@
 		]]></sql>
 		
 		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TC0 ON KREW_DOC_HDR_T(OBJ_ID)   PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI1 ON KREW_DOC_HDR_T(DOC_TYP_ID)   PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI2 ON KREW_DOC_HDR_T(INITR_PRNCPL_ID)   PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI3 ON KREW_DOC_HDR_T(DOC_HDR_STAT_CD)  PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI4 ON KREW_DOC_HDR_T(TTL)  PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI5 ON KREW_DOC_HDR_T(CRTE_DT)  PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI6 ON KREW_DOC_HDR_T(RTE_STAT_MDFN_DT)  PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI7 ON KREW_DOC_HDR_T(APRV_DT)  PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI8 ON KREW_DOC_HDR_T(FNL_DT)  PARALLEL 4
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+                    CREATE INDEX KREW_DOC_HDR_TI9 ON KREW_DOC_HDR_T(APP_DOC_ID)  PARALLEL 4
+		]]></sql>
+
+                <sql splitStatements="false"><![CDATA[
 		
 		--
 		-- KREW_DOC_NTE_T 
@@ -471,7 +535,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_NTE_T SELECT * FROM OLD_KREW_DOC_NTE_T
+		INSERT /*+ PARALLEL(KREW_DOC_NTE_T,4) */ INTO KREW_DOC_NTE_T SELECT /*+ PARALLEL(OLD_KREW_DOC_NTE_T,4) */ * FROM OLD_KREW_DOC_NTE_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_DOC_NTE_T
@@ -524,7 +588,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_EDL_DMP_T SELECT * FROM OLD_KREW_EDL_DMP_T
+		INSERT /*+ PARALLEL(KREW_EDL_DMP_T,4) */ INTO KREW_EDL_DMP_T SELECT /*+ PARALLEL(OLD_KREW_EDL_DMP_T,4) */ * FROM OLD_KREW_EDL_DMP_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_EDL_DMP_T
@@ -554,7 +618,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_EDL_FLD_DMP_T SELECT * FROM OLD_KREW_EDL_FLD_DMP_T
+		INSERT /*+ PARALLEL(KREW_EDL_FLD_DMP_T,4) */ INTO KREW_EDL_FLD_DMP_T SELECT /*+ PARALLEL(OLD_KREW_EDL_FLD_DMP_T,4) */ * FROM OLD_KREW_EDL_FLD_DMP_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_EDL_FLD_DMP_T
@@ -578,7 +642,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_INIT_RTE_NODE_INSTN_T SELECT * FROM OLD_INIT_RTE_NODE_INSTN_T
+		INSERT /*+ PARALLEL(KREW_INIT_RTE_NODE_INSTN_T,4) */ INTO KREW_INIT_RTE_NODE_INSTN_T SELECT /*+ PARALLEL(OLD_KREW_INIT_RTE_NODE_INSTN_T,4) */ * FROM OLD_INIT_RTE_NODE_INSTN_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_INIT_RTE_NODE_INSTN_T
@@ -587,10 +651,10 @@
 		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T ADD CONSTRAINT KREW_INIT_RTE_NODE_INSTN_TP1 PRIMARY KEY (DOC_HDR_ID, RTE_NODE_INSTN_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI1 ON KREW_INIT_RTE_NODE_INSTN_T(DOC_HDR_ID)
+		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI1 ON KREW_INIT_RTE_NODE_INSTN_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI2 ON KREW_INIT_RTE_NODE_INSTN_T(RTE_NODE_INSTN_ID)
+		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI2 ON KREW_INIT_RTE_NODE_INSTN_T(RTE_NODE_INSTN_ID)  PARALLEL 4
 		]]></sql>
 		
 		<sql splitStatements="false"><![CDATA[
@@ -624,7 +688,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_OUT_BOX_ITM_T SELECT * FROM OLD_KREW_OUT_BOX_ITM_T
+		INSERT /*+ PARALLEL(KREW_OUT_BOX_ITM_T,4) */ INTO KREW_OUT_BOX_ITM_T SELECT /*+ PARALLEL(OLD_KREW_OUT_BOX_ITM_T,4) */ * FROM OLD_KREW_OUT_BOX_ITM_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_OUT_BOX_ITM_T
@@ -633,13 +697,13 @@
 		ALTER TABLE KREW_OUT_BOX_ITM_T ADD CONSTRAINT KREW_OUT_BOX_ITM_TP1 PRIMARY KEY (ACTN_ITM_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_OUT_BOX_ITM_TI1 ON KREW_OUT_BOX_ITM_T(PRNCPL_ID)
+		CREATE INDEX KREW_OUT_BOX_ITM_TI1 ON KREW_OUT_BOX_ITM_T(PRNCPL_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_OUT_BOX_ITM_TI2 ON KREW_OUT_BOX_ITM_T(DOC_HDR_ID)
+		CREATE INDEX KREW_OUT_BOX_ITM_TI2 ON KREW_OUT_BOX_ITM_T(DOC_HDR_ID)  PARALLEL 4
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE INDEX KREW_OUT_BOX_ITM_TI3 ON KREW_OUT_BOX_ITM_T(ACTN_RQST_ID)
+		CREATE INDEX KREW_OUT_BOX_ITM_TI3 ON KREW_OUT_BOX_ITM_T(ACTN_RQST_ID)  PARALLEL 4
 		]]></sql>
 		
 		<sql splitStatements="false"><![CDATA[
@@ -660,7 +724,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RMV_RPLC_DOC_T SELECT * FROM OLD_KREW_RMV_RPLC_DOC_T
+		INSERT /*+ PARALLEL(KREW_RMV_RPLC_DOC_T,4) */ INTO KREW_RMV_RPLC_DOC_T SELECT /*+ PARALLEL(OLD_KREW_RMV_RPLC_DOC_T,4) */ * FROM OLD_KREW_RMV_RPLC_DOC_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_RMV_RPLC_DOC_T
@@ -684,7 +748,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RMV_RPLC_GRP_T SELECT * FROM OLD_KREW_RMV_RPLC_GRP_T
+		INSERT /*+ PARALLEL(KREW_RMV_RPLC_GRP_T,4) */ INTO KREW_RMV_RPLC_GRP_T SELECT /*+ PARALLEL(OLD_KREW_RMV_RPLC_GRP_T,4) */ * FROM OLD_KREW_RMV_RPLC_GRP_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_RMV_RPLC_GRP_T
@@ -708,7 +772,7 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RMV_RPLC_RULE_T SELECT * FROM OLD_KREW_RMV_RPLC_RULE_T
+		INSERT /*+ PARALLEL(KREW_RMV_RPLC_RULE_T,4) */ INTO KREW_RMV_RPLC_RULE_T SELECT /*+ PARALLEL(OLD_KREW_RMV_RPLC_RULE_T,4) */ * FROM OLD_KREW_RMV_RPLC_RULE_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_RMV_RPLC_RULE_T

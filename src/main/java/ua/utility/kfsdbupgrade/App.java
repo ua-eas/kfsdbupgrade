@@ -76,6 +76,9 @@ public class App {
                     conn1 = getConnection();
                     conn2 = getConnection();
                     conn2.setAutoCommit(true);
+                    stmt = conn2.createStatement();
+                    stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
+                    stmt.close();
                     stmt = conn1.createStatement();
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
@@ -92,7 +95,7 @@ public class App {
                         stmt.close();
                         stmt = conn2.createStatement();
                         dropTempTables(conn2, stmt);
-                        createIndexes(conn2, stmt);
+                        createExistingIndexes(conn2, stmt);
                         createPublicSynonyms(conn2, stmt);
                         createForeignKeyIndexes(conn2, stmt);
                         writeOut("");
@@ -674,7 +677,7 @@ public class App {
             
             while (res.next()) {
                 if (stmt2 == null) {
-                    stmt2 = conn.prepareStatement("select KIM_TYP_ATTR_ID from KRIM_TYP_ATTR_T where sort_cd = ? and KIM_TYP_ID = ? and  KIM_ATTR_DEFN_ID = ? and ACTV_IND = ? order by KIM_TYP_ATTR_ID");
+                    stmt2 = conn.prepareStatement("select KIM_TYP_ATTR_ID from KRIM_TYP_ATTR_T where sort_cd = ? and KIM_TYP_ID = ? and  KIM_ATTR_DEFN_ID = ? and ACTV_IND = ?");
                 }
                 String sortCd = res.getString(1);
                 stmt2.setString(1, sortCd);                    
@@ -805,10 +808,10 @@ public class App {
         return retval;
     }
     
-    private static void createIndexes(Connection conn, Statement stmt) {
+    private static void createExistingIndexes(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
         
-        writeHeader2("creating KFS indexes ");
+        writeHeader2("creating KFS indexes that existed prior to upgrade where required ");
 
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql"));
@@ -853,21 +856,15 @@ public class App {
                             sql.append(")");
 
                             try {
-                                writeOut("attempting to create index " + indexName + " on table " + tableName + "...");
                                 stmt.execute(sql.toString());
-                                writeOut("index " + indexName + " created on table " + tableName);
                             }
 
                             catch (SQLException ex) {
                                 writeOut("failed to create index: " + sql.toString());
                             }
-                        } else {
-                            writeOut("index " + indexName + " exists on table " + tableName);
-                        }
+                        } 
                     }
-                } else {
-                    writeOut("index " + indexName + " not created - table " + tableName + " no longer exists");
-                }
+                } 
             }
         }
         
@@ -1058,7 +1055,7 @@ public class App {
     private static void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
         
-        writeHeader2("creating KFS public synonyms ");
+        writeHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
 
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql"));
@@ -1074,11 +1071,9 @@ public class App {
                     }
                     
                     catch (SQLException ex) {
-                        writeOut("faled to create public synonym: " + line);
+                        writeOut("failed to create public synonym: " + line);
                     }
-                } else {
-                    writeOut("synonym " + synonymName + " exists");
-                }
+                } 
             }
         }
         
@@ -1097,53 +1092,40 @@ public class App {
         }
     }
     
-    private static Set <String> loadForeignKeyIndexInformation(Connection conn) {
+    private static Set <String> loadForeignKeyIndexInformation(DatabaseMetaData dmd, String table) {
         Set <String> retval = new HashSet<String>();
         
 		ResultSet res = null;
-		ResultSet res2 = null;
 		try {
 			Map <String, ForeignKeyReference> fkeys = new HashMap<String, ForeignKeyReference>();
 			Map <String, TableIndexInfo> tindexes = new HashMap<String, TableIndexInfo>();
-			
-			DatabaseMetaData dmd = conn.getMetaData();
-			res = dmd.getTables(null, getSchema(), null, new String[] {"TABLE"});
-			
-			while (res.next()) {
-				String tname = res.getString(3);
-                
-                writeOut("processing table " + tname + " for foreign key index creation");
-                
-				res2 = dmd.getImportedKeys(null, getSchema(), tname);
-				boolean foundfk = false;
-				
-				while (res2.next()) {
-					foundfk = true;
-					String fcname = res2.getString(8);
-					int seq = res2.getInt(9);
-					String fkname = res2.getString(12);
-					
-					ForeignKeyReference fkref = fkeys.get(fkname);
-					
-					if (fkref == null) {
-						fkeys.put(fkname, fkref = new ForeignKeyReference(getSchema(), tname, fkname, INDEX_NAME_TEMPLATE));
-					}
-					
-					ColumnInfo cinfo = new ColumnInfo(fcname, seq); 
-					
-					cinfo.setNumeric(isNumericColumn(dmd, getSchema(), tname, fcname));
-					
-					fkref.addColumn(cinfo);
-				}
-				
-				res2.close();
-				
-				if (foundfk) {
-					tindexes.put(tname, loadTableIndexInfo(dmd, tname));
-				}
-			}
-			
-			res.close();
+    		res = dmd.getImportedKeys(null, getSchema(), table);
+            boolean foundfk = false;
+
+            while (res.next()) {
+                foundfk = true;
+                String fcname = res.getString(8);
+                int seq = res.getInt(9);
+                String fkname = res.getString(12);
+
+                ForeignKeyReference fkref = fkeys.get(fkname);
+
+                if (fkref == null) {
+                    fkeys.put(fkname, fkref = new ForeignKeyReference(getSchema(), table, fkname, INDEX_NAME_TEMPLATE));
+                }
+
+                ColumnInfo cinfo = new ColumnInfo(fcname, seq); 
+
+                cinfo.setNumeric(isNumericColumn(dmd, getSchema(), table, fcname));
+
+                fkref.addColumn(cinfo);
+            }
+
+            res.close();
+
+            if (foundfk) {
+                tindexes.put(table, loadTableIndexInfo(dmd, table));
+            }
 			
 			List <ForeignKeyReference> l = new ArrayList<ForeignKeyReference>(fkeys.values());
 			
@@ -1169,7 +1151,6 @@ public class App {
         }
         
 		finally {
-			closeDbObjects(null, null, res2);
 			closeDbObjects(null, null, res);
 		}
         
@@ -1295,15 +1276,41 @@ public class App {
     
     private static void createForeignKeyIndexes(Connection conn, Statement stmt) {
         writeHeader2("creating indexes on foreign keys where required...");
-        for (String sql : loadForeignKeyIndexInformation(conn)) {
-            try {
-                writeOut(sql);
-                stmt.executeQuery(sql);
+        ResultSet res = null;
+        try {
+            DatabaseMetaData dmd = conn.getMetaData();
+			res = dmd.getTables(null, getSchema(), null, new String[] {"TABLE"});
+			
+			while (res.next()) {
+				String tname = res.getString(3);
+
+                Set <String> sqllist = loadForeignKeyIndexInformation(dmd, tname);
+                
+                if ((sqllist != null) && !sqllist.isEmpty()) {
+                    writeOut("creating required foreign key indexes on table " + tname + "...");
+                    int cnt = 0;
+                    for (String sql : sqllist) {
+                        try {
+                            stmt.executeQuery(sql);
+                            cnt++;
+                        }
+
+                        catch (Exception ex) {
+                            writeOut("create index failed: " + sql);
+                        }
+                    }
+                    
+                    writeOut("    " + cnt + " indexes created");
+                }
             }
-            
-            catch (Exception ex) {
-                writeOut("create index failed: " + sql);
-            }
+        }
+        
+        catch (Exception ex) {
+            writeOut(ex);
+        }
+        
+        finally {
+            closeDbObjects(null, null, res);
         }
     }
 }

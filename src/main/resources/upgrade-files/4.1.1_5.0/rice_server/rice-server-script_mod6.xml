@@ -67,7 +67,7 @@
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		
-		INSERT INTO KREW_RTE_NODE_T(
+		INSERT /*+ PARALLEL(KREW_RTE_NODE_T,4) */ INTO KREW_RTE_NODE_T (
 		RTE_NODE_ID
 		        , DOC_TYP_ID
 		        , NM
@@ -83,7 +83,7 @@
 		        , GRP_ID
 		        , NEXT_DOC_STAT
 		)
-		SELECT RTE_NODE_ID
+		SELECT /*+ PARALLEL(OLD_KREW_RTE_NODE_T,4) */ RTE_NODE_ID
 		        , DOC_TYP_ID
 		        , NM
 		        , TYP
@@ -153,7 +153,7 @@
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		
-		INSERT INTO KREW_DOC_TYP_PROC_T(
+		INSERT /*+ PARALLEL( KREW_DOC_TYP_PROC_T,4) */ INTO KREW_DOC_TYP_PROC_T(
 		DOC_TYP_PROC_ID
 		        , DOC_TYP_ID
 		        , INIT_RTE_NODE_ID
@@ -161,7 +161,7 @@
 		        , INIT_IND
 		        , VER_NBR
 		)
-		SELECT DOC_TYP_PROC_ID
+		SELECT /*+ PARALLEL(OLD_KREW_DOC_TYP_PROC_T,4) */ DOC_TYP_PROC_ID
 		        , DOC_TYP_ID
 		        , INIT_RTE_NODE_ID
 		        , NM
