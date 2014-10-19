@@ -419,7 +419,7 @@
                 
 		<sql splitStatements="false"><![CDATA[
                    DROP INDEX KREW_DOC_HDR_TC0
-		]]></sq l>
+		]]></sql>
 		<sql splitStatements="false"><![CDATA[
                     DROP INDEX KREW_DOC_HDR_TI1
 		]]></sql>
