@@ -17,10 +17,8 @@
 <databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog'
 	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
 	xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd'>
-
-	<include file="01_structure/ap-module-structure-updates.xml"/>
-	<include file="01_structure/coa-module-structure-updates.xml"/>
-	<include file="01_structure/fp-module-structure-updates.xml"/>
-
+ 
+	<changeSet author="KFS50" id="KFSMI6999_RENAME_CFDA_REF_T">
+		<renameTable oldTableName="CG_CFDA_REF_T" newTableName="CA_CFDA_REF_T"/>
+	</changeSet>
 </databaseChangeLog>
-	
