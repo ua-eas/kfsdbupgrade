@@ -477,6 +477,20 @@
 		
 		delete from KREW_USR_OPTN_T where PRSN_OPTN_ID like 'DocSearch%'
 		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		
+		
+		
+		
+		
+		-- 
+		-- 2011-09-16.sql
+		-- 
+		
+		
+		-- KULRICE-5360 add KIM entity fields
+		alter table KRIM_ENTITY_NM_T add TITLE_NM VARCHAR(20)
+		]]></sql>
 
                 <sql splitStatements="false"><![CDATA[
 		alter table KRIM_ENTITY_NM_T add NOTE_MSG VARCHAR(1024)
@@ -511,6 +525,11 @@
 		<sql splitStatements="false"><![CDATA[
 		alter table KRIM_ENTITY_BIO_T add GNDR_CHG_CD VARCHAR(20)
 		]]></sql>
+      		<sql splitStatements="false"><![CDATA[
+		
+		alter table KRIM_PND_NM_MT add TITLE_NM VARCHAR(20)
+		]]></sql>
+
 		<sql splitStatements="false"><![CDATA[
 		alter table KRIM_PND_NM_MT add NOTE_MSG VARCHAR(1024)
 		]]></sql>
