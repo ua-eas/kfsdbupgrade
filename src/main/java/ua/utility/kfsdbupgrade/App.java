@@ -82,22 +82,22 @@ public class App {
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
 
-                    if (doInitialProcessing(conn1, stmt)) {
-                        doCommit(conn1);
+                    //if (doInitialProcessing(conn1, stmt)) {
+                    //    doCommit(conn1);
                         if (doUpgrade(conn1, conn2, stmt)) {
                             success = true;
                         }
-                    }
+                   // }
 
                     if (success) {
-                        doCommit(conn1);
-                        stmt.close();
-                        stmt = conn2.createStatement();
-                        dropTempTables(conn2, stmt);
-                        createExistingIndexes(conn2, stmt);
-                        createPublicSynonyms(conn2, stmt);
-                        createForeignKeyIndexes(conn2, stmt);
-                        createDocumentSearchEntries(conn2, stmt);
+                     //   doCommit(conn1);
+                     //   stmt.close();
+                     //   stmt = conn2.createStatement();
+                     //   dropTempTables(conn2, stmt);
+                     //   createExistingIndexes(conn2, stmt);
+                     //   createPublicSynonyms(conn2, stmt);
+                     //   createForeignKeyIndexes(conn2, stmt);
+                     //   createDocumentSearchEntries(conn2, stmt);
                         writeOut("");
                         writeHeader1("upgrade completed successfully");
                     }
