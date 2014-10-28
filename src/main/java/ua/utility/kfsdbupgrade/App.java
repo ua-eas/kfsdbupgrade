@@ -527,7 +527,7 @@ public class App {
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-        writeOut("connected to database " + properties.getProperty("database-name"));
+        writeOut("connected to database " + properties.getProperty("legacy-database-name"));
         writeOut("");
 
         return retval;
