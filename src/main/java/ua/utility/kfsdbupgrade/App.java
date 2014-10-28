@@ -72,8 +72,8 @@ public class App {
                 Statement stmt = null;
                 boolean success = false;
                 try {
-                    conn1 = getConnection();
-                    conn2 = getConnection();
+                    conn1 = getUpgradeConnection();
+                    conn2 = getUpgradeConnection();
                     conn2.setAutoCommit(true);
                     stmt = conn2.createStatement();
                     stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
@@ -82,22 +82,24 @@ public class App {
                     writeOut("Starting KFS database upgrade process...");
                     writeOut("");
 
-                    //if (doInitialProcessing(conn1, stmt)) {
-                    //    doCommit(conn1);
+                    if (doInitialProcessing(conn1, stmt)) {
+                        doCommit(conn1);
                         if (doUpgrade(conn1, conn2, stmt)) {
                             success = true;
                         }
-                   // }
+                    }
 
                     if (success) {
-                     //   doCommit(conn1);
-                     //   stmt.close();
-                     //   stmt = conn2.createStatement();
-                     //   dropTempTables(conn2, stmt);
-                     //   createExistingIndexes(conn2, stmt);
-                     //   createPublicSynonyms(conn2, stmt);
-                     //   createForeignKeyIndexes(conn2, stmt);
-                     //   createDocumentSearchEntries(conn2, stmt);
+                        doCommit(conn1);
+                        stmt.close();
+                        stmt = conn2.createStatement();
+                        dropTempTables(conn2, stmt);
+                        runMiscSql(conn2, stmt);
+                        updatePurchasingStatuses(conn1);
+                        createExistingIndexes(conn2, stmt);
+                        createPublicSynonyms(conn2, stmt);
+                        createForeignKeyIndexes(conn2, stmt);
+                        createDocumentSearchEntries(conn2, stmt);
                         writeOut("");
                         writeHeader1("upgrade completed successfully");
                     }
@@ -487,7 +489,7 @@ public class App {
         return "[" + DF.format(new Date()) + "] ";
     }
 
-    private static Connection getConnection() throws Exception {
+    private static Connection getUpgradeConnection() throws Exception {
         Connection retval = null;
         String url = properties.getProperty("database-url");
 
@@ -509,6 +511,29 @@ public class App {
         return retval;
     }
 
+    private static Connection getLegacyConnection() throws Exception {
+        Connection retval = null;
+        String url = properties.getProperty("legacy-database-url");
+
+        Properties props = new Properties();
+        props.setProperty("user", properties.getProperty("legacy-database-user"));
+        props.setProperty("password", properties.getProperty("legacy-database-password"));
+
+        writeOut("Connecting to db " + properties.getProperty("legacy-database-name") + "...");
+        writeOut("url=" + url);
+
+        Class.forName(properties.getProperty("legacy-database-driver"));
+        retval = DriverManager.getConnection(url, props);
+        retval.setReadOnly(false);
+        retval.setAutoCommit(false);
+
+        writeOut("connected to database " + properties.getProperty("database-name"));
+        writeOut("");
+
+        return retval;
+
+    }
+    
     private static void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
         try {
             if (res != null) {
@@ -1258,6 +1283,171 @@ public class App {
             
             catch (Exception ex) {
             };
+        }
+    }
+
+    private static void runMiscSql(Connection conn, Statement stmt) {
+        LineNumberReader lnr = null;
+
+        writeHeader2("Executiong miscellaneous post-upgrade sql");
+        try {
+            lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/misc.sql"));
+
+            String sql = null;
+
+            while ((sql = lnr.readLine()) != null) {
+                if (StringUtils.isNotBlank(sql)) {
+                    try {
+                        stmt.execute(sql);
+                        writeOut(sql);
+                    } catch (SQLException ex) {
+                        writeOut("sql execution failed: " + sql);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            writeOut(ex);
+        } finally {
+            try {
+                if (lnr != null) {
+                    lnr.close();
+                }
+            } catch (Exception ex) {
+            };
+        }
+    }
+    
+    private static void updatePurchasingStatuses(Connection upgradeConn) {
+        Connection legacyConn = null;
+        Statement legacyStmt = null;
+        ResultSet legacyRes = null;
+        PreparedStatement upgradeStmt1 = null;
+        PreparedStatement upgradeStmt2 = null;
+        try {
+            // load status names from legacy status tables
+            legacyConn = getLegacyConnection();
+            legacyStmt = legacyConn.createStatement();
+            
+            legacyRes = legacyStmt.executeQuery("select CRDT_MEMO_STAT_CD, CRDT_MEMO_STAT_DESC from AP_CRDT_MEMO_STAT_T");
+            
+            upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_CRDT_MEMO_T where DEPR_CRDT_MEMO_STAT_CD = ?)");
+            upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from AP_CRDT_MEMO_T where DEPR_CRDT_MEMO_STAT_CD = ?)");
+            while(legacyRes.next()) {
+                String cd = legacyRes.getString(1);
+                String desc = legacyRes.getString(2);
+                
+                writeOut("updating credit memo app_doc_stat[" + desc + "] in krew_doc_hdr_t...");
+                upgradeStmt1.setString(1, desc.replace("&", "and"));
+                upgradeStmt1.setString(2, cd);
+                upgradeStmt1.executeUpdate();
+
+                writeOut("updating credit memo app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                upgradeStmt2.setString(1, desc.replace("&", "and"));
+                upgradeStmt2.setString(2, cd);
+                upgradeStmt2.executeUpdate();
+            }
+
+            closeDbObjects(null, upgradeStmt1, legacyRes);
+            closeDbObjects(null, upgradeStmt2, null);
+            
+            legacyRes = legacyStmt.executeQuery("select PMT_RQST_STAT_CD, PMT_RQST_STAT_DESC from AP_PMT_RQST_STAT_T");
+            upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
+            upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
+            while(legacyRes.next()) {
+                String cd = legacyRes.getString(1);
+                String desc = legacyRes.getString(2);
+                
+                writeOut("updating payment request app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                upgradeStmt1.setString(1, desc.replace("&", "and"));
+                upgradeStmt1.setString(2, cd);
+                upgradeStmt1.executeUpdate();
+
+                writeOut("updating payment request app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                upgradeStmt2.setString(1, desc.replace("&", "and"));
+                upgradeStmt2.setString(2, cd);
+                upgradeStmt2.executeUpdate();
+            }
+
+            closeDbObjects(null, upgradeStmt1, legacyRes);
+            closeDbObjects(null, upgradeStmt2, null);
+
+            legacyRes = legacyStmt.executeQuery("select PO_STAT_CD, PO_STAT_DESC from PUR_PO_STAT_T");
+            upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
+            upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
+            while(legacyRes.next()) {
+                String cd = legacyRes.getString(1);
+                String desc = legacyRes.getString(2);
+                
+                writeOut("updating purchase order app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                upgradeStmt1.setString(1, desc.replace("&", "and"));
+                upgradeStmt1.setString(2, cd);
+                upgradeStmt1.executeUpdate();
+
+                writeOut("updating purchase order app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                upgradeStmt2.setString(1, desc.replace("&", "and"));
+                upgradeStmt2.setString(2, cd);
+                upgradeStmt2.executeUpdate();
+            }
+
+            closeDbObjects(null, upgradeStmt1, legacyRes);
+            closeDbObjects(null, upgradeStmt2, null);
+
+            legacyRes = legacyStmt.executeQuery("select RCVNG_LN_STAT_CD, RCVNG_LN_STAT_DESC from PUR_RCVNG_LN_STAT_T");
+            upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
+            upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
+            while(legacyRes.next()) {
+                String cd = legacyRes.getString(1);
+                String desc = legacyRes.getString(2);
+                
+                writeOut("updating purchase receiving line app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                upgradeStmt1.setString(1, desc.replace("&", "and"));
+                upgradeStmt1.setString(2, cd);
+                upgradeStmt1.executeUpdate();
+
+                writeOut("updating purchase receiving line app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                upgradeStmt2.setString(1, desc.replace("&", "and"));
+                upgradeStmt2.setString(2, cd);
+                upgradeStmt2.executeUpdate();
+            }
+
+            closeDbObjects(null, upgradeStmt1, legacyRes);
+            closeDbObjects(null, upgradeStmt2, null);
+
+            
+            legacyRes = legacyStmt.executeQuery("select REQS_STAT_CD, REQS_STAT_DESC from PUR_REQS_STAT_T");
+            upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
+            upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
+            while(legacyRes.next()) {
+                String cd = legacyRes.getString(1);
+                String desc = legacyRes.getString(2);
+                
+                writeOut("updating requisition app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                upgradeStmt1.setString(1, desc.replace("&", "and"));
+                upgradeStmt1.setString(2, cd);
+                upgradeStmt1.executeUpdate();
+
+                writeOut("updating requisition app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                upgradeStmt2.setString(1, desc.replace("&", "and"));
+                upgradeStmt2.setString(2, cd);
+                upgradeStmt2.executeUpdate();
+            }
+
+            upgradeConn.commit();
+        }
+        
+        catch (Exception ex) {
+            writeOut(ex);
+            try {
+                upgradeConn.rollback();
+            }
+            
+            catch (Exception ex2) {};
+        }
+        
+        finally {
+            closeDbObjects(legacyConn, legacyStmt, legacyRes);
+            closeDbObjects(null, upgradeStmt1, null);
+            closeDbObjects(null, upgradeStmt2, null);
         }
     }
 }

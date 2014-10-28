@@ -1,0 +1,1 @@
+alter table KRLC_CNTRY_T add  ALT_POSTAL_CNTRY_CD VARCHAR2(3);
