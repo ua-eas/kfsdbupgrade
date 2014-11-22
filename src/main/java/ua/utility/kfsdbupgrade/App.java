@@ -611,6 +611,7 @@ public class App {
 
             res.close();
 
+            /*
             List<String> updates = new ArrayList<String>();
 
             writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
@@ -643,7 +644,7 @@ public class App {
             }
 
             res.close();
-
+*/
             writeHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
 
             StringBuilder sql = new StringBuilder(256);
