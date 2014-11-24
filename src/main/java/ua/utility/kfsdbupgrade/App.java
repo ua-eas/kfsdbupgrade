@@ -373,21 +373,25 @@ public class App {
             List<String> folderFiles = getFolderFiles(folder, lastProcessedFile);
             if (folderFiles != null) {
                 for (String fname : folderFiles) {
-                    File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
-
-                    if (f.getName().endsWith(".sql")) {
-                        if (!runSqlFile(conn1, stmt, f, ";")) {
-                            retval = false;
-                            writeProcessedFileInfo("[failure] " + f.getPath());
-                        } else {
-                            writeProcessedFileInfo("[success] " + f.getPath());
-                        }
+                    if (isMethodCall(fname)) {
+                        retval = callMethod(fname, conn1, stmt);
                     } else {
-                        if (!runLiquibase(conn2, f)) {
-                            retval = false;
-                            writeProcessedFileInfo("[failure] " + f.getPath());
+                        File f = getUpgradeFile(upgradeRoot + "/" + folder + "/" + fname);
+
+                        if (f.getName().endsWith(".sql")) {
+                            if (!runSqlFile(conn1, stmt, f, ";")) {
+                                retval = false;
+                                writeProcessedFileInfo("[failure] " + f.getPath());
+                            } else {
+                                writeProcessedFileInfo("[success] " + f.getPath());
+                            }
                         } else {
-                            writeProcessedFileInfo("[success] " + f.getPath());
+                            if (!runLiquibase(conn2, f)) {
+                                retval = false;
+                                writeProcessedFileInfo("[failure] " + f.getPath());
+                            } else {
+                                writeProcessedFileInfo("[success] " + f.getPath());
+                            }
                         }
                     }
 
@@ -611,40 +615,6 @@ public class App {
 
             res.close();
 
-            /*
-            List<String> updates = new ArrayList<String>();
-
-            writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
-
-            // find duplicates
-            res = stmt.executeQuery("select count(*), NM, NMSPC_CD from KRIM_PERM_T group by NM, NMSPC_CD having count(*) > 1");
-
-            //tack perm_id to name to make unique
-            while (res.next()) {
-                String nm = res.getString(2);
-                String nmspccd = res.getString(3);
-                updates.add("update KRIM_PERM_T set nm = nm || '[' || perm_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
-            }
-
-            res.close();
-
-            // find duplicates
-            res = stmt.executeQuery("select count(*), NM, NMSPC_CD from  KRIM_RSP_T group by NM, NMSPC_CD having count(*) > 1");
-
-            //tack rsp_id to name to make unique
-            while (res.next()) {
-                String nm = res.getString(2);
-                String nmspccd = res.getString(3);
-                updates.add("update KRIM_RSP_T set nm = nm || '[' || rsp_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
-            }
-
-            for (String sql : updates) {
-                writeOut("executing: " + sql);
-                stmt.executeUpdate(sql);
-            }
-
-            res.close();
-*/
             writeHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
 
             StringBuilder sql = new StringBuilder(256);
@@ -1450,5 +1420,72 @@ public class App {
             closeDbObjects(null, upgradeStmt1, null);
             closeDbObjects(null, upgradeStmt2, null);
         }
+    }
+    
+    private static boolean ensureNmNmspccdUnique(Connection conn, Statement stmt) {
+        boolean retval = false;
+        ResultSet res = null;
+        try {
+            List<String> updates = new ArrayList<String>();
+
+            writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
+
+            // find duplicates
+            res = stmt.executeQuery("select count(*), NM, NMSPC_CD from KRIM_PERM_T group by NM, NMSPC_CD having count(*) > 1");
+
+            //tack perm_id to name to make unique
+            while (res.next()) {
+                String nm = res.getString(2);
+                String nmspccd = res.getString(3);
+                updates.add("update KRIM_PERM_T set nm = nm || '[' || perm_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
+            }
+
+            res.close();
+
+            // find duplicates
+            res = stmt.executeQuery("select count(*), NM, NMSPC_CD from  KRIM_RSP_T group by NM, NMSPC_CD having count(*) > 1");
+
+            //tack rsp_id to name to make unique
+            while (res.next()) {
+                String nm = res.getString(2);
+                String nmspccd = res.getString(3);
+                updates.add("update KRIM_RSP_T set nm = nm || '[' || rsp_id || ']' where nm = '" + nm + "' and nmspc_cd = '" + nmspccd + "'");
+            }
+
+            for (String sql : updates) {
+                writeOut("executing: " + sql);
+                stmt.executeUpdate(sql);
+            }
+
+            res.close();
+            
+            retval = true;
+        }
+
+        catch (Exception ex) {
+            writeOut(ex);
+        } 
+        
+        finally {
+            closeDbObjects(null, null, res);
+        }
+        
+        
+        return retval;
+    }
+    
+    private static boolean isMethodCall(String nm) {
+        return nm.startsWith("method:");
+    }
+    
+    private static boolean callMethod(String nm, Connection conn, Statement stmt) {
+        boolean retval = false;
+        if (StringUtils.isNotBlank(nm)) {
+            if ("ensureNmNmspccdUnique".equals(nm)) {
+                retval = ensureNmNmspccdUnique(conn, stmt);
+            }
+        }
+        
+        return retval;
     }
 }
