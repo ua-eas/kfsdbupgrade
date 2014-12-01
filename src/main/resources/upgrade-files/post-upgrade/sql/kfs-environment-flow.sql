@@ -18,6 +18,13 @@ truncate table kulowner.QRTZ_SIMPLE_TRIGGERS;
 truncate table kulowner.KRSB_MSG_PYLD_T;
 truncate table kulowner.KRSB_MSG_QUE_T;
 truncate table kulowner.KRSB_SVC_DEF_T;
+
+delete from QRTZ_BLOB_TRIGGERS;
+delete from QRTZ_CRON_TRIGGERS;
+delete from QRTZ_SIMPLE_TRIGGERS;
+delete from QRTZ_TRIGGER_LISTENERS;
+
+
 delete from kulowner.QRTZ_TRIGGERS;
 delete from kulowner.QRTZ_JOB_DETAILS;
 
@@ -221,8 +228,8 @@ values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1051033', 'T0000000000000054
 -- ====================================================================================================================
 
 -- Set BI_REPORT_URL to https://eiasupbi.uaccess.arizona.edu/analytics/
-update kulowner.krns_parm_t set txt = 'https://eiasupetlbi.uaccess.arizona.edu/analytics/'
-where nmspc_cd = 'KFS-SYS' and parm_dtl_typ_cd = 'All' and parm_nm = 'BI_REPORT_URL'
+update kulowner.krcr_parm_t set val = 'https://eiasupetlbi.uaccess.arizona.edu/analytics/'
+where nmspc_cd = 'KFS-SYS' and parm_typ_cd = 'All' and parm_nm = 'BI_REPORT_URL'
 ;
 
 
@@ -402,8 +409,8 @@ update kulowner.pdp_cust_prfl_t set cust_file_thrshld_email_addr = 'kfsbsateam@l
 update kulowner.pdp_cust_prfl_t set adv_rtrn_email_addr = 'kfsbsateam@list.arizona.edu' where adv_rtrn_email_addr is not null or adv_rtrn_email_addr != '';
 
 -- Parameter Values containing emails - kfsbsateam@list.arizona.edu
-update kulowner.krns_parm_t set txt = 'N' where nmspc_cd = 'KR-WKFLW' and parm_dtl_typ_cd = 'ActionList' and parm_nm = 'SEND_EMAIL_NOTIFICATION_IND'; 
-update kulowner.krns_parm_t set txt = 'kfsbsateam@list.arizona.edu' where txt like '%@%' and parm_nm not in ('PDF_STATUS_INQUIRY_URL', 'FROM_ADDRESS');
+update kulowner.krcr_parm_t set val = 'N' where nmspc_cd = 'KR-WKFLW' and parm_typ_cd = 'ActionList' and parm_nm = 'SEND_EMAIL_NOTIFICATION_IND'; 
+update kulowner.krcr_parm_t set val = 'kfsbsateam@list.arizona.edu' where val like '%@%' and parm_nm not in ('PDF_STATUS_INQUIRY_URL', 'FROM_ADDRESS');
 
 
 

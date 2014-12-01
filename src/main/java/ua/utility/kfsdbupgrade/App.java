@@ -1475,13 +1475,14 @@ public class App {
     }
     
     private static boolean isMethodCall(String nm) {
-        return nm.startsWith("method:");
+        return (StringUtils.isNotBlank(nm) && nm.contains("method:"));
     }
     
     private static boolean callMethod(String nm, Connection conn, Statement stmt) {
         boolean retval = false;
         if (StringUtils.isNotBlank(nm)) {
-            if ("ensureNmNmspccdUnique".equals(nm)) {
+            
+            if (nm.contains("ensureNmNmspccdUnique")) {
                 retval = ensureNmNmspccdUnique(conn, stmt);
             }
         }
