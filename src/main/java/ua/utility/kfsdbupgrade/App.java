@@ -1458,7 +1458,6 @@ public class App {
             }
 
             res.close();
-            
             retval = true;
         }
 
@@ -1481,9 +1480,14 @@ public class App {
     private static boolean callMethod(String nm, Connection conn, Statement stmt) {
         boolean retval = false;
         if (StringUtils.isNotBlank(nm)) {
-            
             if (nm.contains("ensureNmNmspccdUnique")) {
                 retval = ensureNmNmspccdUnique(conn, stmt);
+            }
+            
+            if (retval) {
+                doCommit(conn);
+            } else {
+                doRollback(conn);
             }
         }
         
