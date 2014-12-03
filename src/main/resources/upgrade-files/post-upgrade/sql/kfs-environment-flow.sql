@@ -1,8 +1,3 @@
-
--- kfs-test-sec66   #T000000000000005504
--- kfs-test-sec79   #T000000000000005517
--- ====================================================================================================================
-
 -- ====================================================================================================================
 -- 0)Pre-requisites  Clean all the triggers and quartz tables. 
 --                   Clear all the roles for any existing kfs-test-sec* or kfs-test-sys* users
@@ -309,11 +304,11 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 
 -- Give to the "UA KFS Developers" role the persmission to modify batch job
 -- Q: Is it OK if the namespace is just KFS-SYS? Or should it be KFS*?
-insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
-values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
-  (select role_id from krim_role_t where role_nm='UA KFS Developers'),
-  (select perm_id from krim_perm_t where nmspc_cd='KFS-SYS' and nm='Modify Batch Job'),
-  'Y')
+--insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
+--values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
+--  (select role_id from krim_role_t where role_nm='UA KFS Developers'),
+--  (select perm_id from krim_perm_t where nmspc_cd='KFS-SYS' and nm='Modify Batch Job'),
+--  'Y')
 ;
 
 
@@ -575,11 +570,11 @@ where fin_coa_cd = 'UA' and account_nbr in
 ;
 
 --OLD make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts 
-insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
-select fin_coa_cd, account_nbr, 'KFS', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
-from kulowner.ca_account_t 
-where fin_coa_cd = 'UA'
-;
+--insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
+--select fin_coa_cd, account_nbr, 'KFS', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
+--from kulowner.ca_account_t 
+--where fin_coa_cd = 'UA'
+--;
 
 
 
@@ -588,11 +583,11 @@ where fin_coa_cd = 'UA'
 -- ====================================================================================================================
 
 -- make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts for doc type KFST #612218
-insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
-select fin_coa_cd, account_nbr, 'KFST', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
-from kulowner.ca_account_t 
-where fin_coa_cd = 'UA'
-;
+--insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
+--select fin_coa_cd, account_nbr, 'KFST', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
+--from kulowner.ca_account_t 
+--where fin_coa_cd = 'UA'
+--;
 
 
 
