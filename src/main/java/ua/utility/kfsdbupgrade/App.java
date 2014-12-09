@@ -73,7 +73,6 @@ public class App {
                 boolean success = false;
                 try {
                     conn1 = getUpgradeConnection();
-
                     conn2 = getUpgradeConnection();
                     conn2.setAutoCommit(true);
                     stmt = conn2.createStatement();
@@ -94,8 +93,8 @@ public class App {
                         doCommit(conn1);
                         stmt.close();
                         stmt = conn2.createStatement();
-                       dropTempTables(conn2, stmt);
-                       runMiscSql(conn2, stmt);
+                        dropTempTables(conn2, stmt);
+                        runMiscSql(conn2, stmt);
                         updatePurchasingStatuses(conn1);
                         createExistingIndexes(conn2, stmt);
                         createPublicSynonyms(conn2, stmt);
@@ -538,7 +537,7 @@ public class App {
         return retval;
 
     }
-    
+
     private static void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
         try {
             if (res != null) {
@@ -1226,18 +1225,16 @@ public class App {
             while (res.next()) {
                 pstmt.setString(1, res.getString(1));
                 pstmt.executeUpdate();
-                
+
                 if ((i % 10000) == 0) {
                     writeOut(i + " krew_doc_hdr_ext_t entries inserted");
                 }
-                
+
                 i++;
             }
 
             conn.commit();
-        } 
-        
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
 
             if (conn != null) {
@@ -1246,14 +1243,10 @@ public class App {
                 } catch (Exception ex2) {
                 };
             }
-        } 
-        
-        finally {
+        } finally {
             try {
                 closeDbObjects(null, pstmt, res);
-            } 
-            
-            catch (Exception ex) {
+            } catch (Exception ex) {
             };
         }
     }
@@ -1270,7 +1263,11 @@ public class App {
             while ((sql = lnr.readLine()) != null) {
                 if (StringUtils.isNotBlank(sql)) {
                     try {
-                        stmt.execute(sql);
+                        if (isDDL(sql)) {
+                            stmt.execute(sql.replace(";", "").trim());
+                        } else {
+                            stmt.executeUpdate(sql.replace(";", "").trim());
+                        }
                         writeOut(sql);
                     } catch (SQLException ex) {
                         writeOut("sql execution failed: " + sql);
@@ -1288,8 +1285,8 @@ public class App {
             };
         }
     }
-    
-private static void updatePurchasingStatuses(Connection upgradeConn) {
+
+    private static void updatePurchasingStatuses(Connection upgradeConn) {
         Connection legacyConn = null;
         Statement legacyStmt = null;
         ResultSet legacyRes = null;
@@ -1299,15 +1296,15 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
             // load status names from legacy status tables
             legacyConn = getLegacyConnection();
             legacyStmt = legacyConn.createStatement();
-            
+
             legacyRes = legacyStmt.executeQuery("select CRDT_MEMO_STAT_CD, CRDT_MEMO_STAT_DESC from AP_CRDT_MEMO_STAT_T");
-            
+
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_CRDT_MEMO_T where DEPR_CRDT_MEMO_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from AP_CRDT_MEMO_T where DEPR_CRDT_MEMO_STAT_CD = ?)");
-            while(legacyRes.next()) {
+            while (legacyRes.next()) {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
-                
+
                 writeOut("updating credit memo app_doc_stat[" + desc + "] in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
@@ -1321,14 +1318,14 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
 
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
-            
+
             legacyRes = legacyStmt.executeQuery("select PMT_RQST_STAT_CD, PMT_RQST_STAT_DESC from AP_PMT_RQST_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
-            while(legacyRes.next()) {
+            while (legacyRes.next()) {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
-                
+
                 writeOut("updating payment request app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
@@ -1346,10 +1343,10 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
             legacyRes = legacyStmt.executeQuery("select PO_STAT_CD, PO_STAT_DESC from PUR_PO_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
-            while(legacyRes.next()) {
+            while (legacyRes.next()) {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
-                
+
                 writeOut("updating purchase order app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
@@ -1367,10 +1364,10 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
             legacyRes = legacyStmt.executeQuery("select RCVNG_LN_STAT_CD, RCVNG_LN_STAT_DESC from PUR_RCVNG_LN_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
-            while(legacyRes.next()) {
+            while (legacyRes.next()) {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
-                
+
                 writeOut("updating purchase receiving line app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
@@ -1385,14 +1382,13 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
-            
             legacyRes = legacyStmt.executeQuery("select REQS_STAT_CD, REQS_STAT_DESC from PUR_REQS_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
-            while(legacyRes.next()) {
+            while (legacyRes.next()) {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
-                
+
                 writeOut("updating requisition app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
@@ -1405,23 +1401,19 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
             }
 
             upgradeConn.commit();
-        }
-        
-        catch (Exception ex) {
+        } catch (Exception ex) {
             writeOut(ex);
             try {
                 upgradeConn.rollback();
-            }
-            
-            catch (Exception ex2) {};
-        }
-        
-        finally {
+            } catch (Exception ex2) {
+            };
+        } finally {
             closeDbObjects(legacyConn, legacyStmt, legacyRes);
             closeDbObjects(null, upgradeStmt1, null);
             closeDbObjects(null, upgradeStmt2, null);
         }
-    }    
+    }
+
     private static boolean ensureNmNmspccdUnique(Connection conn, Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
@@ -1459,38 +1451,33 @@ private static void updatePurchasingStatuses(Connection upgradeConn) {
 
             res.close();
             retval = true;
-        }
-
-        catch (Exception ex) {
+        } catch (Exception ex) {
             writeOut(ex);
-        } 
-        
-        finally {
+        } finally {
             closeDbObjects(null, null, res);
         }
-        
-        
+
         return retval;
     }
-    
+
     private static boolean isMethodCall(String nm) {
         return (StringUtils.isNotBlank(nm) && nm.contains("method:"));
     }
-    
+
     private static boolean callMethod(String nm, Connection conn, Statement stmt) {
         boolean retval = false;
         if (StringUtils.isNotBlank(nm)) {
             if (nm.contains("ensureNmNmspccdUnique")) {
                 retval = ensureNmNmspccdUnique(conn, stmt);
             }
-            
+
             if (retval) {
                 doCommit(conn);
             } else {
                 doRollback(conn);
             }
         }
-        
+
         return retval;
     }
 }
