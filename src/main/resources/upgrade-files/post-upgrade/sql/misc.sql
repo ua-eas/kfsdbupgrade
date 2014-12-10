@@ -4,3 +4,7 @@ insert into krim_grp_t (grp_id, obj_id, ver_nbr, grp_nm, nmspc_cd, kim_typ_id, a
 insert into krsb_qrtz_locks (lock_name) values ('STATE_ACCESS');
 insert into krsb_qrtz_locks (lock_name) values ('TRIGGER_ACCESS');
 alter table pur_po_t modify PO_DOC_CRTE_DT null;
+update krcr_parm_t set val = 'DV=0002;ND=0001;AD=0001;CMD=0001;PREQ=0002;CM=0002;CTRL=0001;CCR=0006;DI=0001' where nmspc_cd = 'KFS-FP' and parm_nm ='DEFAULT_BANK_BY_DOCUMENT_TYPE';
+update krcr_parm_t set val = 'DV=0002;ND=0001;AD=0001;CMD=0001;PREQ=0002;CM=0002;CTRL=0001;CCR=0006;TA=TEST;TR=TEST;RELO=TEST;ENT=TEST' where nmspc_cd = 'KFS-SYS' and parm_nm ='DEFAULT_BANK_BY_DOCUMENT_TYPE';
+update krcr_parm_t set val = 'CH;IC;IN;TI' where nmspc_cd = 'KFS-GL' and parm_nm ='INCOME_OBJECT_TYPE';
+update krcr_parm_t set val = 'EE;ES;EX;TE' where nmspc_cd = 'KFS-GL' and parm_nm ='EXPENSE_OBJECT_TYPE';
