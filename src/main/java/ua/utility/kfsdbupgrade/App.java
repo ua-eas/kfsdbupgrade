@@ -615,6 +615,19 @@ public class App {
 
             res.close();
 
+            writeOut("dropping triggers on document indexing tables...");
+            
+            try {
+                stmt.executeUpdate("drop trigger KULOWNER.KREW_DOC_HDR_EXT_LONG_TR1");
+                stmt.executeUpdate("drop trigger KULOWNER.KREW_DOC_HDR_EXT_FLT_TR1");
+                stmt.executeUpdate("drop trigger KULOWNER.KREW_DOC_HDR_EXT_DT_TR1");
+                stmt.executeUpdate("drop trigger KULOWNER.KREW_DOC_HDR_EXT_TR1");
+            }
+            
+            catch (SQLException ex) {
+                writeOut(ex);
+            }
+            
             writeHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
 
             StringBuilder sql = new StringBuilder(256);
