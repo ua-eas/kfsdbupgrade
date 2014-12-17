@@ -27,6 +27,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
@@ -95,6 +96,7 @@ public class App {
                         stmt = conn2.createStatement();
                         dropTempTables(conn2, stmt);
                         runMiscSql(conn2, stmt);
+                        populateProcurementCardTable(conn1);
                         updatePurchasingStatuses(conn1);
                         createExistingIndexes(conn2, stmt);
                         createPublicSynonyms(conn2, stmt);
@@ -1492,5 +1494,113 @@ public class App {
         }
 
         return retval;
+    }
+    
+    private static void populateProcurementCardTable(Connection conn) {
+        Statement stmt = null;
+        PreparedStatement pstmt = null;
+        ResultSet res = null;
+        writeHeader2("Populating procurement card default table with UA detail data");
+        
+        try {
+            StringBuilder sql = new StringBuilder(512);
+            
+            sql.append("insert into fp_prcrmnt_card_dflt_t (");
+            sql.append("ID,"); // 1
+            sql.append("CC_NBR,"); // 2
+            sql.append("VER_NBR,"); // 3
+            sql.append("OBJ_ID,"); // 4
+            sql.append("CARD_HLDR_NM,"); // 5
+            sql.append("CARD_HLDR_ALTRNT_NM,"); // 6
+            sql.append("CARD_HLDR_LN1_ADDR,"); // 7
+            sql.append("CARD_HLDR_LN2_ADDR,"); // 8
+            sql.append("CARD_HLDR_CTY_NM,"); // 9
+            sql.append("CARD_HLDR_ST_CD,"); // 10
+            sql.append("CARD_HLDR_ZIP_CD,"); // 11
+            sql.append("CARD_HLDR_WRK_PHN_NBR,"); // 12
+            sql.append("CARD_LMT,"); // 13
+            sql.append("CARD_CYCLE_AMT_LMT,"); // 14
+            sql.append("CARD_CYCLE_VOL_LMT,"); // 15
+            sql.append("CARD_STAT_CD,"); // 16
+            sql.append("CARD_NTE_TXT,"); // 17
+            sql.append("FIN_COA_CD,"); // 18
+            sql.append("ACCOUNT_NBR,"); // 19
+            sql.append("SUB_ACCT_NBR,"); // 20
+            sql.append("FIN_OBJECT_CD,"); // 21
+            sql.append("FIN_SUB_OBJ_CD,"); // 22
+            sql.append("PROJECT_CD,"); // 23
+            sql.append("ROW_ACTV_IND"); // 24
+            sql.append(") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+            pstmt = conn.prepareStatement(sql.toString());
+            stmt = conn.createStatement();
+            
+            sql.setLength(0);
+            sql.append("select ");
+            sql.append("FP_PRCRMNT_CARD_DFLT_SEQ.nextVal,");
+            sql.append("CC_NBR,"); // 2
+            sql.append("VER_NBR,"); // 3
+            sql.append("OBJ_ID,"); // 4
+            sql.append("CARD_HLDR_NM,"); // 5
+            sql.append("CARD_HLDR_ALTRNT_NM,"); // 6
+            sql.append("CARD_HLDR_LN1_ADDR,"); // 7
+            sql.append("CARD_HLDR_LN2_ADDR,"); // 8
+            sql.append("CARD_HLDR_CTY_NM,"); // 9
+            sql.append("CARD_HLDR_ST_CD,"); // 10
+            sql.append("CARD_HLDR_ZIP_CD,"); // 11
+            sql.append("CARD_HLDR_WRK_PHN_NBR,"); // 12
+            sql.append("CARD_LMT,"); // 13
+            sql.append("CARD_CYCLE_AMT_LMT,"); // 14
+            sql.append("CARD_CYCLE_VOL_LMT,"); // 15
+            sql.append("CARD_STAT_CD,"); // 16
+            sql.append("CARD_NTE_TXT,"); // 17
+            sql.append("FIN_COA_CD,"); // 18
+            sql.append("ACCOUNT_NBR,"); // 19
+            sql.append("SUB_ACCT_NBR,"); // 20
+            sql.append("FIN_OBJECT_CD,"); // 21
+            sql.append("FIN_SUB_OBJ_CD,"); // 22
+            sql.append("null,"); // 23
+            sql.append("'Y'"); // 24
+            sql.append("from fp_prcrmnt_card_hldr_dtl_t");
+            
+            res = stmt.executeQuery(sql.toString());
+            
+            ResultSetMetaData rmd = res.getMetaData();
+            
+            int cnt = 0;
+            while (res.next()) {
+                for (int i = 0; i < rmd.getColumnCount(); ++i) {
+                    pstmt.setObject(i+1, res.getObject(i+1));
+                }
+                
+                try {
+                    pstmt.executeUpdate();
+                }
+                
+                catch (SQLException ex) {
+                    writeOut("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString());
+                }
+                
+                if (((cnt++) % 1000) == 0) {
+                    System.out.println(cnt);;
+                }
+            }
+            
+            conn.commit();
+        }
+        
+        catch (Exception ex) {
+            writeOut(ex);
+            try {
+                conn.rollback();
+            }
+            
+            catch (Exception ex2) {};
+        }
+        
+        finally {
+            closeDbObjects(null, stmt, res);
+            closeDbObjects(null, pstmt, null);
+        }
     }
 }
