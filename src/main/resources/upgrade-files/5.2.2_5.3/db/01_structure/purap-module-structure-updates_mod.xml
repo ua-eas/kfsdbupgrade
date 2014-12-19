@@ -54,7 +54,7 @@ SELECT P.AP_PUR_DOC_LNK_ID,
 		</createView>
 		<!-- purchase order -->
 		<dropForeignKeyConstraint baseTableName="PUR_PO_T" constraintName="PUR_PO_TR2"/>
-:x		<renameTable oldTableName="PUR_PO_STAT_T" newTableName="DEPR_PUR_PO_STAT_T"/>
+		<renameTable oldTableName="PUR_PO_STAT_T" newTableName="DEPR_PUR_PO_STAT_T"/>
 		<renameColumn tableName="PUR_PO_T" oldColumnName="PO_STAT_CD" newColumnName="DEPR_PO_STAT_CD" columnDataType="varchar(4)"/>
 		
 		<!-- receiving lines -->

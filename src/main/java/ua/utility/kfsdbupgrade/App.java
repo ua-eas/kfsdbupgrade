@@ -1517,14 +1517,13 @@ public class App {
             sql.append("FIN_SUB_OBJ_CD,"); // 22
             sql.append("PROJECT_CD,"); // 23
             sql.append("ROW_ACTV_IND"); // 24
-            sql.append(") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            sql.append(") values (FP_PRCRMNT_CARD_DFLT_SEQ.nextVal, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             pstmt = conn.prepareStatement(sql.toString());
             stmt = conn.createStatement();
             
             sql.setLength(0);
             sql.append("select ");
-            sql.append("FP_PRCRMNT_CARD_DFLT_SEQ.nextVal,");
             sql.append("CC_NBR,"); // 2
             sql.append("VER_NBR,"); // 3
             sql.append("OBJ_ID,"); // 4
