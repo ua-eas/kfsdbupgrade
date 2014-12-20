@@ -164,7 +164,7 @@ UPDATE pdp_ach_acct_nbr_t set ach_bnk_acct_nbr = DES_ENCRYPT( ROWNUM + 900000000
 UPDATE pdp_payee_ach_acct_t set bnk_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 
 -- NEW: 900000000 + ROW# - for tax id numbers that are not of type NONE
-UPDATE pur_vndr_hdr_t set vndr_tax_nbr = DES_ENCRYPT( ROWNUM + 900000000 ) where vndr_tax_typ_cd != 'NONE';
+UPDATE pur_vndr_hdr_t set vndr_us_tax_nbr = DES_ENCRYPT( ROWNUM + 900000000 ) where vndr_tax_typ_cd != 'NONE';
 UPDATE pur_vndr_tax_chg_t set vndr_prev_tax_nbr = DES_ENCRYPT( ROWNUM + 899999999 ) where vndr_prev_tax_typ_cd != 'NONE';
 UPDATE tax_payee_t set hdr_vndr_tax_nbr = DES_ENCRYPT( ROWNUM + 900000000 );
 
