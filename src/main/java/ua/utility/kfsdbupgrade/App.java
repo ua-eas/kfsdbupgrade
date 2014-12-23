@@ -1265,10 +1265,15 @@ public class App {
             while ((sql = lnr.readLine()) != null) {
                 if (StringUtils.isNotBlank(sql)) {
                     try {
+                        if (sql.trim().endsWith(";")) {
+                            int pos = sql.lastIndexOf(";");
+                            sql = sql.substring(0, pos);
+                        }
+                    
                         if (isDDL(sql)) {
-                            stmt.execute(sql.replace(";", "").trim());
+                            stmt.execute(sql);
                         } else {
-                            stmt.executeUpdate(sql.replace(";", "").trim());
+                            stmt.executeUpdate(sql);
                         }
                         writeOut(sql);
                     } catch (SQLException ex) {
