@@ -1625,10 +1625,10 @@ public class App {
                 if (f.exists()) {
                     MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(this, f);
                     EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
-                    pstmt = upgradeConn.prepareStatement("update krns_maint_doc_test_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
+                    pstmt = upgradeConn.prepareStatement("update krns_maint_doc_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
                     stmt = upgradeConn.createStatement();
 
-                    res = stmt.executeQuery("SELECT DOC_HDR_ID, DOC_CNTNT FROM krns_maint_doc_test_t ");
+                    res = stmt.executeQuery("SELECT DOC_HDR_ID, DOC_CNTNT FROM krns_maint_doc_t ");
 
                     int cnt = 0;
                     long start = System.currentTimeMillis();
