@@ -49,78 +49,91 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class App {
-
+    private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
+    
     private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
     private static final String ERROR = "************************************************* error *************************************************";
     private static final String HEADER1 = "================================================ ? ================================================";
     private static final String INDEX_NAME_TEMPLATE = "[table-name]I{index}";
     private static String upgradeRoot;
-    private static List<String> upgradeFolders;
-    private static Properties properties;
-    private static Map<String, List<String>> upgradeFiles;
+    private List<String> upgradeFolders;
+    private Properties properties;
+    private Map<String, List<String>> upgradeFiles;
 
     public static void main(final String args[]) {
         if (args.length == 1) {
-            properties = loadProperties(args[0]);
-            if (properties != null) {
-                upgradeRoot = properties.getProperty("upgrade-base-directory");
-                upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
-                upgradeFiles = loadFolderFileMap("files-");
-
-                Connection conn1 = null;
-                Connection conn2 = null;
-                Statement stmt = null;
-                boolean success = false;
-                try {
-                    conn1 = getUpgradeConnection();
-                    conn2 = getUpgradeConnection();
-                    conn2.setAutoCommit(true);
-                    stmt = conn2.createStatement();
-                    stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
-                    stmt.close();
-                    stmt = conn1.createStatement();
-                    writeOut("Starting KFS database upgrade process...");
-                    writeOut("");
-
-                    if (doInitialProcessing(conn1, stmt)) {
-                        doCommit(conn1);
-                        if (doUpgrade(conn1, conn2, stmt)) {
-                            success = true;
-                        }
-                    }
-
-                    if (success) {
-                        doCommit(conn1);
-                        stmt.close();
-                        stmt = conn2.createStatement();
-                        dropTempTables(conn2, stmt);
-                        runMiscSql(conn2, stmt);
-                        populateProcurementCardTable(conn1);
-                        updatePurchasingStatuses(conn1);
-                        createExistingIndexes(conn2, stmt);
-                        createPublicSynonyms(conn2, stmt);
-                        createForeignKeyIndexes(conn2, stmt);
-                        createDocumentSearchEntries(conn2, stmt);
-                        writeOut("");
-                        writeHeader1("upgrade completed successfully");
-                    }
-                } catch (Exception ex) {
-                    writeOut(ex);
-                } finally {
-                    closeDbObjects(conn1, stmt, null);
-                    closeDbObjects(conn2, null, null);
-                }
-            } else {
-                System.out.println("invalid properties file: " + args[0]);
-            }
-
+            new App(args[0]);
         } else {
             System.out.println("usage: java -Xmx500m -jar kfsdbupgrade.jar <property-file-path>");
         }
     }
 
-    private static List<String> loadList(String input) {
+    public App(String propertyFileName) {
+        properties = loadProperties(propertyFileName);
+        if (properties != null) {
+            upgradeRoot = properties.getProperty("upgrade-base-directory");
+            upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
+            upgradeFiles = loadFolderFileMap("files-");
+
+            Connection conn1 = null;
+            Connection conn2 = null;
+            Statement stmt = null;
+            boolean success = false;
+            try {
+                conn1 = getUpgradeConnection();
+                conn2 = getUpgradeConnection();
+                conn2.setAutoCommit(true);
+                stmt = conn2.createStatement();
+                stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
+                stmt.close();
+                stmt = conn1.createStatement();
+                writeOut("Starting KFS database upgrade process...");
+                writeOut("");
+
+                if (doInitialProcessing(conn1, stmt)) {
+                    doCommit(conn1);
+                    if (doUpgrade(conn1, conn2, stmt)) {
+                        success = true;
+                    }
+                }
+
+                if (success) {
+                    doCommit(conn1);
+                    stmt.close();
+                    stmt = conn2.createStatement();
+                    dropTempTables(conn2, stmt);
+                    runMiscSql(conn2, stmt);
+                    populateProcurementCardTable(conn1);
+                    updatePurchasingStatuses(conn1);
+                    createExistingIndexes(conn2, stmt);
+                    createPublicSynonyms(conn2, stmt);
+                    createForeignKeyIndexes(conn2, stmt);
+                    createDocumentSearchEntries(conn2, stmt);
+                    if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
+                        convertMaintenanceDocuments(conn1);
+                    }
+                    writeOut("");
+                    writeHeader1("upgrade completed successfully");
+                }
+            } 
+            
+            catch (Exception ex) {
+                writeOut(ex);
+            } 
+            
+            finally {
+                closeDbObjects(conn1, stmt, null);
+                closeDbObjects(conn2, null, null);
+            }
+        } else {
+            System.out.println("invalid properties file: " + propertyFileName);
+        }
+        
+        System.exit(0);
+    }
+    
+    private List<String> loadList(String input) {
         List<String> retval = new ArrayList<String>();
         if (StringUtils.isNotBlank(input)) {
             StringTokenizer st = new StringTokenizer(input, ",");
@@ -132,7 +145,7 @@ public class App {
         return retval;
     }
 
-    private static void dropTempTables(Connection conn, Statement stmt) {
+    private void dropTempTables(Connection conn, Statement stmt) {
         writeHeader2("Dropping temporary tables");
 
         List<String> tables = new ArrayList<String>();
@@ -158,7 +171,7 @@ public class App {
         }
     }
 
-    private static Map<String, List<String>> loadFolderFileMap(String prefix) {
+    private Map<String, List<String>> loadFolderFileMap(String prefix) {
         Map<String, List<String>> retval = new HashMap<String, List<String>>();
 
         for (Entry e : properties.entrySet()) {
@@ -172,7 +185,7 @@ public class App {
         return retval;
     }
 
-    private static Properties loadProperties(String fname) {
+    private Properties loadProperties(String fname) {
         Properties retval = null;
         FileReader reader = null;
 
@@ -198,7 +211,7 @@ public class App {
         return retval;
     }
 
-    private static void doRollback(Connection conn) {
+    private void doRollback(Connection conn) {
         try {
             conn.rollback();
         } catch (Exception ex) {
@@ -206,7 +219,7 @@ public class App {
         }
     }
 
-    private static boolean doCommit(Connection conn) {
+    private boolean doCommit(Connection conn) {
         boolean retval = true;
         try {
             conn.commit();
@@ -218,7 +231,7 @@ public class App {
         return retval;
     }
 
-    private static boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
+    private boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
         boolean retval = true;
         writeHeader2("processing sql file " + f.getPath());
         List<String> sqlStatements = getSqlStatements(f);
@@ -245,7 +258,7 @@ public class App {
         return retval;
     }
 
-    private static List<String> getSqlStatements(File f) {
+    private List<String> getSqlStatements(File f) {
         List<String> retval = new ArrayList<String>();
         LineNumberReader lnr = null;
 
@@ -291,7 +304,7 @@ public class App {
         return retval;
     }
 
-    private static File getUpgradeFile(String fname) {
+    private File getUpgradeFile(String fname) {
         File retval = null;
 
         int pos = fname.lastIndexOf(".");
@@ -307,7 +320,7 @@ public class App {
         return retval;
     }
 
-    private static String getLastProcessedFolder(String lastProcessedFile) {
+    private String getLastProcessedFolder(String lastProcessedFile) {
         String retval = null;
         String s = lastProcessedFile.substring(properties.getProperty("upgrade-base-directory").length() + 1);
         int pos = s.indexOf("/");
@@ -315,7 +328,7 @@ public class App {
         return retval;
     }
 
-    private static List<String> getFolders(String lastProcessedFile) {
+    private List<String> getFolders(String lastProcessedFile) {
         List<String> retval = new ArrayList<String>();
 
         if (StringUtils.isNotBlank(lastProcessedFile)) {
@@ -337,7 +350,7 @@ public class App {
         return retval;
     }
 
-    private static List<String> getFolderFiles(String folder, String lastProcessedFile) {
+    private List<String> getFolderFiles(String folder, String lastProcessedFile) {
         List<String> retval = new ArrayList<String>();
         if (StringUtils.isBlank(lastProcessedFile)) {
             retval = upgradeFiles.get(folder);
@@ -361,7 +374,7 @@ public class App {
         return retval;
     }
 
-    private static boolean doUpgrade(Connection conn1, Connection conn2, Statement stmt) {
+    private boolean doUpgrade(Connection conn1, Connection conn2, Statement stmt) {
         boolean retval = true;
         writeHeader1("upgrading kfs");
 
@@ -413,7 +426,7 @@ public class App {
         return retval;
     }
 
-    private static boolean runLiquibase(Connection conn, File f) {
+    private boolean runLiquibase(Connection conn, File f) {
         boolean retval = true;
         writeHeader2("processing liquibase file " + f.getPath());
         PrintWriter pw = null;
@@ -439,14 +452,14 @@ public class App {
         return retval;
     }
 
-    private static void writeOut(Exception ex) {
+    public void writeOut(Exception ex) {
         System.out.println();
         System.out.println(getTimeString() + ERROR);
         ex.printStackTrace(System.out);
         writeLog(ex);
     }
 
-    private static void writeLog(Exception ex) {
+    private void writeLog(Exception ex) {
         PrintWriter pw = null;
 
         try {
@@ -465,12 +478,12 @@ public class App {
         }
     }
 
-    private static void writeOut(String msg) {
+    public void writeOut(String msg) {
         System.out.println(msg);
         writeLog(msg);
     }
 
-    private static void writeLog(String msg) {
+    private void writeLog(String msg) {
         PrintWriter pw = null;
 
         try {
@@ -491,11 +504,11 @@ public class App {
         }
     }
 
-    private static String getTimeString() {
+    private String getTimeString() {
         return "[" + DF.format(new Date()) + "] ";
     }
 
-    private static Connection getUpgradeConnection() throws Exception {
+    private Connection getUpgradeConnection() throws Exception {
         Connection retval = null;
         String url = properties.getProperty("database-url");
 
@@ -517,7 +530,7 @@ public class App {
         return retval;
     }
 
-    private static Connection getLegacyConnection() throws Exception {
+    private Connection getLegacyConnection() throws Exception {
         Connection retval = null;
         String url = properties.getProperty("legacy-database-url");
 
@@ -540,7 +553,7 @@ public class App {
 
     }
 
-    private static void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
+    private void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
         try {
             if (res != null) {
                 res.close();
@@ -561,7 +574,7 @@ public class App {
         };
     }
 
-    private static boolean executeSql(Connection conn, Statement stmt, String sql) {
+    private boolean executeSql(Connection conn, Statement stmt, String sql) {
         boolean retval = false;
 
         try {
@@ -579,19 +592,19 @@ public class App {
         return retval;
     }
 
-    private static boolean isDDL(String sql) {
+    private boolean isDDL(String sql) {
         String s = sql.toUpperCase();
         return (!s.toUpperCase().startsWith("UPDATE") && !s.startsWith("INSERT") && !s.startsWith("DELETE"));
     }
 
-    private static void deleteFile(File f) throws IOException {
+    private void deleteFile(File f) throws IOException {
         try {
             FileUtils.forceDelete(f);
         } catch (FileNotFoundException ex) {
         };
     }
 
-    private static boolean doInitialProcessing(Connection conn, Statement stmt) {
+    private boolean doInitialProcessing(Connection conn, Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
         ResultSet res2 = null;
@@ -659,28 +672,28 @@ public class App {
         return retval;
     }
 
-    private static void writeHeader1(String msg) {
+    private void writeHeader1(String msg) {
         writeOut("");
         writeOut(HEADER1.replace("?", msg));
         writeOut("");
     }
 
-    private static void writeHeader2(String msg) {
+    private void writeHeader2(String msg) {
         writeOut("");
         writeOut(msg);
         writeOut(UNDERLINE);
         writeOut("");
     }
 
-    private static PrintWriter getOutputLogWriter() throws IOException {
+    private PrintWriter getOutputLogWriter() throws IOException {
         return new PrintWriter(new FileWriter(properties.getProperty("output-log-file-name"), true));
     }
 
-    private static PrintWriter getProcessedFilesWriter() throws IOException {
+    private PrintWriter getProcessedFilesWriter() throws IOException {
         return new PrintWriter(new FileWriter(properties.getProperty("processed-files-file-name"), true));
     }
 
-    private static void writeProcessedFileInfo(String txt) {
+    private void writeProcessedFileInfo(String txt) {
         PrintWriter pw = null;
         try {
             pw = getProcessedFilesWriter();
@@ -697,7 +710,7 @@ public class App {
         }
     }
 
-    private static String getIndexTableName(String line) {
+    private String getIndexTableName(String line) {
         String retval = null;
         int pos = line.indexOf(" ON ");
 
@@ -713,7 +726,7 @@ public class App {
         return retval;
     }
 
-    private static String getIndexName(String line) {
+    private String getIndexName(String line) {
         String retval = null;
         StringTokenizer st = new StringTokenizer(line);
         if (st.countTokens() > 4) {
@@ -731,7 +744,7 @@ public class App {
         return retval;
     }
 
-    private static List<String> getIndexColumnNames(String line) {
+    private List<String> getIndexColumnNames(String line) {
         List<String> retval = new ArrayList<String>();
 
         int pos = line.indexOf("(");
@@ -748,7 +761,7 @@ public class App {
         return retval;
     }
 
-    private static void createExistingIndexes(Connection conn, Statement stmt) {
+    private void createExistingIndexes(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
         writeHeader2("creating KFS indexes that existed prior to upgrade where required ");
@@ -816,7 +829,7 @@ public class App {
         }
     }
 
-    private static boolean tableExists(Connection conn, Statement stmt, String tableName) throws Exception {
+    private boolean tableExists(Connection conn, Statement stmt, String tableName) throws Exception {
         boolean retval = false;
         ResultSet res = null;
 
@@ -834,7 +847,7 @@ public class App {
 
     }
 
-    private static boolean indexExists(Connection conn, Statement stmt, String tableName, List<String> columnNames) throws Exception {
+    private boolean indexExists(Connection conn, Statement stmt, String tableName, List<String> columnNames) throws Exception {
         boolean retval = false;
         ResultSet res = null;
 
@@ -887,7 +900,7 @@ public class App {
         return retval;
     }
 
-    private static boolean indexNameExists(Connection conn, Statement stmt, String tableName, String indexName) throws Exception {
+    private boolean indexNameExists(Connection conn, Statement stmt, String tableName, String indexName) throws Exception {
         boolean retval = false;
         ResultSet res = null;
 
@@ -903,7 +916,7 @@ public class App {
         return retval;
     }
 
-    private static String getNextTableIndexName(Connection conn, Statement stmt, String tableName) throws Exception {
+    private String getNextTableIndexName(Connection conn, Statement stmt, String tableName) throws Exception {
         String retval = null;
 
         int maxIndex = -1;
@@ -937,7 +950,7 @@ public class App {
         return retval;
     }
 
-    private static String getSynonymName(String line) {
+    private String getSynonymName(String line) {
         String retval = null;
         StringTokenizer st = new StringTokenizer(line);
 
@@ -957,7 +970,7 @@ public class App {
         return retval;
     }
 
-    private static boolean synonymExists(Connection conn, Statement stmt, String synonymName) throws Exception {
+    private boolean synonymExists(Connection conn, Statement stmt, String synonymName) throws Exception {
         boolean retval = false;
         ResultSet res = null;
 
@@ -973,7 +986,7 @@ public class App {
         return retval;
     }
 
-    private static void createPublicSynonyms(Connection conn, Statement stmt) {
+    private void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
         writeHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
@@ -1006,7 +1019,7 @@ public class App {
         }
     }
 
-    private static Set<String> loadForeignKeyIndexInformation(DatabaseMetaData dmd, String table) {
+    private Set<String> loadForeignKeyIndexInformation(DatabaseMetaData dmd, String table) {
         Set<String> retval = new HashSet<String>();
 
         ResultSet res = null;
@@ -1067,7 +1080,7 @@ public class App {
         return retval;
     }
 
-    private static TableIndexInfo loadTableIndexInfo(DatabaseMetaData dmd, String tname) throws Exception {
+    private TableIndexInfo loadTableIndexInfo(DatabaseMetaData dmd, String tname) throws Exception {
         TableIndexInfo retval = new TableIndexInfo(tname);
         ResultSet res = null;
 
@@ -1120,7 +1133,7 @@ public class App {
         return retval;
     }
 
-    private static boolean hasIndex(List<IndexInfo> indexes, ForeignKeyReference fkref) throws Exception {
+    private boolean hasIndex(List<IndexInfo> indexes, ForeignKeyReference fkref) throws Exception {
         boolean retval = false;
 
         for (IndexInfo i : indexes) {
@@ -1142,11 +1155,11 @@ public class App {
         return retval;
     }
 
-    private static String getSchema() {
+    private String getSchema() {
         return properties.getProperty("database-schema");
     }
 
-    private static boolean isNumericColumn(DatabaseMetaData dmd, String schema, String tname, String cname) throws Exception {
+    private boolean isNumericColumn(DatabaseMetaData dmd, String schema, String tname, String cname) throws Exception {
         boolean retval = false;
 
         ResultSet res = null;
@@ -1165,7 +1178,7 @@ public class App {
         return retval;
     }
 
-    private static boolean isNumericJavaType(int type) {
+    private boolean isNumericJavaType(int type) {
         return ((type == java.sql.Types.BIGINT)
             || (type == java.sql.Types.BINARY)
             || (type == java.sql.Types.DECIMAL)
@@ -1178,7 +1191,7 @@ public class App {
             || (type == java.sql.Types.TINYINT));
     }
 
-    private static void createForeignKeyIndexes(Connection conn, Statement stmt) {
+    private void createForeignKeyIndexes(Connection conn, Statement stmt) {
         writeHeader2("creating indexes on foreign keys where required...");
         ResultSet res = null;
         try {
@@ -1212,7 +1225,7 @@ public class App {
         }
     }
 
-    private static void createDocumentSearchEntries(Connection conn, Statement stmt) {
+    private void createDocumentSearchEntries(Connection conn, Statement stmt) {
         PreparedStatement pstmt = null;
         ResultSet res = null;
         try {
@@ -1253,7 +1266,7 @@ public class App {
         }
     }
 
-    private static void runMiscSql(Connection conn, Statement stmt) {
+    private void runMiscSql(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
         writeHeader2("Executiong miscellaneous post-upgrade sql");
@@ -1293,7 +1306,7 @@ public class App {
         }
     }
 
-    private static void updatePurchasingStatuses(Connection upgradeConn) {
+    private void updatePurchasingStatuses(Connection upgradeConn) {
         Connection legacyConn = null;
         Statement legacyStmt = null;
         ResultSet legacyRes = null;
@@ -1421,7 +1434,7 @@ public class App {
         }
     }
 
-    private static boolean ensureNmNmspccdUnique(Connection conn, Statement stmt) {
+    private boolean ensureNmNmspccdUnique(Connection conn, Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
         try {
@@ -1467,11 +1480,11 @@ public class App {
         return retval;
     }
 
-    private static boolean isMethodCall(String nm) {
+    private boolean isMethodCall(String nm) {
         return (StringUtils.isNotBlank(nm) && nm.contains("method:"));
     }
 
-    private static boolean callMethod(String nm, Connection conn, Statement stmt) {
+    private boolean callMethod(String nm, Connection conn, Statement stmt) {
         boolean retval = false;
         if (StringUtils.isNotBlank(nm)) {
             if (nm.contains("ensureNmNmspccdUnique")) {
@@ -1488,7 +1501,7 @@ public class App {
         return retval;
     }
     
-    private static void populateProcurementCardTable(Connection conn) {
+    private void populateProcurementCardTable(Connection conn) {
         Statement stmt = null;
         PreparedStatement pstmt = null;
         ResultSet res = null;
@@ -1592,6 +1605,99 @@ public class App {
         finally {
             closeDbObjects(null, stmt, res);
             closeDbObjects(null, pstmt, null);
+        }
+    }
+    
+
+    private void convertMaintenanceDocuments(Connection upgradeConn) {
+        PreparedStatement pstmt = null;
+        Statement stmt = null;
+        ResultSet res = null;
+        
+        try {
+            writeHeader2("Converting legacy maintenance documents to rice 2.0...");
+            
+            String fname = properties.getProperty("maintenace-document-conversion-rules-file");
+            
+            if (StringUtils.isNotBlank(fname)) {
+                File f = new File(fname);
+            
+                if (f.exists()) {
+                    MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(this, f);
+                    EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
+                    pstmt = upgradeConn.prepareStatement("update krns_maint_doc_test_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
+                    stmt = upgradeConn.createStatement();
+
+                    res = stmt.executeQuery("SELECT DOC_HDR_ID, DOC_CNTNT FROM krns_maint_doc_test_t ");
+
+                    int cnt = 0;
+                    long start = System.currentTimeMillis();
+                    while (res.next()) {
+                        String docid = res.getString(1);
+                        String oldXml = null;
+                        
+                        if (encryptService.isEnabled()) {
+                            oldXml = encryptService.decrypt(res.getString(2));
+                        } else {
+                            oldXml = res.getString(2);
+                        }
+
+                        String newXml  = null;
+                        
+                        try {
+                            newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml);
+                        }
+
+                        catch (Exception ex) {
+                            newXml = null;
+                            writeOut("error occured while attemptintg to convert document " + docid);
+                            writeOut("-------------------------------------------- xml ---------------------------------------------");
+                            writeOut(oldXml);
+                            writeOut(ex);
+                        }
+
+                        if (newXml != null) {
+                            if (encryptService.isEnabled()) {
+                                pstmt.setString(1, encryptService.encrypt(newXml));
+                            } else {
+                                pstmt.setString(1, newXml);
+                            }
+
+                            pstmt.setString(2, docid);
+
+                            pstmt.addBatch();
+                        
+                            cnt++;
+
+                            if ((cnt % MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE) == 0) {
+                                pstmt.executeBatch();
+                                
+                                if ((cnt % (5 * MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE)) == 0) {
+                                    writeOut(cnt + " documents processed - " + ((System.currentTimeMillis() - start)/1000) + "sec");
+                                    start = System.currentTimeMillis();
+                                }
+                            }
+                        }
+                    }
+
+                    if ((cnt % MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE) != 0) {
+                        pstmt.executeBatch();
+                    }
+
+                    doCommit(upgradeConn);
+
+                    writeOut(cnt + " maintenance documents upgraded.");
+                } else {
+                    writeOut("maintenance document conversion rules file " + f.getPath() + " does not exist");
+                }
+            } else {
+                writeOut("no property 'maintenace-document-conversion-rules-file' entry in property file");
+            }
+        } 
+        
+        catch (Exception ex) {
+            doRollback(upgradeConn);
+            writeOut(ex);
         }
     }
 }
