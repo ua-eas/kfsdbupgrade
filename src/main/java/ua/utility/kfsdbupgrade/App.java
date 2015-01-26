@@ -62,69 +62,29 @@ public class App {
     private Map<String, List<String>> upgradeFiles;
 
     public static void main(final String args[]) {
-        if (args.length == 1) {
-            new App(args[0]);
+        if (args.length > 0) {
+            String propertyFileName = args[0];
+            boolean ingestWorkflow = false;
+            if (args.length > 1) {
+                ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
+            }
+            new App(propertyFileName, ingestWorkflow);
         } else {
             System.out.println("usage: java -Xmx500m -jar kfsdbupgrade.jar <property-file-path>");
         }
     }
 
-    public App(String propertyFileName) {
+    public App(String propertyFileName, boolean ingestWorkflow) {
         properties = loadProperties(propertyFileName);
         if (properties != null) {
             upgradeRoot = properties.getProperty("upgrade-base-directory");
             upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
             upgradeFiles = loadFolderFileMap("files-");
-
-            Connection conn1 = null;
-            Connection conn2 = null;
-            Statement stmt = null;
-            boolean success = false;
-            try {
-                conn1 = getUpgradeConnection();
-                conn2 = getUpgradeConnection();
-                conn2.setAutoCommit(true);
-                stmt = conn2.createStatement();
-                stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
-                stmt.close();
-                stmt = conn1.createStatement();
-                writeOut("Starting KFS database upgrade process...");
-                writeOut("");
-
-                if (doInitialProcessing(conn1, stmt)) {
-                    doCommit(conn1);
-                    if (doUpgrade(conn1, conn2, stmt)) {
-                        success = true;
-                    }
-                }
-
-                if (success) {
-                    doCommit(conn1);
-                    stmt.close();
-                    stmt = conn2.createStatement();
-                    dropTempTables(conn2, stmt);
-                    runMiscSql(conn2, stmt);
-                    populateProcurementCardTable(conn1);
-                    updatePurchasingStatuses(conn1);
-                    createExistingIndexes(conn2, stmt);
-                    createPublicSynonyms(conn2, stmt);
-                    createForeignKeyIndexes(conn2, stmt);
-                    createDocumentSearchEntries(conn2, stmt);
-                    if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
-                        convertMaintenanceDocuments(conn1);
-                    }
-                    writeOut("");
-                    writeHeader1("upgrade completed successfully");
-                }
-            } 
             
-            catch (Exception ex) {
-                writeOut(ex);
-            } 
-            
-            finally {
-                closeDbObjects(conn1, stmt, null);
-                closeDbObjects(conn2, null, null);
+            if (ingestWorkflow) {
+                doWorkflow();
+            } else {
+     //           doUpgrade();
             }
         } else {
             System.out.println("invalid properties file: " + propertyFileName);
@@ -133,6 +93,64 @@ public class App {
         System.exit(0);
     }
     
+    private void doUpgrade() {
+        Connection conn1 = null;
+        Connection conn2 = null;
+        Statement stmt = null;
+        boolean success = false;
+        try {
+            conn1 = getUpgradeConnection();
+            conn2 = getUpgradeConnection();
+            conn2.setAutoCommit(true);
+            stmt = conn2.createStatement();
+            stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
+            stmt.close();
+            stmt = conn1.createStatement();
+            writeOut("Starting KFS database upgrade process...");
+            writeOut("");
+
+            if (doInitialProcessing(conn1, stmt)) {
+                doCommit(conn1);
+                if (doUpgrade(conn1, conn2, stmt)) {
+                    success = true;
+                }
+            }
+
+            if (success) {
+                doCommit(conn1);
+                stmt.close();
+                stmt = conn2.createStatement();
+                dropTempTables(conn2, stmt);
+                runMiscSql(conn2, stmt);
+                populateProcurementCardTable(conn1);
+                updatePurchasingStatuses(conn1);
+                createExistingIndexes(conn2, stmt);
+                createPublicSynonyms(conn2, stmt);
+                createForeignKeyIndexes(conn2, stmt);
+                createDocumentSearchEntries(conn2, stmt);
+                if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
+                    convertMaintenanceDocuments(conn1);
+                }
+                writeOut("");
+                writeHeader1("upgrade completed successfully");
+            }
+        } 
+
+        catch (Exception ex) {
+            writeOut(ex);
+        } 
+
+        finally {
+            closeDbObjects(conn1, stmt, null);
+            closeDbObjects(conn2, null, null);
+        }
+    }
+    
+    private void doWorkflow() {
+        new WorkflowImporter(this, upgradeRoot, upgradeFolders);
+    }
+    
+
     private List<String> loadList(String input) {
         List<String> retval = new ArrayList<String>();
         if (StringUtils.isNotBlank(input)) {
@@ -672,13 +690,13 @@ public class App {
         return retval;
     }
 
-    private void writeHeader1(String msg) {
+    public void writeHeader1(String msg) {
         writeOut("");
         writeOut(HEADER1.replace("?", msg));
         writeOut("");
     }
 
-    private void writeHeader2(String msg) {
+    public void writeHeader2(String msg) {
         writeOut("");
         writeOut(msg);
         writeOut(UNDERLINE);
@@ -1650,7 +1668,7 @@ public class App {
 
                         catch (Exception ex) {
                             newXml = null;
-                            writeOut("error occured while attemptintg to convert document " + docid);
+                            writeOut("error occured while attempting to convert document " + docid);
                             writeOut("-------------------------------------------- xml ---------------------------------------------");
                             writeOut(oldXml);
                             writeOut(ex);
@@ -1691,7 +1709,7 @@ public class App {
                     writeOut("maintenance document conversion rules file " + f.getPath() + " does not exist");
                 }
             } else {
-                writeOut("no property 'maintenace-document-conversion-rules-file' entry in property file");
+                writeOut("no property 'maintenance-document-conversion-rules-file' entry in property file");
             }
         } 
         
