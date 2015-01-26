@@ -20,26 +20,41 @@ package ua.utility.kfsdbupgrade;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.kuali.rice.core.api.config.property.ConfigContext;
+import org.kuali.rice.core.impl.config.property.JAXBConfigImpl;
+import org.kuali.rice.kew.batch.XmlPollerServiceImpl;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 
 public class WorkflowImporter {
-    private static ClassPathXmlApplicationContext context;
+    private GenericApplicationContext context;
 
     public void initializeKfs(App app, String upgradeRoot) {
         app.writeHeader1("Initializing Web Context" );
         app.writeHeader2( "Calling KualiInitializeListener.contextInitialized" );
         long start = System.currentTimeMillis();
 
-     /*
         Properties baseProps = new Properties();
         baseProps.putAll(System.getProperties());
         JAXBConfigImpl config = new JAXBConfigImpl(baseProps);
         ConfigContext.init(config);
 
-        new ClassPathXmlApplicationContext(upgradeRoot + File.separator + "kfs-workflow-importer-startup.xml").start();
-         */
+        context = new GenericApplicationContext();
+        XmlBeanDefinitionReader xmlReader = new XmlBeanDefinitionReader(context);
+        xmlReader.loadBeanDefinitions(new ClassPathResource("kfs-workflow-importer-startup.xml"));
+        PropertyPlaceholderConfigurer ppc = (PropertyPlaceholderConfigurer)context.getBean("propertyPlaceholderConfigurer");
+        ppc.setLocation(new FileSystemResource(upgradeRoot + File.separator + "kfsdbupgrade.properties"));
+        context.refresh();
+
         app.writeOut("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start)/1000) + "sec");
     }
 
@@ -59,33 +74,65 @@ public class WorkflowImporter {
             failedDir.mkdirs();
             
             int indx = 1;
+            boolean foundone = false;
             for (String folder : upgradeFolders) {
-                File fdir = new File(upgradeRoot + File.separator + folder);
+                File fdir = new File(upgradeRoot + File.separator + "upgrade-files" + File.separator + folder);
                 
                 if (fdir.exists() && fdir.isDirectory()) {
                     List <File> workflowFiles = new ArrayList<File>();
                     loadWorkflowFiles(fdir, workflowFiles);
+                    removeModifiedBaseWorkflowFiles(workflowFiles);
                     
                     if (!workflowFiles.isEmpty()) {
                         for (File f : workflowFiles) {
                             FileUtils.copyFile(f, getPendingFile(pendingDir, f, folder, indx++));
+                            foundone = true;
+                            break;
                         }
                     }
                 }
+                
+                if (foundone) {
+                    break;
+                }
             }
             
-            /*
             XmlPollerServiceImpl parser = new XmlPollerServiceImpl();
             parser.setXmlPendingLocation(pendingDir.getAbsolutePath() );
             parser.setXmlCompletedLocation(completedDir.getAbsolutePath() );
             parser.setXmlProblemLocation(failedDir.getAbsolutePath() );
 
             parser.run();
-                */
         }
         
         catch (Exception ex) {
             app.writeOut(ex);
+        }
+    }
+    
+    private void removeModifiedBaseWorkflowFiles(List <File> files) {
+        Set <String> hs = new HashSet<String>();
+        
+        // add all the modified files to the set
+        for (File f : files) {
+            if (f.getPath().endsWith("_mod.xml")) {
+                hs.add(f.getPath());
+            }
+        }
+        
+        Iterator <File> it = files.iterator();
+        
+        while (it.hasNext()) {
+            File f = it.next();
+            
+            // if this is a base file and it has a modified counterpart - remove it
+            if (!f.getPath().endsWith("_mod.xml")) {
+                String s = f.getPath().substring(0, f.getPath().lastIndexOf("."));
+                
+                if (hs.contains(s + "_mod.xml")) {
+                    it.remove();
+                }
+            }
         }
     }
     
