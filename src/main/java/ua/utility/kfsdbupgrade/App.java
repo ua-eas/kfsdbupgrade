@@ -52,9 +52,9 @@ public class App {
     private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
     
     private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
-    private static final String ERROR = "************************************************* error *************************************************";
-    private static final String HEADER1 = "================================================ ? ================================================";
+    public static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
+    public static final String ERROR = "************************************************* error *************************************************";
+    public static final String HEADER1 = "================================================ ? ================================================";
     private static final String INDEX_NAME_TEMPLATE = "[table-name]I{index}";
     private static String upgradeRoot;
     private List<String> upgradeFolders;
@@ -470,7 +470,7 @@ public class App {
         return retval;
     }
 
-    public void writeOut(Exception ex) {
+    private void writeOut(Exception ex) {
         System.out.println();
         System.out.println(getTimeString() + ERROR);
         ex.printStackTrace(System.out);
@@ -522,7 +522,7 @@ public class App {
         }
     }
 
-    private String getTimeString() {
+   public String getTimeString() {
         return "[" + DF.format(new Date()) + "] ";
     }
 
