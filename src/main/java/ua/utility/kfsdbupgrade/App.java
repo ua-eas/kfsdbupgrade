@@ -84,7 +84,7 @@ public class App {
             if (ingestWorkflow) {
                 doWorkflow();
             } else {
-     //           doUpgrade();
+                doUpgrade();
             }
         } else {
             System.out.println("invalid properties file: " + propertyFileName);
