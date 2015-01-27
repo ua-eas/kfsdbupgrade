@@ -19,6 +19,9 @@
 package ua.utility.kfsdbupgrade;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.impl.config.property.JAXBConfigImpl;
 import org.kuali.rice.kew.batch.XmlPollerServiceImpl;
@@ -36,11 +40,14 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 
 public class WorkflowImporter {
+    private static final String WORKFLOW_PROCESSING_FOLDER = "workflow-processing";
     private GenericApplicationContext context;
-
-    public void initializeKfs(App app, String upgradeRoot) {
-        app.writeHeader1("Initializing Web Context" );
-        app.writeHeader2( "Calling KualiInitializeListener.contextInitialized" );
+    private App app;
+    private String upgradeRoot;
+    
+    public void initializeKfs() {
+        writeHeader1("Initializing Web Context" );
+        writeHeader2( "Calling KualiInitializeListener.contextInitialized" );
         long start = System.currentTimeMillis();
 
         Properties baseProps = new Properties();
@@ -55,26 +62,40 @@ public class WorkflowImporter {
         ppc.setLocation(new FileSystemResource(upgradeRoot + File.separator + "kfsdbupgrade.properties"));
         context.refresh();
 
-        app.writeOut("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start)/1000) + "sec");
+        writeOut("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start)/1000) + "sec");
     }
 
     public WorkflowImporter(App app, String upgradeRoot, List <String> upgradeFolders) {
+        this.app = app;
+        this.upgradeRoot = upgradeRoot;
         try {
-            initializeKfs(app, upgradeRoot);
+            initializeKfs();
 
-            File workflowWorkDir = new File(upgradeRoot + File.separator + "workflow-work");
-            FileUtils.deleteDirectory(workflowWorkDir);
+            File workflowWorkDir = new File(upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER);
+            
+            if (!workflowWorkDir.exists()) {
+                workflowWorkDir.mkdirs();
+            }
             
             File pendingDir = new File(workflowWorkDir.getPath() + File.separator + "pending" );
             File completedDir = new File(workflowWorkDir.getPath() + File.separator + "completed" );
             File failedDir = new File(workflowWorkDir.getPath() + File.separator + "problem");
 
+            if (pendingDir.exists()) {
+                FileUtils.deleteDirectory(pendingDir);
+                FileUtils.deleteDirectory(completedDir);
+                FileUtils.deleteDirectory(failedDir);
+            }
+            
             pendingDir.mkdirs();
             completedDir.mkdirs();
             failedDir.mkdirs();
             
-            int indx = 1;
-            boolean foundone = false;
+            XmlPollerServiceImpl parser = new XmlPollerServiceImpl();
+            parser.setXmlPendingLocation(pendingDir.getAbsolutePath() );
+            parser.setXmlCompletedLocation(completedDir.getAbsolutePath() );
+            parser.setXmlProblemLocation(failedDir.getAbsolutePath() );
+
             for (String folder : upgradeFolders) {
                 File fdir = new File(upgradeRoot + File.separator + "upgrade-files" + File.separator + folder);
                 
@@ -84,29 +105,26 @@ public class WorkflowImporter {
                     removeModifiedBaseWorkflowFiles(workflowFiles);
                     
                     if (!workflowFiles.isEmpty()) {
+                        int indx = 1;
+                        writeHeader2("processing workflow files for folder " + folder);
                         for (File f : workflowFiles) {
                             FileUtils.copyFile(f, getPendingFile(pendingDir, f, folder, indx++));
-                            foundone = true;
+                            writeOut("file: " + f.getPath());
                             break;
                         }
+                        
+                        parser.run();
                     }
                 }
-                
-                if (foundone) {
-                    break;
-                }
             }
-            
-            XmlPollerServiceImpl parser = new XmlPollerServiceImpl();
-            parser.setXmlPendingLocation(pendingDir.getAbsolutePath() );
-            parser.setXmlCompletedLocation(completedDir.getAbsolutePath() );
-            parser.setXmlProblemLocation(failedDir.getAbsolutePath() );
-
-            parser.run();
         }
         
         catch (Exception ex) {
-            app.writeOut(ex);
+            writeOut(ex);
+        }
+        
+        finally {
+            writeOut("workflow processing completed");
         }
     }
     
@@ -176,4 +194,72 @@ public class WorkflowImporter {
         }
     }
 
+    public void writeHeader1(String msg) {
+        writeOut("");
+        writeOut(App.HEADER1.replace("?", msg));
+        writeOut("");
+    }
+
+    public void writeHeader2(String msg) {
+        writeOut("");
+        writeOut(msg);
+        writeOut(App.UNDERLINE);
+        writeOut("");
+    }
+
+    private PrintWriter getOutputLogWriter() throws IOException {
+        return new PrintWriter(new FileWriter(upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER + File.separator + "workflow.log", true));
+    }
+
+    private void writeOut(Exception ex) {
+        System.out.println();
+        System.out.println(app.getTimeString() + App.ERROR);
+        ex.printStackTrace(System.out);
+        writeLog(ex);
+    }
+
+    private void writeLog(Exception ex) {
+        PrintWriter pw = null;
+
+        try {
+            pw = getOutputLogWriter();
+            pw.println();
+            pw.println(app.getTimeString() + App.ERROR);
+            ex.printStackTrace(pw);
+        } catch (Exception ex2) {
+        } finally {
+            try {
+                if (pw != null) {
+                    pw.close();
+                }
+            } catch (Exception ex2) {
+            };
+        }
+    }
+    
+    private void writeOut(String msg) {
+        System.out.println(msg);
+        writeLog(msg);
+    }
+
+    private void writeLog(String msg) {
+        PrintWriter pw = null;
+
+        try {
+            pw = getOutputLogWriter();
+            if (StringUtils.isNotBlank(msg)) {
+                pw.println(app.getTimeString() + msg);
+            } else {
+                pw.println();
+            }
+        } catch (Exception ex2) {
+        } finally {
+            try {
+                if (pw != null) {
+                    pw.close();
+                }
+            } catch (Exception ex2) {
+            };
+        }
+    }
 }
