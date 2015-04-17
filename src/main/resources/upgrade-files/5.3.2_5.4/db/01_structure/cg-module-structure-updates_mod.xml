@@ -161,14 +161,6 @@
 			<column name="STOP_WRK_IND" type="VARCHAR(1)" defaultValue="N" />
 			<column name="STOP_WRK_REASON_TXT" type="VARCHAR(120)" />
 		</addColumn>
-
-                <!--  KFSTP1222 - Increase column sizes to be consistent with Kuali Coeus (KC) -->
-                <modifyDataType tableName="CG_AGENCY_T" columnName="CG_AGENCY_NBR" newDataType="VARCHAR2(6)" />
-                <modifyDataType tableName="CG_AWD_T" columnName="CG_AGENCY_NBR" newDataType="VARCHAR2(6)" />
-                <modifyDataType tableName="CG_PRPSL_T" columnName="CG_AGENCY_NBR" newDataType="VARCHAR2(6)" />
-                <modifyDataType tableName="CM_CPTLAST_DOC_T" columnName="CG_AGENCY_NBR" newDataType="VARCHAR2(6)" />
-                <modifyDataType tableName="CM_CPTLAST_T" columnName="CG_AGENCY_NBR" newDataType="VARCHAR2(6)" />
-                <modifyDataType tableName="FS_ORIGIN_CODE_T" columnName="NEXT_CG_AGENCY_NBR" newDataType="VARCHAR2(6)" />
                 
                 <!--  KFSTP1160 Removed unused (and unable to be maintained) comments field from Award -->
                 <dropColumn tableName="CG_AWD_T" columnName="CGAWD_COMMENT_TXT" />
@@ -177,6 +169,34 @@
 		</modifySql>
 	</changeSet>
 
+
+	<changeSet author="KFSCGB" id="KFS_CGB_MODIFIED_CG_TABLES_KFSTP1222">
+                <!--  KFSTP1222 - Increase column sizes to be consistent with Kuali Coeus (KC) -->
+                <modifyColumn tableName="CG_AGENCY_T">
+                    <column name="CG_AGENCY_NBR" type="VARCHAR2(6)" />
+		</modifyColumn>
+                
+                <modifyColumn tableName="CG_AWD_T">
+                    <column name="CG_AGENCY_NBR" type="VARCHAR2(6)" />
+		</modifyColumn>
+
+
+                <modifyColumn tableName="CG_PRPSL_T">
+                    <column name="CG_AGENCY_NBR" type="VARCHAR2(6)" />
+		</modifyColumn>
+                
+                <modifyColumn tableName="CM_CPTLAST_DOC_T">
+                    <column name="CG_AGENCY_NBR" type="VARCHAR2(6)" />
+		</modifyColumn>
+                
+                <modifyColumn tableName="CM_CPTLAST_T">
+                    <column name="CG_AGENCY_NBR" type="VARCHAR2(6)" />
+		</modifyColumn>
+                
+                <modifyColumn tableName="FS_ORIGIN_CODE_T">
+                    <column name="CG_AGENCY_NBR" type="VARCHAR2(6)" />
+		</modifyColumn>
+        </changeSet>
 	<changeSet author="KFSCGB" id="KFS_CGB_CG_SEQUENCES_oracle" dbms="oracle">
 		<createSequence sequenceName="AGENCY_ADDR_ID_SEQ" />
 	</changeSet>
