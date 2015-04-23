@@ -159,7 +159,7 @@ END;
 
 -- NEW: 9000000000000 + ROW# -  for account numbers 
 UPDATE fp_dv_ach_t set dv_payee_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
-UPDATE fp_dv_wire_trnfr_t set dv_payee_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
+UPDATE KULOWNER.fp_dv_wire_trnfr_t set dv_payee_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 UPDATE pdp_ach_acct_nbr_t set ach_bnk_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 UPDATE pdp_payee_ach_acct_t set bnk_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 
@@ -309,7 +309,7 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 --  (select role_id from krim_role_t where role_nm='UA KFS Developers'),
 --  (select perm_id from krim_perm_t where nmspc_cd='KFS-SYS' and nm='Modify Batch Job'),
 --  'Y')
-;
+
 
 
 

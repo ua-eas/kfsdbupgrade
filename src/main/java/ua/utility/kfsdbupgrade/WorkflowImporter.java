@@ -33,15 +33,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.impl.config.property.JAXBConfigImpl;
 import org.kuali.rice.kew.batch.XmlPollerServiceImpl;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class WorkflowImporter {
     private static final String WORKFLOW_PROCESSING_FOLDER = "workflow-processing";
-    private GenericApplicationContext context;
+    private static ClassPathXmlApplicationContext context;
     private App app;
     private String upgradeRoot;
     
@@ -55,12 +51,8 @@ public class WorkflowImporter {
         JAXBConfigImpl config = new JAXBConfigImpl(baseProps);
         ConfigContext.init(config);
 
-        context = new GenericApplicationContext();
-        XmlBeanDefinitionReader xmlReader = new XmlBeanDefinitionReader(context);
-        xmlReader.loadBeanDefinitions(new ClassPathResource("kfs-workflow-importer-startup.xml"));
-        PropertyPlaceholderConfigurer ppc = (PropertyPlaceholderConfigurer)context.getBean("propertyPlaceholderConfigurer");
-        ppc.setLocation(new FileSystemResource(upgradeRoot + File.separator + "kfsdbupgrade.properties"));
-        context.refresh();
+        context = new ClassPathXmlApplicationContext("kfs-workflow-importer-startup.xml");
+        context.start();
 
         writeOut("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start)/1000) + "sec");
     }
@@ -71,7 +63,7 @@ public class WorkflowImporter {
         try {
             initializeKfs();
 
-            File workflowWorkDir = new File(upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER);
+            File workflowWorkDir = new File(WORKFLOW_PROCESSING_FOLDER);
             
             if (!workflowWorkDir.exists()) {
                 workflowWorkDir.mkdirs();
@@ -97,7 +89,7 @@ public class WorkflowImporter {
             parser.setXmlProblemLocation(failedDir.getAbsolutePath() );
 
             for (String folder : upgradeFolders) {
-                File fdir = new File(upgradeRoot + File.separator + "upgrade-files" + File.separator + folder);
+                File fdir = new File("upgrade-files" + File.separator + folder);
                 
                 if (fdir.exists() && fdir.isDirectory()) {
                     List <File> workflowFiles = new ArrayList<File>();
@@ -110,7 +102,6 @@ public class WorkflowImporter {
                         for (File f : workflowFiles) {
                             FileUtils.copyFile(f, getPendingFile(pendingDir, f, folder, indx++));
                             writeOut("file: " + f.getPath());
-                            break;
                         }
                         
                         parser.run();

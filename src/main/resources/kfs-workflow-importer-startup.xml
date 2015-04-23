@@ -1,42 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-   - The Kuali Financial System, a comprehensive financial management system for higher education.
-   - 
-   - Copyright 2005-2014 The Kuali Foundation
-   - 
-   - This program is free software: you can redistribute it and/or modify
-   - it under the terms of the GNU Affero General Public License as
-   - published by the Free Software Foundation, either version 3 of the
-   - License, or (at your option) any later version.
-   - 
-   - This program is distributed in the hope that it will be useful,
-   - but WITHOUT ANY WARRANTY; without even the implied warranty of
-   - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   - GNU Affero General Public License for more details.
-   - 
-   - You should have received a copy of the GNU Affero General Public License
-   - along with this program.  If not, see <http://www.gnu.org/licenses/>.
- -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
        xmlns:p="http://www.springframework.org/schema/p" 
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd" default-lazy-init="false">
-
-	<!--
-		This Spring File loads all of the Rice Configuration (including transaction
-		managers, datasources and the Rice Configurer)
-		
-            Add any additional Spring Beans you have to this file.  Also feel free to
-            modify and re-arrange these Spring files as you see fit!
-    -->
-
     <bean id="properties" class="org.kuali.kfs.sys.context.PropertyLoadingFactoryBean" />
 
     <bean id="securityProperties" class="org.kuali.kfs.sys.context.PropertyLoadingFactoryBean"
-          p:secureMode="true" />
+        p:secureMode="true" />
 
     <bean id="propertyPlaceholderConfigurer" class="org.kuali.kfs.sys.context.ConfigPropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders" value="true" />
@@ -54,14 +24,13 @@
     <bean id="btmConfig" factory-method="getConfiguration" class="bitronix.tm.TransactionManagerServices" lazy-init="true" />
 
     <bean id="transactionManagerBitronix" class="bitronix.tm.TransactionManagerServices"
-          factory-method="getTransactionManager" depends-on="btmConfig" destroy-method="shutdown" lazy-init="true"/>
+        factory-method="getTransactionManager" depends-on="btmConfig" destroy-method="shutdown" lazy-init="true"/>
 
     <bean id="transactionManagerBitronixXa" class="bitronix.tm.TransactionManagerServices"
-          factory-method="getTransactionManager" depends-on="btmConfig" destroy-method="shutdown" lazy-init="true"/>
+        factory-method="getTransactionManager" depends-on="btmConfig" destroy-method="shutdown" lazy-init="true"/>
 
     <alias name="transactionManager${connection.pool.impl}" alias="jtaTransactionManager"/>
     <alias name="transactionManager${connection.pool.impl}" alias="jtaUserTransaction"/>
-
 
     <bean id="nonTransactionalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="${database-driver}"/>
@@ -70,18 +39,18 @@
         <property name="username" value="${database-user}" />
         <property name="password" value="${database-password}" />
         <property name="accessToUnderlyingConnectionAllowed" value="${kfs.datasource.pool.accessToUnderlyingConnectionAllowed}"/>
-        <property name="maxActive" value="10"/>
-        <property name="minIdle" value="1" />
-        <property name="initialSize" value="1" />
+        <property name="maxActive" value="${kfs.datasource.pool.maxActive}"/>
+        <property name="minIdle" value="${kfs.datasource.pool.minIdle}" />
+        <property name="initialSize" value="${kfs.datasource.pool.initialSize}" />
     </bean>
 
     <bean id="kfsDataSourceXAPool" class="org.kuali.rice.core.framework.persistence.jdbc.datasource.XAPoolDataSource">
         <property name="transactionManager" ref="transactionManagerXAPool" />
         <property name="driverClassName" value="${database-driver}" />
         <property name="url" value="${database-url}" />
-        <property name="maxSize" value="10" />
-        <property name="minSize" value="1" />
-        <property name="maxWait" value="30000" />
+        <property name="maxSize" value="${kfs.datasource.pool.maxSize}" />
+        <property name="minSize" value="${kfs.datasource.pool.minSize}" />
+        <property name="maxWait" value="${kfs.datasource.pool.maxWait}" />
         <property name="validationQuery" value="select * from dual"/>
         <property name="username" value="${database-user}" />
         <property name="password" value="${database-password}" />
@@ -91,22 +60,29 @@
         <property name="transactionManager" ref="transactionManagerXAPool" />
         <property name="driverClassName" value="${database-driver}" />
         <property name="url" value="${database-url}" />
-        <property name="maxSize" value="5" />
-        <property name="minSize" value="1" />
-        <property name="maxWait" value="30000" />
-        <property name="validationQuery" value="select * from dual"/>
+        <property name="maxSize" value="${rice.datasource.pool.maxSize}" />
+        <property name="minSize" value="${rice.datasource.pool.minSize}" />
+        <property name="maxWait" value="${rice.datasource.pool.maxWait}" />
+        <property name="validationQuery" value="${rice.datasource.validating.query}"/>
         <property name="username" value="${database-user}" />
         <property name="password" value="${database-password}" />
     </bean>
 
+    <!-- 
+     <bean id="ds-random-string" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+       <property name="staticMethod" value="org.apache.commons.lang.RandomStringUtils.randomAlphanumeric"/>
+       <property name="arguments"><list><value>20</value></list></property>
+     </bean>
+    -->
+
     <bean id="riceDataSourceBitronix" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init"
-          destroy-method="close" lazy-init="true">
+        destroy-method="close" lazy-init="true">
         <property name="className" value="bitronix.tm.resource.jdbc.lrc.LrcXADataSource" />
-        <property name="uniqueName" value="riceDataSourceBitronix-kfs-upg" />
-        <property name="minPoolSize" value="1" />
-        <property name="maxPoolSize" value="10" />
+        <property name="uniqueName" value="riceDataSourceBitronix-kfs-upgrade" />
+        <property name="minPoolSize" value="${rice.datasource.pool.minSize}" />
+        <property name="maxPoolSize" value="${rice.datasource.pool.maxSize}" />
         <property name="useTmJoin" value="true" />
-        <property name="testQuery" value="select * from dual" />
+        <property name="testQuery" value="${rice.datasource.validating.query}" />
         <property name="allowLocalTransactions" value="true" />
         <property name="driverProperties">
             <props>
@@ -119,13 +95,13 @@
     </bean>
 
     <bean id="riceDataSourceBitronixXa" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init"
-          destroy-method="close" lazy-init="true">
-        <property name="className" value="oracle.jdbc.xa.client.OracleXADataSource" />
-        <property name="uniqueName" value="riceDataSourceBitronixXa-kfs-upg" />
-        <property name="minPoolSize" value="1" />
-        <property name="maxPoolSize" value="10" />
+        destroy-method="close" lazy-init="true">
+        <property name="className" value="bitronix.tm.resource.jdbc.lrc.LrcXADataSource" />
+        <property name="uniqueName" value="riceDataSourceBitronixXa-kfs-upgrade" />
+        <property name="minPoolSize" value="${rice.datasource.pool.minSize}" />
+        <property name="maxPoolSize" value="${rice.datasource.pool.maxSize}" />
         <property name="useTmJoin" value="true" />
-        <property name="testQuery" value="select * from dual" />
+        <property name="testQuery" value="${rice.datasource.validating.query}" />
         <property name="allowLocalTransactions" value="true" />
         <property name="driverProperties">
             <props>
@@ -138,17 +114,17 @@
     </bean>
 
     <bean id="kfsDataSourceBitronix" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init"
-          destroy-method="close" lazy-init="true">
+        destroy-method="close" lazy-init="true">
         <property name="className" value="bitronix.tm.resource.jdbc.lrc.LrcXADataSource" />
-        <property name="uniqueName" value="kfsDataSourceBitronix-kfs-upg" />
-        <property name="minPoolSize" value="1" />
-        <property name="maxPoolSize" value="10" />
+        <property name="uniqueName" value="kfsDataSourceBitronix-kfs-upgrade" />
+        <property name="minPoolSize" value="${kfs.datasource.pool.minSize}" />
+        <property name="maxPoolSize" value="${kfs.datasource.pool.maxSize}" />
         <property name="useTmJoin" value="true" />
         <property name="testQuery" value="select * from dual" />
         <property name="allowLocalTransactions" value="true" />
         <property name="driverProperties">
             <props>
-                <prop key="url">${database-url}</prop>
+                <prop key="Url">${database-url}</prop>
                 <prop key="driverClassName">${database-driver}</prop>
                 <prop key="user">${database-user}</prop>
                 <prop key="password">${database-password}</prop>
@@ -157,11 +133,11 @@
     </bean>
 
     <bean id="kfsDataSourceBitronixXa" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init"
-          destroy-method="close" lazy-init="true">
-        <property name="className" value="oracle.jdbc.xa.client.OracleXADataSource" />
-        <property name="uniqueName" value="kfsDataSourceBitronixXa-kfs-upg" />
-        <property name="minPoolSize" value="1" />
-        <property name="maxPoolSize" value="10" />
+        destroy-method="close" lazy-init="true">
+        <property name="className" value="bitronix.tm.resource.jdbc.lrc.LrcXADataSource" />
+        <property name="uniqueName" value="kfsDataSourceBitronixXa-kfs-upgrade" />
+        <property name="minPoolSize" value="${kfs.datasource.pool.minSize}" />
+        <property name="maxPoolSize" value="${kfs.datasource.pool.maxSize}" />
         <property name="useTmJoin" value="true" />
         <property name="testQuery" value="select * from dual" />
         <property name="allowLocalTransactions" value="true" />
@@ -174,9 +150,8 @@
         </property>
     </bean>
 
-    <alias name="riceDataSourceXAPool" alias="riceDataSource"/>
-    <alias name="kfsDataSourceXAPool" alias="dataSource"/>
-
+    <alias name="riceDataSource${connection.pool.impl}" alias="riceDataSource"/>
+    <alias name="kfsDataSource${connection.pool.impl}" alias="dataSource"/>
     <bean id="coreConfigurer" class="org.kuali.rice.core.impl.config.module.CoreConfigurer">
         <property name="dataSource" ref="dataSource" />
         <property name="serverDataSource" ref="riceDataSource" />
@@ -199,14 +174,15 @@
     </bean>
 
     <bean id="coreServiceConfigurer"
-          class="org.kuali.rice.coreservice.impl.config.CoreServiceConfigurer" />
+              class="org.kuali.rice.coreservice.impl.config.CoreServiceConfigurer" />
 
     <bean id="kimConfigurer" class="org.kuali.rice.kim.config.KIMConfigurer" />
 
     <bean id="kewConfigurer" class="org.kuali.rice.kew.config.KEWConfigurer">
         <property name="dataSource" ref="riceDataSource" />
     </bean>
-
+    <!-- <bean id="kenConfigurer" class="org.kuali.rice.ken.impl.config.KENConfigurer"/> 
+    <bean id="edlConfigurer" class="org.kuali.rice.edl.impl.config.EDLConfigurer"/> 
+    <bean id="krmsConfigurer" class="org.kuali.rice.krms.config.KRMSConfigurer"/> -->
     <bean id="locationConfigurer" class="org.kuali.rice.location.impl.config.LocationConfigurer" />
-
 </beans>

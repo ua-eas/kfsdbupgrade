@@ -82,7 +82,7 @@ public class App {
             upgradeFiles = loadFolderFileMap("files-");
             
             if (ingestWorkflow) {
-                doWorkflow();
+                doWorkflow(propertyFileName);
             } else {
                 doUpgrade();
             }
@@ -146,7 +146,8 @@ public class App {
         }
     }
     
-    private void doWorkflow() {
+    private void doWorkflow(String propertyFileName) {
+        System.getProperties().setProperty("security.property.file", "file:" + propertyFileName);
         new WorkflowImporter(this, upgradeRoot, upgradeFolders);
     }
     

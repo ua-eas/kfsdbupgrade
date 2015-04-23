@@ -7,8 +7,9 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <kuali.rice.version>2.1.9</kuali.rice.version>
     </properties>
     <dependencies>
         <dependency>
@@ -42,74 +43,145 @@
             <version>1.8.3-kuali-4</version>
         </dependency>        
         <dependency>
-            <groupId>kfs-classes</groupId>
-            <artifactId>kfs-classes</artifactId>
-            <version>5.3</version>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs</artifactId>
+            <version>6.0.0-release-process-test-lib</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-core-api</artifactId>
-            <version>2.1.9</version>
-        </dependency>    
-        <dependency>
-            <groupId>org.kuali.rice</groupId>
-            <artifactId>rice-impl</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-core-framework</artifactId>
-            <version>2.1.9</version>
-        </dependency>        
+            <version>${kuali.rice.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-core-impl</artifactId>
-            <version>2.1.9</version>
-        </dependency>        
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-core-service-api</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-core-service-framework</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-core-service-impl</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-core-service-web</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-core-web</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-impl</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-kim-impl</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>                
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-kim-framework</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-kim-api</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-krad-app-framework</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>        
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-location-api</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-location-framework</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-location-impl</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
-            <artifactId>rice-ksb-web</artifactId>
-            <version>2.1.9</version>
+            <artifactId>rice-ksb-client-impl</artifactId>
+            <version>${kuali.rice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-krms-impl</artifactId>
-            <version>2.1.9</version>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-kew-api</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-kew-impl</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-kew-framework</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-kns</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-krad-web-framework</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-ksb-api</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-ksb-web</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-location-web</artifactId>
+            <version>${kuali.rice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.rice</groupId>
+            <artifactId>rice-impl</artifactId>
+            <version>${kuali.rice.version}</version>
+            <classifier>ua</classifier>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
@@ -126,6 +198,7 @@
     </dependencies>
     <build>
         <plugins>
+            <!--
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -150,6 +223,44 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>ua.utility.kfsdbupgrade.App</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>            
         </plugins>
         <finalName>kfsdbupgrade</finalName>
     </build>
