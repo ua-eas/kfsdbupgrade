@@ -9,7 +9,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.0</version>
+        <version>2.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -44,6 +44,15 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+    <repository>
+      <releases />
+      <snapshots />
+      <id>kuali.nexus</id>
+      <name>Nexus Repository Manager</name>
+      <url>http://nexus.kuali.org/content/groups/public</url>
+    </repository>
+  </repositories>
   <properties>
     <kuali.rice.version>2.1.9</kuali.rice.version>
     <maven.compiler.source>1.8</maven.compiler.source>

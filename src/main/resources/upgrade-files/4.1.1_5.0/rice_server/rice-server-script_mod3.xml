@@ -253,28 +253,50 @@
 		CREATE INDEX KREW_APP_DOC_STAT_TI3 ON KREW_APP_DOC_STAT_TRAN_T (DOC_HDR_ID, APP_DOC_STAT_TO)
 		]]></sql>
 
-		<sql><![CDATA[		
-		--
-		-- KREW_DOC_HDR_CNTNT_T 
-		-- Depending on the size of the table, this conversion can take a long time.  Example - takes 45 minutes for 8 million rows 
-		-- 
-		ALTER TABLE KREW_DOC_HDR_CNTNT_T RENAME TO OLD_KREW_DOC_HDR_CNTNT_T
-		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		CREATE TABLE KREW_DOC_HDR_CNTNT_T ( 
-		    DOC_HDR_ID   	VARCHAR2(40),
-		    DOC_CNTNT_TXT	CLOB NULL
+		alter table
+		KREW_DOC_HDR_CNTNT_T
+		add(
+		  DOC_HDR_ID_2 VARCHAR2(40)
 		)
 		]]></sql>
+
 		<sql splitStatements="false"><![CDATA[
-		INSERT /*+ PARALLEL(KREW_DOC_HDR_CNTNT_T,4) */ INTO KREW_DOC_HDR_CNTNT_T SELECT /*+ PARALLEL(OLD_KREW_DOC_HDR_CNTNT_T,4) */ * FROM OLD_KREW_DOC_HDR_CNTNT_T
+		update KREW_DOC_HDR_CNTNT_T t
+		set DOC_HDR_ID_2=to_char(t.DOC_HDR_ID)
 		]]></sql>
-		<!-- <sql splitStatements="false"><![CDATA[
-		DROP TABLE OLD_KREW_DOC_HDR_CNTNT_T
-		]]></sql> -->
+
+		<!--
 		<sql splitStatements="false"><![CDATA[
-		ALTER TABLE KREW_DOC_HDR_CNTNT_T ADD CONSTRAINT KREW_DOC_HDR_CNTNT_TP1 PRIMARY KEY (DOC_HDR_ID)
+		alter table KREW_DOC_HDR_CNTNT_T
+		drop constraint KREW_DOC_HDR_CNTNT_TP1
 		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		drop index KREW_DOC_HDR_CNTNT_TP1
+		]]></sql>
+		-->
+
+		<sql splitStatements="false"><![CDATA[
+		alter table KREW_DOC_HDR_CNTNT_T
+		rename column DOC_HDR_ID to DOC_HDR_ID_ORIG
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		alter table KREW_DOC_HDR_CNTNT_T
+		rename column DOC_HDR_ID_2 to DOC_HDR_ID
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		alter table KREW_DOC_HDR_CNTNT_T
+		add constraint KREW_DOC_HDR_CNTNT_TP1 primary key (DOC_HDR_ID)
+		]]></sql>
+
+		<sql splitStatements="false"><![CDATA[
+		alter table KREW_DOC_HDR_CNTNT_T
+		drop column DOC_HDR_ID_ORIG
+		]]></sql>
+
 
 		<sql splitStatements="false"><![CDATA[
 		
