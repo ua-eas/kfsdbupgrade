@@ -1636,7 +1636,7 @@ public class App {
         try {
             writeHeader2("Converting legacy maintenance documents to rice 2.0...");
             
-            String fname = properties.getProperty("maintenace-document-conversion-rules-file");
+            String fname = properties.getProperty("maintenance-document-conversion-rules-file");
             
             if (StringUtils.isNotBlank(fname)) {
                 File f = new File(fname);
