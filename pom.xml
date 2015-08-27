@@ -266,6 +266,17 @@
     </build>
     <repositories>
         <repository>
+            <id>ksd-external-artifacts</id>
+            <name>KSD External Artifacts</name>
+            <url>https://ka-tools.mosaic.arizona.edu/nexus/content/repositories/ksd-external-artifacts/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>kuali.nexus</id>
             <name>Nexus Repository Manager</name>
             <url>http://nexus.kuali.org/content/groups/public</url>
