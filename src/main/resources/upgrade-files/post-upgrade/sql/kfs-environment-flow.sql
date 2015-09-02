@@ -19,7 +19,6 @@ delete from QRTZ_CRON_TRIGGERS;
 delete from QRTZ_SIMPLE_TRIGGERS;
 delete from QRTZ_TRIGGER_LISTENERS;
 
-
 delete from kulowner.QRTZ_TRIGGERS;
 delete from kulowner.QRTZ_JOB_DETAILS;
 
@@ -90,13 +89,14 @@ select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1053323', 'T00000000000000546
 -- ====================================================================================================================
 
 -- add kfs-test-sec25 #T000000000000005416 to "Batch Job Modifier" role #82
-insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd ) 
-values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '82', 'T000000000000005416', 'P')
-;
+-- insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd ) 
+-- values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '82', 'T000000000000005416', 'P')
+-- ;
 
 
 -- ====================================================================================================================
--- 2) Make sure all groups where test ID's are listed are active: All kfs-test-sec* and only kfs-test-sys10 and 8
+-- 2) Make sure all groups where test ID's are listed are active: All kfs-test-sec*, kfs-test-eds*, and kfs-test-sys" 
+--    and only kfs-test-sys10 and 8
 -- ====================================================================================================================
 
 --Q: Why only sys10 and sys8, what about the other test-sys?
@@ -108,7 +108,8 @@ where grp_id in
                     select prncpl_id 
                     from krim_entity_cache_t 
                     where prncpl_nm like 'kfs-test-sec%' 
-                    --or prncpl_nm like 'kfs-test-sys%'
+					or prncpl_nm like 'kfs-test-eds%'
+                    or prncpl_nm like 'kfs-test-sys%'
                     or prncpl_nm in ('kfs-test-sys10', 'kfs-test-sys8')
                 )
     )
@@ -159,7 +160,7 @@ END;
 
 -- NEW: 9000000000000 + ROW# -  for account numbers 
 UPDATE fp_dv_ach_t set dv_payee_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
-UPDATE KULOWNER.fp_dv_wire_trnfr_t set dv_payee_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
+UPDATE KULOWNER.fs_pmt_src_wire_trnfr_t set payee_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 UPDATE pdp_ach_acct_nbr_t set ach_bnk_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 UPDATE pdp_payee_ach_acct_t set bnk_acct_nbr = DES_ENCRYPT( ROWNUM + 9000000000000 );
 
@@ -170,10 +171,10 @@ UPDATE tax_payee_t set hdr_vndr_tax_nbr = DES_ENCRYPT( ROWNUM + 900000000 );
 
 --OLD:
 -- update fp_dv_ach_t set dv_payee_acct_nbr = 'r+181z6uNTJrgbJPn0ljGA==';
--- update fp_dv_wire_trnfr_t set dv_payee_acct_nbr = 'r+181z6uNTJrgbJPn0ljGA==';
+-- update fs_pmt_src_wire_trnfr_t set payee_acct_nbr = 'r+181z6uNTJrgbJPn0ljGA==';
 -- update pdp_ach_acct_nbr_t set ach_bnk_acct_nbr = 'r+181z6uNTJrgbJPn0ljGA==';
 -- update pdp_payee_ach_acct_t set bnk_acct_nbr = 'r+181z6uNTJrgbJPn0ljGA==';
--- update pur_vndr_hdr_t set vndr_tax_nbr = 'r+181z6uNTIc3lalnjPKpA==';
+-- update pur_vndr_hdr_t set vndr_us_tax_nbr = 'r+181z6uNTIc3lalnjPKpA==';
 -- update pur_vndr_tax_chg_t set vndr_prev_tax_nbr = 'r+181z6uNTIc3lalnjPKpA==';
 -- update tax_payee_t set hdr_vndr_tax_nbr = 'r+181z6uNTIc3lalnjPKpA==';
 
@@ -304,12 +305,12 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 
 -- Give to the "UA KFS Developers" role the persmission to modify batch job
 -- Q: Is it OK if the namespace is just KFS-SYS? Or should it be KFS*?
---insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
---values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
---  (select role_id from krim_role_t where role_nm='UA KFS Developers'),
---  (select perm_id from krim_perm_t where nmspc_cd='KFS-SYS' and nm='Modify Batch Job'),
---  'Y')
-
+insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
+values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
+  (select role_id from krim_role_t where role_nm='UA KFS Developers'),
+  (select perm_id from krim_perm_t where nmspc_cd='KUALI-TAX' and nm='Modify Batch Job'),
+  'Y')
+;
 
 
 
@@ -382,13 +383,13 @@ values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1050058', 'T0000000000000055
 ; 
 
 -- ====================================================================================================================
--- 14c) Add  kfs-test-sec79 to the Contract Manger table with the following values: 
+-- 14c) Add  kfs-test-sec79 to the Contract Manager table with the following values: 
 --      Contract Manager Code Contract Manager Name Published Phone Number Published Fax Number Contract Manager Delegation Dollar Limit Active Indicator
 --              80                kfs-test-sec79         555-555-6666            556-555-6666                       0.00                    Yes
 -- ====================================================================================================================
 
 insert into pur_contr_mgr_t (CONTR_MGR_CD, OBJ_ID, VER_NBR, CONTR_MGR_NM, CONTR_MGR_PHN_NBR, CONTR_MGR_FAX_NBR, CONTR_MGR_DLGN_DLR_LMT, ACTV_IND)
-values ('80', SYS_GUID(), 1, 'kfs-test-sec79', '555-555-5555', '555-555-5555', 0.0, 'Y')
+values ('80', SYS_GUID(), 1, 'kfs-test-sec79', '555-555-6666', '556-555-6666', 0.0, 'Y')
 ;
 
 
@@ -406,8 +407,6 @@ update kulowner.pdp_cust_prfl_t set adv_rtrn_email_addr = 'kfsbsateam@list.arizo
 -- Parameter Values containing emails - kfsbsateam@list.arizona.edu
 update kulowner.krcr_parm_t set val = 'N' where nmspc_cd = 'KR-WKFLW' and parm_typ_cd = 'ActionList' and parm_nm = 'SEND_EMAIL_NOTIFICATION_IND'; 
 update kulowner.krcr_parm_t set val = 'kfsbsateam@list.arizona.edu' where val like '%@%' and parm_nm not in ('PDF_STATUS_INQUIRY_URL', 'FROM_ADDRESS');
-
-
 
 
 -- ====================================================================================================================
@@ -956,4 +955,30 @@ select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1050033', 'T00000000000000539
 
 UPDATE KRCR_PARM_T SET VAL = 'Y' WHERE PARM_NM = 'SHOW_BACK_DOOR_LOGIN_IND';
 
+-- ====================================================================================================================
+-- Add Permission/Role for Backdoor Access Control
+-- ====================================================================================================================
 
+-- Create permission "Use Backdoor Log In Kuali Portal" (UAF-94)
+insert into krim_perm_t (perm_id, obj_id, ver_nbr, perm_tmpl_id, nmspc_cd, nm, desc_txt, actv_ind)
+values (KRIM_PERM_ID_S.NEXTVAL, sys_guid(), 1, '1', 'KR-SYS', 'Use Backdoor Log In Kuali Portal', 'Use Backdoor Log In Kuali Portal', 'Y');
+
+-- Create role "Back Door Login"
+insert into krim_role_t (role_id, obj_id, ver_nbr, role_nm, nmspc_cd, desc_txt, kim_typ_id, actv_ind)
+values (KRIM_ROLE_ID_S.NEXTVAL, sys_guid(), 1, 'Back Door Login', 'KR-SYS', 'Back Door Login', '1', 'Y');
+
+-- Add Permission to the Role
+insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
+values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
+  (select role_id from krim_role_t where role_nm='Back Door Login'), 
+  (select perm_id from krim_perm_t where nmspc_cd='KR-SYS' and desc_txt='Use Backdoor Log In Kuali Portal'),
+  'Y')
+;
+
+--  Add KFS Developers to Role to BackDoor Login
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) 
+  select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), prncpl_id, 'P' 
+  from kulowner.krim_entity_cache_t 
+  where prncpl_nm in ('kbasu', 'maryb', 'rdubisar', 'fischerm', 'elvirag', 'ghanson', 'jshard', 'mhohl', 'rdj1', 'akhilashokk', 'ake27', 'kosta',
+  'hlo', 'robbiem', 'mccunej', 'sandberm', 'mmoen', 'shaloo', 'leahasullivan', 'jwingate', 'gurtonj', 'derektengler', 'jvm92') 
+;
