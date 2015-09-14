@@ -569,11 +569,11 @@ where fin_coa_cd = 'UA' and account_nbr in
 ;
 
 --OLD make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts 
---insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
---select fin_coa_cd, account_nbr, 'KFS', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
---from kulowner.ca_account_t 
---where fin_coa_cd = 'UA'
---;
+insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
+select fin_coa_cd, account_nbr, 'KFS', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
+from kulowner.ca_account_t 
+where fin_coa_cd = 'UA'
+;
 
 
 
@@ -582,11 +582,11 @@ where fin_coa_cd = 'UA' and account_nbr in
 -- ====================================================================================================================
 
 -- make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts for doc type KFST #612218
---insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
---select fin_coa_cd, account_nbr, 'KFST', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
---from kulowner.ca_account_t 
---where fin_coa_cd = 'UA'
---;
+insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
+select fin_coa_cd, account_nbr, 'KFST', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
+from kulowner.ca_account_t 
+where fin_coa_cd = 'UA'
+;
 
 
 
