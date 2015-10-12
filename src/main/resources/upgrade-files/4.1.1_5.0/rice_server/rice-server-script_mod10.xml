@@ -652,9 +652,10 @@
 		        (select kim_attr_defn_id from krim_attr_defn_t where nm = 'namespaceCode'),
 		        'KRMS_TEST',1,sys_guid())
 		]]></sql>
-		<sql splitStatements="false"><![CDATA[
+		<!-- UAF-547 removing extra role insert-->
+		<!-- KIM roles -->
+		<!--<sql splitStatements="false"><![CDATA[
 		
-		-- KIM roles
 		insert into krim_role_t
 		(role_id, role_nm, nmspc_cd, desc_txt, kim_typ_id, actv_ind, last_updt_dt, obj_id)
 		values ('RICE_KRMS_4',
@@ -663,7 +664,7 @@
 		        'This role maintains KRMS agendas and rules.',
 		        (select kim_typ_id from krim_typ_t where nm = 'Default' and nmspc_cd = 'KUALI'),
 		        'Y', current_date, sys_guid())
-		]]></sql>
+		]]></sql>-->
 		<sql splitStatements="false"><![CDATA[
 		
 		insert into krim_role_mbr_t
