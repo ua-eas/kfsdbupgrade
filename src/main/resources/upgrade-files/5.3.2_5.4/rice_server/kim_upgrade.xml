@@ -198,6 +198,9 @@
 			<column name="ATTR_VAL"
 				value="org.kuali.kfs.module.cg.web.struts.FederalFinancialReportAction" />
 		</insert>
+		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10935" />
 			<column name="OBJ_ID" value="KFS-ROLE-PERM-372" />
@@ -206,6 +209,8 @@
 			<column name="ROLE_ID" value="38" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFS10909" />
 			<column name="OBJ_ID" value="KFS-PERM-132" />
@@ -226,6 +231,9 @@
 			<column name="ATTR_VAL"
 				value="org.kuali.kfs.module.cg.web.struts.TransmitContractsAndGrantsInvoicesLookupAction" />
 		</insert>
+		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10936" />
 			<column name="OBJ_ID" value="KFS-ROLE-PERM-373" />
@@ -234,6 +242,8 @@
 			<column name="ROLE_ID" value="38" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_TYP_T">
 			<column name="KIM_TYP_ID" value="KFS10898" />
 			<column name="OBJ_ID" value="KFS-TYP-010" />
@@ -409,6 +419,9 @@
 			<column name="KIM_ATTR_DEFN_ID" valueNumeric="13" />
 			<column name="ATTR_VAL" value="DLTM" />
 		</insert>
+		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10940" />
 			<column name="OBJ_ID" value="KFS-CGB-ROLE-PERM-007" />
@@ -417,6 +430,8 @@
 			<column name="PERM_ID" value="KFS10912" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFS10913" />
 			<column name="OBJ_ID" value="KFS-PERM-136" />
@@ -436,6 +451,9 @@
 			<column name="KIM_ATTR_DEFN_ID" valueNumeric="13" />
 			<column name="ATTR_VAL" value="DLTM" />
 		</insert>
+		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10941" />
 			<column name="OBJ_ID" value="KFS-ROLE-PERM-378" />
@@ -444,6 +462,8 @@
 			<column name="PERM_ID" value="KFS10913" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFS10914" />
 			<column name="OBJ_ID" value="KFS-PERM-137" />
@@ -463,6 +483,9 @@
 			<column name="KIM_ATTR_DEFN_ID" valueNumeric="2" />
 			<column name="ATTR_VAL" value="org.kuali.kfs.module.ar.web.struts.AccountsReceivableDunningLetterTemplateUploadAction" />
 		</insert>
+		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10942" />
 			<column name="OBJ_ID" value="KFS-CGB-ROLE-PERM-010" />
@@ -471,6 +494,8 @@
 			<column name="PERM_ID" value="KFS10914" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFS10915" />
 			<column name="OBJ_ID" value="KFS-PERM-138" />
@@ -490,6 +515,9 @@
 			<column name="KIM_ATTR_DEFN_ID" value="13" />
 			<column name="ATTR_VAL" value="LCR" />
 		</insert>
+		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10943" />
 			<column name="OBJ_ID" value="KFS-ROLE-PERM-380" />
@@ -498,6 +526,8 @@
 			<column name="ROLE_ID" value="44" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFS10916" />
 			<column name="OBJ_ID" value="KFS-PERM-139" />

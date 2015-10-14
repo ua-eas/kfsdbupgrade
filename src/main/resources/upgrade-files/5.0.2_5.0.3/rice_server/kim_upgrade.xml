@@ -15,6 +15,8 @@
 			<column name="ACTV_IND" value="Y" />
 		</insert>
 		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB1343-RLPRM1-1" />
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -23,7 +25,10 @@
 			<column name="PERM_ID" value="KFSCNTRB1343-PRM1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
 		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB1343-RLPRM1-2" />
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -32,6 +37,8 @@
 			<column name="PERM_ID" value="KFSCNTRB1343-PRM1"/>
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_PERM_ATTR_DATA_T">
 			<column name="ATTR_DATA_ID" value="KFSCNTRB1343-PRMATTR1" />
 			<column name="OBJ_ID" valueNumeric="sys_guid() " />

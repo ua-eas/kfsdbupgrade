@@ -210,6 +210,9 @@
 			<column name='KIM_ATTR_DEFN_ID' value='1' />
 			<column name='ATTR_VAL' value='laborEnterpriseFeederFileSetType' />
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--		
 		<insert tableName='KRIM_ROLE_PERM_T'>
 			<column name='ROLE_PERM_ID' value='45_KFSLD6987' />
 			<column name='OBJ_ID' value='KFSLD6987j' />
@@ -218,6 +221,8 @@
 			<column name='PERM_ID' value='KFSLD6987' />
 			<column name='ACTV_IND' value='Y' />
 		</insert>
+		-->
+		
 	</changeSet>
 	<changeSet author="KFS50" id="KFSMI-7145">
 		<insert tableName='KRIM_PERM_T'>
@@ -333,6 +338,9 @@
 			<column name="KIM_ATTR_DEFN_ID" valueNumeric=" (select kim_attr_defn_id from KRIM_ATTR_DEFN_T where nm = 'editMode') "/>
 			<column name="ATTR_VAL" value="immediateDisbursementEntryMode"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSSYS6007-1"/>
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -349,6 +357,7 @@
 			<column name="PERM_ID" value="KFSSYS6007"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
 	    <modifySql dbms="mysql">
 	      <replace replace="sys_guid()" with="uuid()" />
 	    </modifySql>
@@ -701,6 +710,8 @@
 			<column name="PERM_ID" value="KFSMI6886-PRM3" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSMI6886-RLPRM4" />
 			<column name="OBJ_ID" valueNumeric="sys_guid() "/>
@@ -709,6 +720,7 @@
 			<column name="PERM_ID" value="KFSMI6886-PRM3" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
 	    <modifySql dbms='mysql'>
 	      <replace replace="sys_guid()" with="uuid()" />
 	    </modifySql>
@@ -802,6 +814,9 @@
 			<column name="KIM_ATTR_DEFN_ID" value="1" />
 			<column name="ATTR_VAL" value="semaphoreInputFileTypeError" />
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB199-RP1" />
 			<column name="OBJ_ID" value="KFSCNTRB199-RP1"/>
@@ -809,7 +824,8 @@
 			<column name="ROLE_ID" value="51" />
 			<column name="PERM_ID" value="KFSCNTRB199-P1" />
 			<column name="ACTV_IND" value="Y" />
-		</insert>
+		</insert> 
+		-->
 
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB199-P2" />
@@ -839,6 +855,9 @@
 			<column name="KIM_ATTR_DEFN_ID" value="KFSCNTRB199-ATTRDEF1" />
 			<column name="ATTR_VAL" value="staging/sys/batchContainer/*" />
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB199-RP2" />
 			<column name="OBJ_ID" value="KFSCNTRB199-RP2"/>
@@ -846,7 +865,8 @@
 			<column name="ROLE_ID" value="51" />
 			<column name="PERM_ID" value="KFSCNTRB199-P2" />
 			<column name="ACTV_IND" value="Y" />
-		</insert>
+		</insert> 
+		-->
 	</changeSet>
 	
 	<changeSet author="KFS50" id="WORKSTUDY_WORKFLOW_UPDATES">

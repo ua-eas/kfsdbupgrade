@@ -26,11 +26,12 @@
 			<column name="ATTR_VAL" value="researchParticipantInboundServiceInputType" />
 		</insert>
 
+		<!-- Changed ROLE_ID from 20 to 10428 per UAF-936 -->
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM1" />
 			<column name="OBJ_ID" value="d2af2070-d668-4123-8d8e-a333f5df20b1" />
 			<column name="VER_NBR" valueNumeric="1" />
-			<column name="ROLE_ID" value="20" />
+			<column name="ROLE_ID" value="10428" />
 			<column name="PERM_ID" value="KFSCNTRB705-PRM1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
@@ -66,6 +67,8 @@
 			<column name="ATTR_VAL" value="paymentGroup.payeeName" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM2" />
 			<column name="OBJ_ID" value="046c3926-ed43-4e8a-bb30-67a786091067" />
@@ -74,7 +77,8 @@
 			<column name="PERM_ID" value="KFSCNTRB705-PRM2" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB705-PRM3" />
 			<column name="OBJ_ID" value="1deaaf16-c1c9-4a46-be80-c2bbe1009656" />
@@ -106,6 +110,8 @@
 			<column name="ATTR_VAL" value="paymentGroup.street" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM3" />
 			<column name="OBJ_ID" value="50c628b1-c67f-4e97-b39d-db292b96f210" />
@@ -114,7 +120,8 @@
 			<column name="PERM_ID" value="KFSCNTRB705-PRM3" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB705-PRM4" />
 			<column name="OBJ_ID" value="b4c3714a-2232-413c-8f24-82c556897f14" />
@@ -146,6 +153,8 @@
 			<column name="ATTR_VAL" value="paymentGroup.city" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM4" />
 			<column name="OBJ_ID" value="e0040260-0f79-410f-9944-995384c6e593" />
@@ -154,7 +163,8 @@
 			<column name="PERM_ID" value="KFSCNTRB705-PRM4" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB705-PRM5" />
 			<column name="OBJ_ID" value="2cc3fd9a-d889-446f-bbe7-8668cb611dee" />
@@ -186,6 +196,8 @@
 			<column name="ATTR_VAL" value="paymentGroup.state" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM5" />
 			<column name="OBJ_ID" value="00124dff-78c2-4864-8ae0-caadc9a539ab" />
@@ -194,7 +206,8 @@
 			<column name="PERM_ID" value="KFSCNTRB705-PRM5" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB705-PRM6" />
 			<column name="OBJ_ID" value="4d8420e8-3fad-4073-8f44-4a8b8165f4f9" />
@@ -226,6 +239,8 @@
 			<column name="ATTR_VAL" value="paymentGroup.zipCd" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM6" />
 			<column name="OBJ_ID" value="9fd5cb99-6a21-48d9-be9d-93dfd7bae108" />
@@ -234,7 +249,8 @@
 			<column name="PERM_ID" value="KFSCNTRB705-PRM6" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSCNTRB705-PRM7" />
 			<column name="OBJ_ID" value="faa60363-d8cb-4ea9-9b69-eb7feba8ece9" />
@@ -266,6 +282,8 @@
 			<column name="ATTR_VAL" value="staging/PDP/paymentExtract/RP-Upload*" />
 		</insert>
 		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSCNTRB705-RLPRM7" />
 			<column name="OBJ_ID" value="e32ea686-2d4f-4689-bf16-0cc48bb18a68" />
@@ -274,6 +292,7 @@
 			<column name="PERM_ID" value="KFSCNTRB705-PRM7" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
 	</changeSet>
 	<changeSet author="KFS52" id="KFSCNTRB-762">
 		<comment>KFSCNTRB-762 Create Trial Balance in KFS</comment>

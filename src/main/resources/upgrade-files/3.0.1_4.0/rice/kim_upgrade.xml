@@ -192,27 +192,43 @@
 			<column name="PERM_ID" value="1101" />	
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		
+		<!-- Changed ROLE_ID from 31 to 2 per UAF-936 -->	
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS1109" />
 			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
 			<column name="VER_NBR" valueNumeric="1" />
-			<column name="ROLE_ID" value="31" />
+			<column name="ROLE_ID" value="2" />
 			<column name="PERM_ID" value="1102" />	
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS1004" />
 			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
 			<column name="VER_NBR" valueNumeric="1" />
-			<column name="ROLE_ID" value="49" />
+			<column name="ROLE_ID" value="10403" />
 			<column name="PERM_ID" value="306" />	
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		
+		<!-- Added per UAF-936 -->	
+		<insert tableName="KRIM_ROLE_PERM_T">
+			<column name="ROLE_PERM_ID" value="KFS1005" />
+			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
+			<column name="VER_NBR" valueNumeric="1" />
+			<column name="ROLE_ID" value="56" />
+			<column name="PERM_ID" value="306" />	
+			<column name="ACTV_IND" value="Y" />
+		</insert>
+		
+		<!-- Changed ROLE_ID from 31 to 4 per UAF-936 -->			
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS1110" />
 			<column name="OBJ_ID" valueNumeric="SYS_GUID() " />
 			<column name="VER_NBR" valueNumeric="1" />
-			<column name="ROLE_ID" value="31" />
+			<column name="ROLE_ID" value="4" />
 			<column name="PERM_ID" value="248" />	
 			<column name="ACTV_IND" value="Y" />
 		</insert>

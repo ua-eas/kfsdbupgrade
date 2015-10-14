@@ -2915,6 +2915,9 @@
 			<column name="PERM_ID" value="KFS10282"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10001"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-002"/>
@@ -2922,6 +2925,8 @@
 			<column name="PERM_ID" value="KFS10282"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10002"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-003"/>
@@ -2929,6 +2934,9 @@
 			<column name="PERM_ID" value="KFS10282"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10003"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-004"/>
@@ -2943,6 +2951,7 @@
 			<column name="PERM_ID" value="KFS10284"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10006"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-007"/>
@@ -2950,6 +2959,9 @@
 			<column name="PERM_ID" value="KFS10285"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10007"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-008"/>
@@ -2957,6 +2969,8 @@
 			<column name="PERM_ID" value="KFS10285"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10008"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-009"/>
@@ -2978,6 +2992,9 @@
 			<column name="PERM_ID" value="KFS10286"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10011"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-012"/>
@@ -2985,6 +3002,8 @@
 			<column name="PERM_ID" value="KFS10286"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10012"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-013"/>
@@ -3356,6 +3375,9 @@
 			<column name="PERM_ID" value="KFS10307"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10080"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-081"/>
@@ -3363,6 +3385,8 @@
 			<column name="PERM_ID" value="KFS10307"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10081"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-082"/>
@@ -3398,6 +3422,9 @@
 			<column name="PERM_ID" value="KFS10308"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10086"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-087"/>
@@ -3405,6 +3432,8 @@
 			<column name="PERM_ID" value="KFS10308"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10087"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-088"/>
@@ -3531,6 +3560,9 @@
 			<column name="PERM_ID" value="KFS10314"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10114"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-116"/>
@@ -3545,6 +3577,8 @@
 			<column name="PERM_ID" value="KFS10315"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10118"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-120"/>
@@ -3566,6 +3600,9 @@
 			<column name="PERM_ID" value="KFS10318"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10121"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-123"/>
@@ -3615,6 +3652,8 @@
 			<column name="PERM_ID" value="KFS10294"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10129"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-131"/>
@@ -3629,6 +3668,9 @@
 			<column name="PERM_ID" value="KFS10322"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10131"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-133"/>
@@ -3636,6 +3678,8 @@
 			<column name="PERM_ID" value="KFS10323"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10133"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-135"/>
@@ -3671,6 +3715,9 @@
 			<column name="PERM_ID" value="KFS10328"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10141"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-141"/>
@@ -3678,6 +3725,8 @@
 			<column name="PERM_ID" value="KFS10328"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10142"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-142"/>
@@ -3762,6 +3811,9 @@
 			<column name="PERM_ID" value="KFS10294"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10166"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-166"/>
@@ -3790,6 +3842,8 @@
 			<column name="PERM_ID" value="KFS10336"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10170"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-170"/>
@@ -3804,6 +3858,9 @@
 			<column name="PERM_ID" value="KFS10330"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10172"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-172"/>
@@ -3811,6 +3868,8 @@
 			<column name="PERM_ID" value="KFS10330"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10173"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-173"/>
@@ -3951,6 +4010,9 @@
 			<column name="PERM_ID" value="KFS10341"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10195"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-195"/>
@@ -3958,6 +4020,8 @@
 			<column name="PERM_ID" value="KFS10342"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10196"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-196"/>
@@ -3965,6 +4029,9 @@
 			<column name="PERM_ID" value="KFS10341"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10376"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-197"/>
@@ -3972,6 +4039,8 @@
 			<column name="PERM_ID" value="KFS10372"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10377"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-198"/>
@@ -3979,6 +4048,9 @@
 			<column name="PERM_ID" value="KFS10372"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10378"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-199"/>
@@ -3986,6 +4058,8 @@
 			<column name="PERM_ID" value="KFS10373"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10379"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-200"/>
@@ -4000,6 +4074,9 @@
 			<column name="PERM_ID" value="KFS10387"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10424"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-206"/>
@@ -4063,6 +4140,8 @@
 			<column name="PERM_ID" value="KFS10405"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10438"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-215"/>
@@ -4140,6 +4219,9 @@
 			<column name="PERM_ID" value="KFS10451"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10473"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-234"/>
@@ -4154,6 +4236,8 @@
 			<column name="PERM_ID" value="KFS10470"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10507"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-252"/>
@@ -4161,6 +4245,9 @@
 			<column name="PERM_ID" value="KFS10503"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10512"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-253"/>
@@ -4175,6 +4262,8 @@
 			<column name="PERM_ID" value="KFS10513"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10521"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-256"/>
@@ -4399,6 +4488,9 @@
 			<column name="PERM_ID" value="KFS10722"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10729"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-308"/>
@@ -4406,6 +4498,8 @@
 			<column name="PERM_ID" value="KFS10723"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10732"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-309"/>
@@ -4448,6 +4542,9 @@
 			<column name="PERM_ID" value="KFS10312"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10741"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-315"/>
@@ -4476,6 +4573,8 @@
 			<column name="PERM_ID" value="KFS10298"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10745"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-319"/>
@@ -4483,6 +4582,9 @@
 			<column name="PERM_ID" value="KFS10735"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10749"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-320"/>
@@ -4490,6 +4592,8 @@
 			<column name="PERM_ID" value="KFS10746"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10750"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-321"/>
@@ -4518,6 +4622,9 @@
 			<column name="PERM_ID" value="KFS10328"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10757"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-325"/>
@@ -4532,6 +4639,8 @@
 			<column name="PERM_ID" value="KFS10758"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10766"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-327"/>
@@ -4546,6 +4655,9 @@
 			<column name="PERM_ID" value="KFS10767"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10771"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-329"/>
@@ -4560,6 +4672,8 @@
 			<column name="PERM_ID" value="KFS10767"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10776"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-331"/>
@@ -4574,6 +4688,9 @@
 			<column name="PERM_ID" value="KFS10773"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10778"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-333"/>
@@ -4581,6 +4698,8 @@
 			<column name="PERM_ID" value="KFS10773"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10782"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-334"/>
@@ -4595,6 +4714,9 @@
 			<column name="PERM_ID" value="KFS10779"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10784"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-336"/>
@@ -4602,6 +4724,8 @@
 			<column name="PERM_ID" value="KFS10779"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10789"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-337"/>
@@ -4630,6 +4754,9 @@
 			<column name="PERM_ID" value="KFS10746"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10801"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-341"/>
@@ -4637,6 +4764,8 @@
 			<column name="PERM_ID" value="KFS10798"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10802"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-342"/>
@@ -4672,6 +4801,9 @@
 			<column name="PERM_ID" value="KFS10804"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10809"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-347"/>
@@ -4679,6 +4811,8 @@
 			<column name="PERM_ID" value="KFS10804"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10810"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-348"/>
@@ -4707,6 +4841,9 @@
 			<column name="PERM_ID" value="KFS10811"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10815"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-352"/>
@@ -4714,6 +4851,8 @@
 			<column name="PERM_ID" value="KFS10811"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10816"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-353"/>
@@ -4742,6 +4881,9 @@
 			<column name="PERM_ID" value="KFS10821"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10826"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-358"/>
@@ -4749,6 +4891,8 @@
 			<column name="PERM_ID" value="KFS10821"/>
 			<column name="ACTV_IND" value="Y"/>
 		</insert>
+		-->
+		
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFS10827"/>
 			<column name="OBJ_ID" value="KFS-TEM-ROLE-PERM-359"/>
