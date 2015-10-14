@@ -127,3 +127,15 @@
    error:
 
     update KRIM_ROLE_PERM_T set role_id = 'RICE_KRMS_4' where role_id is null and perm_id = 'RICE_20_1'
+
+10. commented out the following from 4.1.1_5.0/rice_server/rice-server-script_mod10.xml around line 658 because the role already existed with a KFS98 role_id:
+	<sql splitStatements="false"><![CDATA[
+	insert into krim_role_t
+	(role_id, role_nm, nmspc_cd, desc_txt, kim_typ_id, actv_ind, last_updt_dt, obj_id)
+	values ('RICE_KRMS_4',
+	        'Kuali Rules Management System Administrator',
+	        'KR-RULE',
+	        'This role maintains KRMS agendas and rules.',
+	        (select kim_typ_id from krim_typ_t where nm = 'Default' and nmspc_cd = 'KUALI'),
+	        'Y', current_date, sys_guid())
+	]]></sql>
