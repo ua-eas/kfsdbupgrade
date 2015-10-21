@@ -307,6 +307,8 @@
 			<column name="ATTR_VAL" value="AccessSecuritySimpleMaintenanceDocument" />
 		</insert>
 	
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="PERM_ID" value="KFSSEC6001" />
 			<column name="ROLE_ID" value="51" />
@@ -315,7 +317,7 @@
 			<column name="VER_NBR" valueNumeric="1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-	
+		-->
 	
 		<modifySql dbms="mysql">
 			<replace replace="SYS_GUID" with="UUID" />
@@ -345,6 +347,8 @@
 			<column name="ATTR_VAL" value="KFS-SEC" />
 		</insert>
 	
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="PERM_ID" value="KFSSEC6002" />
 			<column name="ROLE_ID" value="51" />
@@ -353,7 +357,7 @@
 			<column name="VER_NBR" valueNumeric="1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-	
+		-->
 	
 		<modifySql dbms="mysql">
 			<replace replace="SYS_GUID" with="UUID" />
@@ -383,6 +387,8 @@
 			<column name="ATTR_VAL" value="KFS-SEC" />
 		</insert>
 	
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="PERM_ID" value="KFSSEC6003" />
 			<column name="ROLE_ID" value="51" />
@@ -391,7 +397,7 @@
 			<column name="VER_NBR" valueNumeric="1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-	
+		-->
 	
 		<modifySql dbms="mysql">
 			<replace replace="SYS_GUID" with="UUID" />
@@ -431,6 +437,8 @@
 			<column name="ATTR_VAL" value="PreRoute" />
 		</insert>
 	
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="PERM_ID" value="KFSSEC6004" />
 			<column name="ROLE_ID" value="51" />
@@ -439,7 +447,7 @@
 			<column name="VER_NBR" valueNumeric="1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-	
+		-->
 	
 		<modifySql dbms="mysql">
 			<replace replace="SYS_GUID" with="UUID" />

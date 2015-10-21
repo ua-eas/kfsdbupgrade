@@ -43,38 +43,42 @@
             <column name="ATTR_VAL" value="lastInventoryDateUpdateButton" />
         </insert>
 
+		<!-- Changed ROLE_ID from 34 to 10429 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10830" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-360" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="34" />
+            <column name="ROLE_ID" value="10429" />
             <column name="PERM_ID" value="KFS10828" />
             <column name="ACTV_IND" value="Y" />
         </insert>
 
+		<!-- Changed ROLE_ID from 35 to 10429 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10831" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-361" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="35" />
+            <column name="ROLE_ID" value="10429" />
             <column name="PERM_ID" value="KFS10828" />
             <column name="ACTV_IND" value="Y" />
         </insert>
 
+		<!-- Changed ROLE_ID from 46 to 10429 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10832" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-362" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="46" />
+            <column name="ROLE_ID" value="10429" />
             <column name="PERM_ID" value="KFS10828" />
             <column name="ACTV_IND" value="Y" />
         </insert>
 
+		<!-- Changed ROLE_ID from 5 to 10429 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10833" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-363" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="5" />
+            <column name="ROLE_ID" value="10429" />
             <column name="PERM_ID" value="KFS10828" />
             <column name="ACTV_IND" value="Y" />
         </insert>
@@ -114,6 +118,8 @@
 			<column name="ATTR_VAL" value="extractNow" />
 		</insert>
 		
+		<!-- Commented out as there is no UA specific role per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="10837" />
 			<column name="OBJ_ID" value="KFS-ROLE-PERM-364" />
@@ -121,7 +127,8 @@
 			<column name="ROLE_ID" valueNumeric="12" />
 			<column name="PERM_ID" value="KFS10834" />
 			<column name="ACTV_IND" value="N" />
-		</insert>		
+		</insert>	
+		-->
 	</changeSet>	
 	
 	<changeSet author="KFS53" id="KFSCNTRB-1793">
@@ -548,55 +555,126 @@
             <column name="ATTR_VAL" value="vendorHeader.vendorForeignTaxId" />
         </insert>
 
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10880" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-365" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="49" />
+            <column name="ROLE_ID" value="10403" />
             <column name="PERM_ID" value="KFS10868" />
             <column name="ACTV_IND" value="Y" />
         </insert>
+		
+		<!-- Added ROLE_ID 56 per UAF-936 -->
+		<insert tableName="KRIM_ROLE_PERM_T">
+            <column name="ROLE_PERM_ID" value="KFS10888" />
+            <column name="OBJ_ID" value="KFS-ROLE-PERM-377" />
+            <column name="VER_NBR" value="1" />
+            <column name="ROLE_ID" value="56" />
+            <column name="PERM_ID" value="KFS10868" />
+            <column name="ACTV_IND" value="Y" />
+        </insert>
+		
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10881" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-366" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="49" />
+            <column name="ROLE_ID" value="10403" />
             <column name="PERM_ID" value="KFS10869" />
             <column name="ACTV_IND" value="Y" />
         </insert>
+		
+		<!-- Added ROLE_ID 56 per UAF-936 -->
+		<insert tableName="KRIM_ROLE_PERM_T">
+            <column name="ROLE_PERM_ID" value="KFS10891" />
+            <column name="OBJ_ID" value="KFS-ROLE-PERM-379" />
+            <column name="VER_NBR" value="1" />
+            <column name="ROLE_ID" value="56" />
+            <column name="PERM_ID" value="KFS10869" />
+            <column name="ACTV_IND" value="Y" />
+        </insert>
+		
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10882" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-367" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="49" />
+            <column name="ROLE_ID" value="10403" />
             <column name="PERM_ID" value="KFS10874" />
             <column name="ACTV_IND" value="Y" />
         </insert>
+		
+		<!-- Added ROLE_ID 56 per UAF-936 -->
+		<insert tableName="KRIM_ROLE_PERM_T">
+            <column name="ROLE_PERM_ID" value="KFS10892" />
+            <column name="OBJ_ID" value="KFS-ROLE-PERM-387" />
+            <column name="VER_NBR" value="1" />
+            <column name="ROLE_ID" value="56" />
+            <column name="PERM_ID" value="KFS10874" />
+            <column name="ACTV_IND" value="Y" />
+        </insert>
+		
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10883" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-368" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="49" />
+            <column name="ROLE_ID" value="10403" />
             <column name="PERM_ID" value="KFS10875" />
             <column name="ACTV_IND" value="Y" />
         </insert>
+		
+		<!-- Added ROLE_ID 56 per UAF-936 -->
+		<insert tableName="KRIM_ROLE_PERM_T">
+            <column name="ROLE_PERM_ID" value="KFS10893" />
+            <column name="OBJ_ID" value="KFS-ROLE-PERM-388" />
+            <column name="VER_NBR" value="1" />
+            <column name="ROLE_ID" value="56" />
+            <column name="PERM_ID" value="KFS10875" />
+            <column name="ACTV_IND" value="Y" />
+        </insert>
+		
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10886" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-369" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="49" />
+            <column name="ROLE_ID" value="10403" />
             <column name="PERM_ID" value="KFS10884" />
             <column name="ACTV_IND" value="Y" />
         </insert>
+		
+		<!-- Added ROLE_ID 56 per UAF-936 -->
+		<insert tableName="KRIM_ROLE_PERM_T">
+            <column name="ROLE_PERM_ID" value="KFS10894" />
+            <column name="OBJ_ID" value="KFS-ROLE-PERM-389" />
+            <column name="VER_NBR" value="1" />
+            <column name="ROLE_ID" value="56" />
+            <column name="PERM_ID" value="KFS10884" />
+            <column name="ACTV_IND" value="Y" />
+        </insert>
+		
+		<!-- Changed ROLE_ID from 49 to 10403 per UAF-936 -->
         <insert tableName="KRIM_ROLE_PERM_T">
             <column name="ROLE_PERM_ID" value="KFS10887" />
             <column name="OBJ_ID" value="KFS-ROLE-PERM-370" />
             <column name="VER_NBR" value="1" />
-            <column name="ROLE_ID" value="49" />
+            <column name="ROLE_ID" value="10403" />
             <column name="PERM_ID" value="KFS10885" />
             <column name="ACTV_IND" value="Y" />
         </insert>
-    	
+		
+		<!-- Added ROLE_ID 56 per UAF-936 -->
+    	<insert tableName="KRIM_ROLE_PERM_T">
+            <column name="ROLE_PERM_ID" value="KFS10898" />
+            <column name="OBJ_ID" value="KFS-ROLE-PERM-390" />
+            <column name="VER_NBR" value="1" />
+            <column name="ROLE_ID" value="56" />
+            <column name="PERM_ID" value="KFS10885" />
+            <column name="ACTV_IND" value="Y" />
+        </insert>
+		
     </changeSet>
     
 </databaseChangeLog>

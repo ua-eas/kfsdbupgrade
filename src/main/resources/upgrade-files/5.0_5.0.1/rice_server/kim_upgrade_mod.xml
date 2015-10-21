@@ -80,6 +80,8 @@
 			<column name="ATTR_VAL" value="KFS" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSMI9598-RLPRM1" />
 			<column name="OBJ_ID" value="KFSMI9598-RLPRM1" />
@@ -88,6 +90,7 @@
 			<column name="PERM_ID" value="KFSMI9598-PRM1" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
+		-->
 		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSMI9598-PRM2" />
@@ -110,6 +113,8 @@
 			<column name="ATTR_VAL" value="KFS" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSMI9598-RLPRM2" />
 			<column name="OBJ_ID" value="KFSMI9598-RLPRM2" />
@@ -118,7 +123,8 @@
 			<column name="PERM_ID" value="KFSMI9598-PRM2" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 		<insert tableName="KRIM_PERM_T">
 			<column name="PERM_ID" value="KFSMI9598-PRM3" />
 			<column name="OBJ_ID" value="KFSMI9598-PRM3" />
@@ -140,6 +146,8 @@
 			<column name="ATTR_VAL" value="KFS" />
 		</insert>
 
+		<!-- Commented out as there is no UA Specific Role to assign this permission per UAF-936 -->
+		<!--
 		<insert tableName="KRIM_ROLE_PERM_T">
 			<column name="ROLE_PERM_ID" value="KFSMI9598-RLPRM3" />
 			<column name="OBJ_ID" value="KFSMI9598-RLPRM3" />
@@ -148,7 +156,8 @@
 			<column name="PERM_ID" value="KFSMI9598-PRM3" />
 			<column name="ACTV_IND" value="Y" />
 		</insert>
-
+		-->
+		
 	</changeSet>
 
 	<changeSet author="KFS501" id="FIX_NAMESPACE_ON_TYPE_SERVICES">
