@@ -116,17 +116,6 @@ public class App {
                 }
             }
 
-            /**
-             * Temporary success commit
-             */
-            if (success) {
-                doCommit(conn1);
-                writeHeader1("upgrade intentionally aborted");
-            }
-            
-            /**
-             * Per UAF-2200 temporarily don't do finalizing work.
-             *
             if (success) {
                 doCommit(conn1);
                 stmt.close();
@@ -145,8 +134,6 @@ public class App {
                 writeOut("");
                 writeHeader1("upgrade completed successfully");
             }
-             *
-             */
         } 
 
         catch (Exception ex) {
