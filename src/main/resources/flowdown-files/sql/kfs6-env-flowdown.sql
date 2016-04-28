@@ -979,5 +979,5 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) 
   select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), prncpl_id, 'P' 
   from kulowner.krim_entity_cache_t 
-  where prncpl_nm in ('kbasu', 'maryb', 'rdubisar', 'fischerm', 'elvirag', 'ghanson', 'jshard', 'mhohl', 'rdj1', 'akhilashokk', 'ake27', 'kosta', 'hlo', 'robbiem', 'mccunej', 'sandberm', 'mmoen', 'leahasullivan', 'jwingate', 'gurtonj', 'jvm92', 'kristinalopez1', 'merussell', 'sskinner') 
+  where prncpl_nm in ('kbasu', 'gurtonj', 'akhilashokk', 'elvirag', 'merussell', 'jpfennig', 'kosta', 'jwingate', 'mccunej', 'maryb', 'sandovar', 'kbrook', 'robbiem', 'fischerm', 'mmoen', 'ketchmark', 'lilas', 'jnschool', 'ghanson', 'melissav73', 'sskinner', 'rdubisar', 'marcel', 'janifisk', 'sandberm', 'mhohl', 'ake27', 'hlo', 'kristinalopez1', 'leahasullivan', 'alee', 'perryg', 'maramian', 'rblank', 'tammyv', 'buchanaw', 'jreese')
 ;
