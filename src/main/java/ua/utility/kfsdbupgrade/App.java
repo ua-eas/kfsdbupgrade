@@ -43,10 +43,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import liquibase.FileSystemFileOpener;
-import liquibase.Liquibase;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import liquibase.FileSystemFileOpener;
+import liquibase.Liquibase;
 
 public class App {
     private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
@@ -56,11 +58,29 @@ public class App {
     public static final String ERROR = "************************************************* error *************************************************";
     public static final String HEADER1 = "================================================ ? ================================================";
     private static final String INDEX_NAME_TEMPLATE = "[table-name]I{index}";
+	/**
+	 * Populated by the <code>upgrade-base-directory</code> {@link Properties}
+	 * entry
+	 */
     private static String upgradeRoot;
+	/**
+	 * {@link List} of {@link String} file paths loaded from the {@link App}'s
+	 * {@link Properties} <code>upgrade-folders</code> property.
+	 */
     private List<String> upgradeFolders;
     private Properties properties;
+	/**
+	 * {@link Map} of {@link String} keys representing a directory containing a
+	 * {@link List} of {@link String} names of files to process
+	 */
     private Map<String, List<String>> upgradeFiles;
 
+    /**
+	 * Main program entry point. Single argument is expected of a path to the
+	 * <code>kfsdbupgrade.properties</code> properties file.
+	 * 
+	 * @param args
+	 */
     public static void main(final String args[]) {
         if (args.length > 0) {
             String propertyFileName = args[0];
@@ -74,6 +94,17 @@ public class App {
         }
     }
 
+    /**
+	 * Constructor.
+	 * 
+	 * @param propertyFileName
+	 *            {@link String} of the <code>.properties</code> file location
+	 *            to use
+	 * @param ingestWorkflow
+	 *            <code>true</code> if the ingest workflow code path should be
+	 *            executed, <code>false</code> if the upgrade path should be
+	 *            executed.
+	 */
     public App(String propertyFileName, boolean ingestWorkflow) {
         properties = loadProperties(propertyFileName);
         if (properties != null) {
@@ -93,7 +124,14 @@ public class App {
         System.exit(0);
     }
     
+	/**
+	 * Main entry point for the database upgrade code path.
+	 */
     private void doUpgrade() {
+    	/*
+		 * conn1 used for miscellanous SQL statements and dropping temp tables,
+		 * etc., and has autocommit set to 'true'. conn2 is used by liquibase
+		 */
         Connection conn1 = null;
         Connection conn2 = null;
         Statement stmt = null;
@@ -146,12 +184,23 @@ public class App {
         }
     }
     
+	/**
+	 * Main entry point for the workflow ingestion code path
+	 * 
+	 * @param propertyFileName
+	 *            {@link String} of the path to the <code>.properties</code>
+	 *            file to use
+	 */
     private void doWorkflow(String propertyFileName) {
         System.getProperties().setProperty("security.property.file", "file:" + propertyFileName);
         new WorkflowImporter(this, upgradeRoot, upgradeFolders);
     }
     
-
+	/**
+	 * @param input
+	 *            {@link String} of a comma-separated list of values
+	 * @return {@link List} of the comma-separated {@link String}s
+	 */
     private List<String> loadList(String input) {
         List<String> retval = new ArrayList<String>();
         if (StringUtils.isNotBlank(input)) {
@@ -164,6 +213,16 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Drops <code>user_tables</code> with a table name that begins with
+	 * <code>OLD_</code> or <code>TEMP_</code>
+	 * 
+	 * @param conn
+	 *            Unused and should be removed
+	 * 
+	 * @param stmt
+	 *            {@link Statement} to use to execute the SQL query.
+	 */
     private void dropTempTables(Connection conn, Statement stmt) {
         writeHeader2("Dropping temporary tables");
 
@@ -190,6 +249,20 @@ public class App {
         }
     }
 
+	/**
+	 * From this {@link App}'s {@link Properties}, gets entries with keys that
+	 * are directory names starting with <code>prefix</code>, loads the
+	 * {@link Properties} values as a {@link List} via {@link #loadList(String)}
+	 * , and returns the values as a {@link Map} with keys of the matched
+	 * directory names to a {@link List} of files in that directory.
+	 * 
+	 * @param prefix
+	 *            {@link String} of the prefix to match on this {@link App}'s
+	 *            {@link Properties} entries
+	 * @return {@link Map} with keys of the matched directory names from this
+	 *         {@link App}'s {@link Properties} to a {@link List} of files in
+	 *         that directory.
+	 */
     private Map<String, List<String>> loadFolderFileMap(String prefix) {
         Map<String, List<String>> retval = new HashMap<String, List<String>>();
 
@@ -204,6 +277,16 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param fname
+	 *            {@link String} location of a file to load into
+	 *            {@link Properties}
+	 * @return {@link Properties} loaded from the file at <code>fname</code>, or
+	 *         <code>null</code> if the file at <code>fname</code> does not
+	 *         contain an entry for <code>database-url</code> or if an
+	 *         {@link Exception} is encountered while attempting to read the
+	 *         file.
+	 */
     private Properties loadProperties(String fname) {
         Properties retval = null;
         FileReader reader = null;
@@ -230,6 +313,13 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Calls {@link Connection#rollback()}, and if any {@link Exception}s are
+	 * encountered redirects them to {@link #writeOut(Exception)}.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to rollback.
+	 */
     private void doRollback(Connection conn) {
         try {
             conn.rollback();
@@ -238,6 +328,15 @@ public class App {
         }
     }
 
+	/**
+	 * Calls {@link Connection#commit()}, and if any {@link Exception}s are
+	 * encountered redirects them to {@link #writeOut(Exception)}.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to commit.
+	 * @return <code>true</code> if no {@link Exception}s were encountered while
+	 *         committing, <code>false</code> otherwise.
+	 */
     private boolean doCommit(Connection conn) {
         boolean retval = true;
         try {
@@ -250,6 +349,21 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Execute the SQL statements in the provided {@link File}
+	 * 
+	 * @param conn
+	 *            {@link Connection} that SQL statements will be executed over
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL statements
+	 * @param f
+	 *            {@link File}
+	 * @param delimiter
+	 *            This parameter is not used and should be removed.
+	 * @return <code>true</code> if all of the SQL statements in the
+	 *         {@link File} were executed successfully, <code>false</code>
+	 *         otherwise
+	 */
     private boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
         boolean retval = true;
         writeHeader2("processing sql file " + f.getPath());
@@ -277,6 +391,16 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Read SQL statements from the provided {@link File} into a {@link List} of
+	 * {@link String}s. Blank lines and comment lines (lines beginning with
+	 * "<code>--</code>") are skipped.
+	 * 
+	 * @param f
+	 *            {@link File} to read SQL statements from
+	 * @return {@link List} of {@link String}s representing the SQL statements
+	 *         to execute read from the provided {@link File}
+	 */
     private List<String> getSqlStatements(File f) {
         List<String> retval = new ArrayList<String>();
         LineNumberReader lnr = null;
@@ -289,6 +413,7 @@ public class App {
             while ((line = lnr.readLine()) != null) {
                 if (StringUtils.isNotBlank(line) && !line.trim().startsWith("--")) {
                     line = line.trim();
+					// FIXME hardcoded delimiters
                     if (line.equals("/") || line.equals(";")) {
                         if (sql.length() > 0) {
                             retval.add(sql.toString());
@@ -323,6 +448,17 @@ public class App {
         return retval;
     }
 
+	/**
+	 * From the provided {@link File}, get a reference to the upgrade version of
+	 * the file. In general, this means for the file <code>someFile.ext</code>,
+	 * get a reference to the {@link File}
+	 * <code>someFile<strong>_mod</strong>.ext</code>.
+	 * 
+	 * @param fname
+	 *            {@link File} to get the upgrade version for
+	 * @return {@link File} referencing the upgrade version of the provided
+	 *         {@link File}
+	 */
     private File getUpgradeFile(String fname) {
         File retval = null;
 
@@ -339,6 +475,19 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Extract the directory name from the <code>lastProcessedFile</code> file
+	 * path
+	 * 
+	 * @param lastProcessedFile
+	 *            {@link String} of the file path of the last processed file
+	 * @return {@link String} of the directory name containing the last
+	 *         processed file
+	 */
+	/*
+	 * FIXME Use File.getParent() instead. No need to rely on an outside
+	 * 'base-directory' property when all we're doing is basic file IO
+	 */
     private String getLastProcessedFolder(String lastProcessedFile) {
         String retval = null;
         String s = lastProcessedFile.substring(properties.getProperty("upgrade-base-directory").length() + 1);
@@ -347,6 +496,18 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Half-completed attempt at disaster recovery.
+	 * 
+	 * @param lastProcessedFile
+	 *            {@link String} name of the last processed file, or the empty
+	 *            {@link String} or <code>null</code> if this is a fresh run.
+	 * @return If <code>lastProcessedFile</code> is specified, then will return
+	 *         a {@link List} of {@link String}s of size 1 with the element that
+	 *         is the {@link String} of the file path to the
+	 *         <code>lastProcessedFile</code>'s parent directory; otherwise,
+	 *         will return a copy of {@link #upgradeFolders}
+	 */
     private List<String> getFolders(String lastProcessedFile) {
         List<String> retval = new ArrayList<String>();
 
@@ -369,6 +530,24 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Half-completed attempt at disaster recovery.
+	 *
+	 * @param folder
+	 *            {@link String} of the directory path to get the child
+	 *            filenames to process
+	 * @param lastProcessedFile
+	 *            {@link String} name of the last processed file, or the empty
+	 *            {@link String} or <code>null</code> if this is a fresh run.
+	 *
+	 * @return If <code>lastProcessedFile</code> is specified, then will return
+	 *         a {@link List} of {@link String}s of size 1 with the element that
+	 *         is the {@link String} of the file path to the
+	 *         <code>lastProcessedFile</code>'s parent directory; otherwise,
+	 *         will return the {@link List} of {@link String}s in
+	 *         {@link #upgradeFiles} with the key of <code>folder</code>.
+	 */
+	// FIXME use Java builtins for File IO. They're FREE
     private List<String> getFolderFiles(String folder, String lastProcessedFile) {
         List<String> retval = new ArrayList<String>();
         if (StringUtils.isBlank(lastProcessedFile)) {
@@ -393,6 +572,18 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Main entry point for the workspace upgrade code path
+	 * 
+	 * @param conn1
+	 *            {@link Connection} to use when executing custom SQL
+	 * @param conn2
+	 *            {@link Connection} to use when executing Liquibase
+	 * @param stmt
+	 *            {@link Statement} to use in conjuction with <code>conn1</code>
+	 * @return <code>true</code> if all files processed correctly,
+	 *         <code>false</code> otherwise
+	 */
     private boolean doUpgrade(Connection conn1, Connection conn2, Statement stmt) {
         boolean retval = true;
         writeHeader1("upgrading kfs");
@@ -445,6 +636,17 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Wrapper method to execute call to Liquibase and handle any exceptions
+	 * encountered
+	 * 
+	 * @param conn
+	 *            {@link Connection} to use when executing Liquibase
+	 * @param f
+	 *            {@link File} representing a Liquibase changelog to execute
+	 * @return <code>true</code> if the changelog {@link File} was successfully
+	 *         processed, <code>false</code> otherwise.
+	 */
     private boolean runLiquibase(Connection conn, File f) {
         boolean retval = true;
         writeHeader2("processing liquibase file " + f.getPath());
@@ -471,6 +673,14 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Write out the {@link Exception} and its stacktrace to STDOUT as well as
+	 * the logging mechanism
+	 * 
+	 * @param ex
+	 *            {@link Exception} to write out
+	 * @see {@link #writeLog(Exception)}
+	 */
     private void writeOut(Exception ex) {
         System.out.println();
         System.out.println(getTimeString() + ERROR);
@@ -478,6 +688,15 @@ public class App {
         writeLog(ex);
     }
 
+	/**
+	 * Write out the {@link Exception} and its stacktrace to the logging
+	 * mechanism
+	 * 
+	 * @param ex
+	 *            {@link Exception} to log
+	 * 
+	 * @see {@link #writeOut(Exception)}
+	 */
     private void writeLog(Exception ex) {
         PrintWriter pw = null;
 
@@ -497,11 +716,26 @@ public class App {
         }
     }
 
+	/**
+	 * Write out the provided {@link String} to STDOUT as well as the logging
+	 * mechanism.
+	 * 
+	 * @param msg
+	 *            {@link String} to write out
+	 * @see {@link #writeLog(String)}
+	 */
     public void writeOut(String msg) {
         System.out.println(msg);
         writeLog(msg);
     }
 
+	/**
+	 * Log the provided {@link String}
+	 * 
+	 * @param msg
+	 *            {@link String} to log
+	 * @see {@link #writeLog(String)}
+	 */
     private void writeLog(String msg) {
         PrintWriter pw = null;
 
@@ -523,10 +757,26 @@ public class App {
         }
     }
 
+	/**
+	 * @return {@link String} of the current {@link Date} formatted in a way
+	 *         suitable to use for logging.
+	 */
    public String getTimeString() {
         return "[" + DF.format(new Date()) + "] ";
     }
 
+	/**
+	 * 
+	 * @return {@link Connection} to the database with the URL of
+	 *         <code>database-url</code> in this {@link App}s {@link Properties}
+	 *         . Uses the <code>database-user</code>,
+	 *         <code>database-password</code>, <code>database-name</code>, and
+	 *         <code>database-driver</code> {@link Properties} entries for
+	 *         connection details. Read-only and auto-commit for the
+	 *         {@link Connection} are both set to <code>false</code>.
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown.
+	 */
     private Connection getUpgradeConnection() throws Exception {
         Connection retval = null;
         String url = properties.getProperty("database-url");
@@ -549,6 +799,18 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @return {@link Connection} to the database with the URL of
+	 *         <code>legacy-database-url</code> in this {@link App}s
+	 *         {@link Properties} . Uses the <code>legacy-database-user</code>,
+	 *         <code>legacy-database-password</code>,
+	 *         <code>legacy-database-name</code>, and
+	 *         <code>legacy-database-driver</code> {@link Properties} entries
+	 *         for connection details. Read-only and auto-commit for the
+	 *         {@link Connection} are both set to <code>false</code>.
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown.
+	 */
     private Connection getLegacyConnection() throws Exception {
         Connection retval = null;
         String url = properties.getProperty("legacy-database-url");
@@ -572,6 +834,16 @@ public class App {
 
     }
 
+	/**
+	 * Wrapper to do exception handling around closing database objects.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to close, if any
+	 * @param stmt
+	 *            {@link Statement} to close, if any
+	 * @param res
+	 *            {@link ResultSet} to close, if any
+	 */
     private void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
         try {
             if (res != null) {
@@ -593,6 +865,19 @@ public class App {
         };
     }
 
+	/**
+	 * Convenience method to handle exeucting SQL statements and exception
+	 * handling
+	 * 
+	 * @param conn
+	 *            {@link Connection} to execute SQL against
+	 * @param stmt
+	 *            {@link Statement} to execute the SQL with
+	 * @param sql
+	 *            {@link String} of the SQL to execute
+	 * @return <code>true</code> if the <code>sql</code> was executed
+	 *         successfully, <code>false</code> otherwise.
+	 */
     private boolean executeSql(Connection conn, Statement stmt, String sql) {
         boolean retval = false;
 
@@ -611,11 +896,28 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param sql
+	 *            {@link String} of the sql to check
+	 * @return <code>true</code> if the provided <code>sql</code> does NOT start
+	 *         with <code>INSERT</code>, <code>UPDATE</code>, or
+	 *         <code>DELETE</code>; <code>false</code> otherwise
+	 */
     private boolean isDDL(String sql) {
         String s = sql.toUpperCase();
         return (!s.toUpperCase().startsWith("UPDATE") && !s.startsWith("INSERT") && !s.startsWith("DELETE"));
     }
 
+	/**
+	 * Convenience wrapper to {@link FileUtils#forceDelete(File)} whether or not
+	 * the file exists
+	 * 
+	 * @param f
+	 *            {@link File} to delete
+	 * @throws IOException
+	 *             Any {@link IOException} encountered OTHER than
+	 *             {@link FileNotFoundException}s will be rethrown
+	 */
     private void deleteFile(File f) throws IOException {
         try {
             FileUtils.forceDelete(f);
@@ -623,6 +925,17 @@ public class App {
         };
     }
 
+	/**
+	 * Perform pre-processing setup, such as cleaning out old logs and updating
+	 * indices TODO note that updating indices is currently not running
+	 * 
+	 * @param conn
+	 *            {@link Connection} to database
+	 * @param stmt
+	 *            {@link Statement} to execute SQL against
+	 * @return <code>true</code> if all commands executed successfully,
+	 *         <code>false</code> otherwise
+	 */
     private boolean doInitialProcessing(Connection conn, Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
@@ -670,6 +983,7 @@ public class App {
                 res2 = stmt2.executeQuery();
 
                 int indx = 0;
+				// FIXME dead code; indx is NEVER > 0
                 while (res2.next()) {
                     if (indx > 0) {
                         indx++;
@@ -691,12 +1005,24 @@ public class App {
         return retval;
     }
 
+	/**
+	 * {@link #writeOut(String)} the provided <code>message</code> encased in a
+	 * block of '='s for emphasis
+	 * 
+	 * @param msg
+	 */
     public void writeHeader1(String msg) {
         writeOut("");
         writeOut(HEADER1.replace("?", msg));
         writeOut("");
     }
 
+	/**
+	 * {@link #writeOut(String)} the provided <code>message</code> followed by a
+	 * line of dashes for emphasis
+	 * 
+	 * @param msg
+	 */
     public void writeHeader2(String msg) {
         writeOut("");
         writeOut(msg);
@@ -704,14 +1030,34 @@ public class App {
         writeOut("");
     }
 
+	/**
+	 * 
+	 * @return {@link PrintWriter} targetting the output log file specified by
+	 *         the <code>output-log-file-name</code> {@link Properties} entry
+	 * @throws IOException
+	 *             Any {@link IOException}s encountered will be rethrown
+	 */
     private PrintWriter getOutputLogWriter() throws IOException {
         return new PrintWriter(new FileWriter(properties.getProperty("output-log-file-name"), true));
     }
 
+	/**
+	 * @return {@link PrintWriter} targetting the processed files log file
+	 *         specified by the <code>processed-files-file-name</code>
+	 *         {@link Properties} entry
+	 * @throws IOException
+	 *             Any {@link IOException}s encountered will be rethrown
+	 */
     private PrintWriter getProcessedFilesWriter() throws IOException {
         return new PrintWriter(new FileWriter(properties.getProperty("processed-files-file-name"), true));
     }
 
+	/**
+	 * Write the provided <code>txt</code> to the processed files log.
+	 * 
+	 * @param txt
+	 * @see {@link #getProcessedFilesWriter()}
+	 */
     private void writeProcessedFileInfo(String txt) {
         PrintWriter pw = null;
         try {
@@ -729,6 +1075,17 @@ public class App {
         }
     }
 
+	/**
+	 * Extracts the table name from a SQL statement using {@link String}
+	 * manipulation based on the location of the sequence "<code> ON </code>"
+	 * (including spaces)
+	 * 
+	 * @param line
+	 *            {@link String} of a SQL statement to extract the table name
+	 *            from
+	 * @return {@link String} of the SQL table name if it is found,
+	 *         <code>null</code> otherwise
+	 */
     private String getIndexTableName(String line) {
         String retval = null;
         int pos = line.indexOf(" ON ");
@@ -745,6 +1102,17 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Extracts the name of the index column from a SQL statement using
+	 * {@link String} manipulation based on the location of the sequence
+	 * "<code> UNIQUE </code>" (including spaces)
+	 * 
+	 * @param line
+	 *            {@link String} of the SQL statement to extract the index
+	 *            column from
+	 * @return {@link String} of the index column if found, <code>null</code>
+	 *         otherwise
+	 */
     private String getIndexName(String line) {
         String retval = null;
         StringTokenizer st = new StringTokenizer(line);
@@ -763,6 +1131,17 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Extracts the {@link List} of {@link String} column names from a SQL
+	 * statement based on the first instance of a parens block
+	 * 
+	 * @param line
+	 *            {@link String} of a SQL statement to extract the column names
+	 *            from
+	 * @return {@link List} of {@link String} column names extracted from the
+	 *         SQL, if any; if no columns are found, will be a {@link List} of
+	 *         size 0.
+	 */
     private List<String> getIndexColumnNames(String line) {
         List<String> retval = new ArrayList<String>();
 
@@ -780,6 +1159,16 @@ public class App {
         return retval;
     }
 
+	/**
+	 * From the {@link #upgradeRoot}
+	 * <code>/post-upgrade/sql/kfs-indexes.sql</code> file, create any indices
+	 * that are present in the SQL file but in the database that is being worked
+	 * against TODO there's more going on here... come back after digging
+	 * through submethods
+	 * 
+	 * @param conn
+	 * @param stmt
+	 */
     private void createExistingIndexes(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
@@ -848,6 +1237,18 @@ public class App {
         }
     }
 
+	/**
+	 * @param conn
+	 *            {@link Connection} to the target database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL statements
+	 * @param tableName
+	 * @return <code>true</code> if the table <code>tableName</code> exists in
+	 *         the database connected to by <code>conn</code>;
+	 *         <code>false</code>otherwise
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
     private boolean tableExists(Connection conn, Statement stmt, String tableName) throws Exception {
         boolean retval = false;
         ResultSet res = null;
@@ -866,6 +1267,27 @@ public class App {
 
     }
 
+	/**
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} to execute SQL against
+	 * @param tableName
+	 *            {@link String} of the table name to check for an existing
+	 *            index
+	 * @param columnNames
+	 *            {@link List} of {@link String} column names to check for the
+	 *            existence of an index against
+	 * @return <code>true</code> if there exists an index on the table
+	 *         <code>tableName</code> on the same columns as
+	 *         <code>columnNames</code>; <code>false</code> otherwise
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
+	/*
+	 * TODO Investigate: this doesn't check on the NAME of the index... does
+	 * that matter?
+	 */
     private boolean indexExists(Connection conn, Statement stmt, String tableName, List<String> columnNames) throws Exception {
         boolean retval = false;
         ResultSet res = null;
@@ -896,6 +1318,13 @@ public class App {
                 columns.add(res.getString(2));
             }
 
+			/*
+			 * for each index name, if the list of columns in that index is the
+			 * same size of the input columnNames, AND the contents are the same
+			 * (NOTE: here, also matching on order; don't strictly need to,
+			 * potential bug; looking for equivalence, not strict equality),
+			 * then the index exists
+			 */
             for (List<String> columns : map.values()) {
                 if (columns.size() == columnNames.size()) {
                     boolean foundit = true;
@@ -919,6 +1348,22 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL
+	 * @param tableName
+	 *            {@link String} of the name of the table to query against
+	 * @param indexName
+	 *            {@link String} of the name of the index to query for the
+	 *            existence of
+	 * @return <code>true</code> if there is an index named
+	 *         <code>indexName</code> on the table <code>tableName</code>;
+	 *         <code>false</code> otherwise
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
     private boolean indexNameExists(Connection conn, Statement stmt, String tableName, String indexName) throws Exception {
         boolean retval = false;
         ResultSet res = null;
