@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1380,6 +1381,26 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Queries for indexes against the provided <code>tableName</code> and looks
+	 * for indices named like <code>*_TI#</code>, finds the one with the highest
+	 * trailing number <code>n</code>, and returns a {@link String} of the
+	 * format <code>[tableName]I(n+1)</code>
+	 * 
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} to execute SQL with
+	 * @param tableName
+	 *            {@link String} of the table name to check on for indices
+	 * @return {@link String} of the format <code>[tableName]I(n+1)</code>
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
+	/*
+	 * NOTE: Extremely tightly coupled to the kfs-indexes.sql resource file...
+	 * how often does that change? If ever?
+	 */
     private String getNextTableIndexName(Connection conn, Statement stmt, String tableName) throws Exception {
         String retval = null;
 
@@ -1414,6 +1435,16 @@ public class App {
         return retval;
     }
 
+	/**
+	 * <strong>Note:</strong> assumes that <code>line</code> is
+	 * <code>CREATE PUBLIC SYNONYM [X] FOR [Y]</code> SQL statement
+	 * <p>
+	 * 
+	 * @param line
+	 *            {@link String} of a SQL create synonym statement
+	 * @return {@link String} of the name of the synonym being created in
+	 *         <code>line</code>
+	 */
     private String getSynonymName(String line) {
         String retval = null;
         StringTokenizer st = new StringTokenizer(line);
@@ -1434,6 +1465,18 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL statements
+	 * @param synonymName
+	 *            {@link String} of the synonym to check for the existence of
+	 * @return <code>true</code> if the synonym exists, <code>false</code>
+	 *         otherwise
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
     private boolean synonymExists(Connection conn, Statement stmt, String synonymName) throws Exception {
         boolean retval = false;
         ResultSet res = null;
@@ -1450,6 +1493,17 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Create the public synonyms specified in {@link #upgradeRoot}
+	 * <code>/post-upgrade/sql/kfs-public-synonyms.sql</code> that do not
+	 * already exist.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL statements
+	 */
+	// FIXME only exception handling is to log out exception... very brittle
     private void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
@@ -1483,6 +1537,20 @@ public class App {
         }
     }
 
+	/**
+	 * Gets the indexes from a {@link DatabaseMetaData} for a given
+	 * <code>table</code> and creates and returns a {@link Set} of
+	 * {@link String} SQL UPDATE statements that will create those indexes on a
+	 * database.
+	 * 
+	 * @param dmd
+	 *            {@link DatabaseMetaData} to get index information from
+	 * @param table
+	 *            {@link String} of the specific table to get index information
+	 *            for
+	 * @return {@link Set} of {@link String} SQL UPDATE statements that will
+	 *         create those indexes on a database.
+	 */
     private Set<String> loadForeignKeyIndexInformation(DatabaseMetaData dmd, String table) {
         Set<String> retval = new HashSet<String>();
 
@@ -1495,8 +1563,16 @@ public class App {
 
             while (res.next()) {
                 foundfk = true;
-                String fcname = res.getString(8);
+				// FKCOLUMN_NAME String => foreign key column name
+				String fcname = res.getString(8);
+				/*
+				 * KEY_SEQ short => sequence number within a foreign key( a
+				 * value of 1 represents the first column of the foreign key, a
+				 * value of 2 would represent the second column within the
+				 * foreign key)
+				 */
                 int seq = res.getInt(9);
+				// 12 - FK_NAME String => foreign key name (may be null)
                 String fkname = res.getString(12);
 
                 ForeignKeyReference fkref = fkeys.get(fkname);
@@ -1544,6 +1620,20 @@ public class App {
         return retval;
     }
 
+	/**
+	 * Constructs a tables {@link TableIndexInfo} from the
+	 * {@link DatabaseMetaData} for a specific table name <code>tname</code>.
+	 * 
+	 * @param dmd
+	 *            {@link DatabaseMetaData} describing the database
+	 * @param tname
+	 *            {@link String} of the table name to construct the
+	 *            {@link TableIndexInfo} for
+	 * @return {@link TableIndexInfo} for the table with the given table name
+	 *         <code>tname</code>
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
     private TableIndexInfo loadTableIndexInfo(DatabaseMetaData dmd, String tname) throws Exception {
         TableIndexInfo retval = new TableIndexInfo(tname);
         ResultSet res = null;
@@ -1554,9 +1644,17 @@ public class App {
             res = dmd.getIndexInfo(null, getSchema(), tname, false, true);
 
             while (res.next()) {
+				/*
+				 * INDEX_NAME String => index name; null when TYPE is
+				 * tableIndexStatistic
+				 */
                 String iname = res.getString(6);
 
                 if (iname != null) {
+					/*
+					 * COLUMN_NAME String => column name; null when TYPE is
+					 * tableIndexStatistic
+					 */
                     String cname = res.getString(9);
 
                     IndexInfo i = imap.get(iname);
@@ -1597,6 +1695,18 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param indexes
+	 *            {@link List} of {@link IndexInfo} to check for the existence
+	 *            of <code>fkref</code> in
+	 * @param fkref
+	 *            {@link ForeignKeyReference} to check for the existence of in
+	 *            <code>indexes</code>
+	 * @return <code>true</code> if <code>indexes</code> contains
+	 *         <code>fkref</code>, <code>false</code> otherwise
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
     private boolean hasIndex(List<IndexInfo> indexes, ForeignKeyReference fkref) throws Exception {
         boolean retval = false;
 
@@ -1619,10 +1729,31 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @return {@link String} of this {@link App}'s <code>database-schema</code>
+	 *         {@link Properties} entry
+	 */
     private String getSchema() {
         return properties.getProperty("database-schema");
     }
 
+	/**
+	 * @param dmd
+	 *            {@link DatabaseMetaData} describing the database to check
+	 * @param schema
+	 *            {@link String} of the schema name to check
+	 * @param tname
+	 *            {@link String} of the table name to check
+	 * @param cname
+	 *            {@link String} of the column name to check
+	 * @return <code>true</code> if the column <code>cname</code> in the table
+	 *         <code>tname</code> in the schema <code>schema</code> in the
+	 *         database described by <code>dmd</code> is a Java numeric type;
+	 *         <code>false</code> otherwise
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 * @see {@link #isNumericJavaType(int)}
+	 */
     private boolean isNumericColumn(DatabaseMetaData dmd, String schema, String tname, String cname) throws Exception {
         boolean retval = false;
 
@@ -1642,6 +1773,25 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param type
+	 *            <code>int</code> of a {@link Types} value
+	 * @return <code>true</code> if <code>type</code> is one of the following:
+	 *         <ul>
+	 *         <li>{@link Types#BIGINT}</li>
+	 *         <li>{@link Types#BINARY}</li>
+	 *         <li>{@link Types#DECIMAL}</li>
+	 *         <li>{@link Types#DOUBLE}</li>
+	 *         <li>{@link Types#FLOAT}</li>
+	 *         <li>{@link Types#INTEGER}</li>
+	 *         <li>{@link Types#NUMERIC}</li>
+	 *         <li>{@link Types#REAL}</li>
+	 *         <li>{@link Types#SMALLINT}</li>
+	 *         <li>{@link Types#TINYINT}</li>
+	 *         </ul>
+	 *         <p>
+	 *         , <code>false</code> otherwise.
+	 */
     private boolean isNumericJavaType(int type) {
         return ((type == java.sql.Types.BIGINT)
             || (type == java.sql.Types.BINARY)
@@ -1655,6 +1805,16 @@ public class App {
             || (type == java.sql.Types.TINYINT));
     }
 
+	/**
+	 * Use the {@link DatabaseMetaData} from the given {@link Connection} to
+	 * generate the foreign key index information for each table
+	 * 
+	 * @param conn
+	 *            {@link Connection} to the database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL
+	 * @see {@link #loadForeignKeyIndexInformation(DatabaseMetaData, String)}
+	 */
     private void createForeignKeyIndexes(Connection conn, Statement stmt) {
         writeHeader2("creating indexes on foreign keys where required...");
         ResultSet res = null;
@@ -1663,7 +1823,13 @@ public class App {
             res = dmd.getTables(null, getSchema(), null, new String[]{"TABLE"});
 
             while (res.next()) {
+				// TABLE_NAME String => table name
                 String tname = res.getString(3);
+				/*
+				 * for each table name, load foreign key index information to
+				 * get SQL updates to execute, then execute each SQL update
+				 * statement
+				 */
 
                 Set<String> sqllist = loadForeignKeyIndexInformation(dmd, tname);
 
@@ -1689,6 +1855,20 @@ public class App {
         }
     }
 
+	/**
+	 * Execute the following prepared statement:
+	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'displayType', 'document')</code>
+	 * with the parameter specified by values returned by
+	 * <code>select distinct doc_hdr_id from krew_doc_hdr_ext_t order by  1</code>
+	 * . All updates are done in a single transaction; any {@link Exception}s
+	 * encountered will cause the transaction to rollback.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} that is immediately blown away and should be
+	 *            removed as a parameter
+	 */
     private void createDocumentSearchEntries(Connection conn, Statement stmt) {
         PreparedStatement pstmt = null;
         ResultSet res = null;
@@ -1714,6 +1894,7 @@ public class App {
 
             conn.commit();
         } catch (Exception ex) {
+			// FIXME follow writeout path for exceptions
             ex.printStackTrace();
 
             if (conn != null) {
@@ -1730,6 +1911,15 @@ public class App {
         }
     }
 
+	/**
+	 * Execute the sql file {@link #upgradeRoot}
+	 * <code>/post-upgrade/sql/misc.sql</code> against the database
+	 * 
+	 * @param conn
+	 *            {@link Connection} to the database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL
+	 */
     private void runMiscSql(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
@@ -1754,6 +1944,7 @@ public class App {
                         }
                         writeOut(sql);
                     } catch (SQLException ex) {
+						// FIXME also log exception; want the stacktrace
                         writeOut("sql execution failed: " + sql);
                     }
                 }
@@ -1770,6 +1961,20 @@ public class App {
         }
     }
 
+	/**
+	 * Update the purchasing statuses from the KFS3 tables to the KFS6 tables.
+	 * All updates are done on a single transaction; if any {@link Exception}s
+	 * are encountered, the transaction will be rolled back.
+	 * 
+	 * @param upgradeConn
+	 *            {@link Connection} to the upgrade database
+	 */
+	/*
+	 * TODO: Need a DB expert to explain what's going on here so can expand
+	 * comment. All of this SQL should really be externalized its own script (or
+	 * several scripts; there are a lot of subpieces here) which is documented
+	 * on its own
+	 */
     private void updatePurchasingStatuses(Connection upgradeConn) {
         Connection legacyConn = null;
         Statement legacyStmt = null;
@@ -1898,6 +2103,21 @@ public class App {
         }
     }
 
+	/**
+	 * Checks if the combination of <code>NM</code> and <code>NMSPC_CD</code> is
+	 * unique on <code>KRIM_PERM_T</code> and <code>KRIM_RSP_T</code>. If there
+	 * are duplicates, <code>PERM_ID</code> will be appended to them. If there
+	 * are STILL duplicates, then <code>RSP_ID</code> will be appended to them.
+	 * Any duplicates found that need to be updated are then written to the
+	 * database.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to the database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL against
+	 * @return <code>true</code> if all SQL updates executed successfully;
+	 *         <code>false</code> otherwise.
+	 */
     private boolean ensureNmNmspccdUnique(Connection conn, Statement stmt) {
         boolean retval = false;
         ResultSet res = null;
@@ -1944,16 +2164,45 @@ public class App {
         return retval;
     }
 
+	/**
+	 * @param nm
+	 *            {@link String} to process
+	 * @return <code>true</code> if <code>nm</code> is non-null and non-empty
+	 *         and contains the substring "<code>method:</code>";
+	 *         <code>false</code> otherwise
+	 */
     private boolean isMethodCall(String nm) {
         return (StringUtils.isNotBlank(nm) && nm.contains("method:"));
     }
 
+	/**
+	 * @param nm
+	 *            {@link String} of the method name.
+	 * @param conn
+	 *            {@link Connection} to the database
+	 * @param stmt
+	 *            {@link Statement} to use to execute SQL
+	 * @return <code>true</code> if the specified method was executed
+	 *         successfully; <code>false</code> otherwise
+	 */
+	/*
+	 * FIXME this seems to be some way of injecting the method name
+	 * "ensureNmNmspccdUnique" into the "upgrade-files" property in the App
+	 * properties to modify the code path..... Why? Aside from that it's a dirty
+	 * commit/rollback logic block. This should be evaluated and either
+	 * corrected or removed.
+	 */
     private boolean callMethod(String nm, Connection conn, Statement stmt) {
         boolean retval = false;
         if (StringUtils.isNotBlank(nm)) {
             if (nm.contains("ensureNmNmspccdUnique")) {
                 retval = ensureNmNmspccdUnique(conn, stmt);
             }
+			/*
+			 * FIXME unsafe commit and rollback; don't know if we actually have
+			 * done anything, and there may be other updates sitting in the
+			 * transaction that shouldn't be interfered with here
+			 */
 
             if (retval) {
                 doCommit(conn);
@@ -1965,6 +2214,18 @@ public class App {
         return retval;
     }
     
+	/**
+	 * Copies values from <code>fp_prcrmnt_card_hldr_dtl_t</code> to
+	 * <code>fp_prcrmnt_card_dflt_t</code>. All updates are done in a single
+	 * transaction; if any {@link Exception}s are encountered the entire
+	 * transaction is rolled back.
+	 * 
+	 * @param conn
+	 *            {@link Connection} to the database
+	 */
+	/*
+	 * TODO this SQL should be externalized
+	 */
     private void populateProcurementCardTable(Connection conn) {
         Statement stmt = null;
         PreparedStatement pstmt = null;
@@ -2046,10 +2307,15 @@ public class App {
                 }
                 
                 catch (SQLException ex) {
+					// FIXME also log out exception; want the stack trace
                     writeOut("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString());
                 }
                 
                 if (((cnt++) % 1000) == 0) {
+					/*
+					 * FIXME use writeOut methods; eventually won't be using
+					 * System.out
+					 */
                     System.out.println(cnt);;
                 }
             }
@@ -2072,7 +2338,19 @@ public class App {
         }
     }
     
-
+	/**
+	 * Queries <code>krns_maint_doc_t</code> for <code>DOC_CNTNT</code> and
+	 * converts it using a {@link MaintainableXMLConversionServiceImpl}
+	 * instance. If the <code>encryption-key</code> property is set, will use an
+	 * {@link EncryptionService} to decrypt the XML contents from
+	 * <code>krns_maint_doc_t</code> and encrypt the transformed xml.
+	 * <p>
+	 * All updates are done in a single transaction; if any {@link Exception}s
+	 * are encountered, the full transaction is rolled back.
+	 * 
+	 * @param upgradeConn
+	 *            {@link Connection} to the upgrade database
+	 */
     private void convertMaintenanceDocuments(Connection upgradeConn) {
         PreparedStatement pstmt = null;
         Statement stmt = null;
