@@ -120,6 +120,7 @@ public class App {
             }
         } else {
             System.out.println("invalid properties file: " + propertyFileName);
+            writeLog("invalid properties file: " + propertyFileName);            
         }
         
         System.exit(0);
@@ -145,8 +146,8 @@ public class App {
             stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
             stmt.close();
             stmt = conn1.createStatement();
-            writeOut("Starting KFS database upgrade process...");
-            writeOut("");
+            writeLog("Starting KFS database upgrade process...");
+            writeLog("");
 
             if (doInitialProcessing(conn1, stmt)) {
                 doCommit(conn1);
@@ -170,13 +171,13 @@ public class App {
                 if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
                     convertMaintenanceDocuments(conn1);
                 }
-                writeOut("");
-                writeHeader1("upgrade completed successfully");
+                writeLog("");
+                writeHeader1Log("upgrade completed successfully");
             }
         } 
 
         catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } 
 
         finally {
@@ -225,7 +226,7 @@ public class App {
 	 *            {@link Statement} to use to execute the SQL query.
 	 */
     private void dropTempTables(Connection conn, Statement stmt) {
-        writeHeader2("Dropping temporary tables");
+        writeHeader2Log("Dropping temporary tables");
 
         List<String> tables = new ArrayList<String>();
         ResultSet res = null;
@@ -325,7 +326,7 @@ public class App {
         try {
             conn.rollback();
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         }
     }
 
@@ -343,7 +344,7 @@ public class App {
         try {
             conn.commit();
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
             retval = false;
         }
 
@@ -367,7 +368,7 @@ public class App {
 	 */
     private boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
         boolean retval = true;
-        writeHeader2("processing sql file " + f.getPath());
+        writeHeader2Log("processing sql file " + f.getPath());
         List<String> sqlStatements = getSqlStatements(f);
 
         if (!sqlStatements.isEmpty()) {
@@ -386,7 +387,7 @@ public class App {
             }
         } else {
             retval = false;
-            writeOut(new Exception("no sql statements found"));
+            writeLog(new Exception("no sql statements found"));
         }
 
         return retval;
@@ -436,7 +437,7 @@ public class App {
                 retval.add(sql.toString());
             }
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             try {
                 if (lnr != null) {
@@ -587,14 +588,14 @@ public class App {
 	 */
     private boolean doUpgrade(Connection conn1, Connection conn2, Statement stmt) {
         boolean retval = true;
-        writeHeader1("upgrading kfs");
+        writeHeader1Log("upgrading kfs");
 
         String lastProcessedFile = properties.getProperty("last-processed-file");
 
         List<String> folders = getFolders(lastProcessedFile);
 
         for (String folder : folders) {
-            writeHeader2("processing folder " + folder);
+            writeHeader2Log("processing folder " + folder);
 
             List<String> folderFiles = getFolderFiles(folder, lastProcessedFile);
             if (folderFiles != null) {
@@ -650,7 +651,7 @@ public class App {
 	 */
     private boolean runLiquibase(Connection conn, File f) {
         boolean retval = true;
-        writeHeader2("processing liquibase file " + f.getPath());
+        writeHeader2Log("processing liquibase file " + f.getPath());
         PrintWriter pw = null;
         try {
             Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
@@ -664,7 +665,7 @@ public class App {
                 pw.close();
             }
             pw = null;
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             if (pw != null) {
                 pw.close();
@@ -705,6 +706,8 @@ public class App {
             pw = getOutputLogWriter();
             pw.println();
             pw.println(getTimeString() + ERROR);
+            pw.println("--"+ex.getClass().getName()+"---===");
+            pw.println("--"+ex.getMessage()+"--");            
             ex.printStackTrace(pw);
         } catch (Exception ex2) {
         } finally {
@@ -786,16 +789,16 @@ public class App {
         props.setProperty("user", properties.getProperty("database-user"));
         props.setProperty("password", properties.getProperty("database-password"));
 
-        writeOut("Connecting to db " + properties.getProperty("database-name") + "...");
-        writeOut("url=" + url);
+        writeLog("Connecting to db " + properties.getProperty("database-name") + "...");
+        writeLog("url=" + url);
 
         Class.forName(properties.getProperty("database-driver"));
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-        writeOut("connected to database " + properties.getProperty("database-name"));
-        writeOut("");
+        writeLog("connected to database " + properties.getProperty("database-name"));
+        writeLog("");
 
         return retval;
     }
@@ -820,16 +823,16 @@ public class App {
         props.setProperty("user", properties.getProperty("legacy-database-user"));
         props.setProperty("password", properties.getProperty("legacy-database-password"));
 
-        writeOut("Connecting to db " + properties.getProperty("legacy-database-name") + "...");
-        writeOut("url=" + url);
+        writeLog("Connecting to db " + properties.getProperty("legacy-database-name") + "...");
+        writeLog("url=" + url);
 
         Class.forName(properties.getProperty("legacy-database-driver"));
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-        writeOut("connected to database " + properties.getProperty("legacy-database-name"));
-        writeOut("");
+        writeLog("connected to database " + properties.getProperty("legacy-database-name"));
+        writeLog("");
 
         return retval;
 
@@ -891,7 +894,7 @@ public class App {
 
             retval = true;
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         }
 
         return retval;
@@ -946,8 +949,8 @@ public class App {
             deleteFile(new File(properties.getProperty("output-log-file-name")));
             deleteFile(new File(properties.getProperty("processed-files-file-name")));
 
-            writeHeader1("pre-upgrade processing");
-            writeHeader2("dropping materialized view logs...");
+            writeHeader1Log("pre-upgrade processing");
+            writeHeader2Log("dropping materialized view logs...");
             res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
 
             List<String> logs = new ArrayList<String>();
@@ -958,12 +961,12 @@ public class App {
 
             for (String log : logs) {
                 stmt.execute("drop materialized view log on " + log);
-                writeOut("dropped materialized view log on " + log);
+                writeLog("dropped materialized view log on " + log);
             }
 
             res.close();
 
-            writeHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
+            writeHeader2Log("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
 
             StringBuilder sql = new StringBuilder(256);
             sql.append("select count(*), SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
@@ -997,7 +1000,7 @@ public class App {
 
             retval = true;
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             closeDbObjects(null, null, res);
             closeDbObjects(null, stmt2, res2);
@@ -1005,7 +1008,19 @@ public class App {
 
         return retval;
     }
-
+    
+	/**
+	 * {@link #writeOut(String)} the provided <code>message</code> encased in a
+	 * block of '='s for emphasis
+	 * 
+	 * @param msg
+	 */    
+    public void writeHeader1Log(String msg) {
+        writeLog("");
+        writeLog(HEADER1.replace("?", msg));
+        writeLog("");
+    }
+    
 	/**
 	 * {@link #writeOut(String)} the provided <code>message</code> encased in a
 	 * block of '='s for emphasis
@@ -1017,7 +1032,20 @@ public class App {
         writeOut(HEADER1.replace("?", msg));
         writeOut("");
     }
-
+    
+	/**
+	 * {@link #writeOut(String)} the provided <code>message</code> followed by a
+	 * line of dashes for emphasis
+	 * 
+	 * @param msg
+	 */    
+    public void writeHeader2Log(String msg) {
+        writeLog("");
+        writeLog(msg);
+        writeLog(UNDERLINE);
+        writeLog("");
+    }
+    
 	/**
 	 * {@link #writeOut(String)} the provided <code>message</code> followed by a
 	 * line of dashes for emphasis
@@ -1065,7 +1093,7 @@ public class App {
             pw = getProcessedFilesWriter();
             pw.println(txt);
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             try {
                 if (pw != null) {
@@ -1173,7 +1201,7 @@ public class App {
     private void createExistingIndexes(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        writeHeader2("creating KFS indexes that existed prior to upgrade where required ");
+        writeHeader2Log("creating KFS indexes that existed prior to upgrade where required ");
 
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql"));
@@ -1220,14 +1248,14 @@ public class App {
                             try {
                                 stmt.execute(sql.toString());
                             } catch (SQLException ex) {
-                                writeOut("failed to create index: " + sql.toString());
+                                writeLog("failed to create index: " + sql.toString());
                             }
                         }
                     }
                 }
             }
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             try {
                 if (lnr != null) {
@@ -1507,7 +1535,7 @@ public class App {
     private void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        writeHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
+        writeHeader2Log("creating KFS public synonyms that existed prior to upgrade where required ");
 
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql"));
@@ -1521,12 +1549,12 @@ public class App {
                     try {
                         stmt.execute(line);
                     } catch (SQLException ex) {
-                        writeOut("failed to create public synonym: " + line);
+                        writeLog("failed to create public synonym: " + line);
                     }
                 }
             }
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             try {
                 if (lnr != null) {
@@ -1612,7 +1640,7 @@ public class App {
                 }
             }
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -1816,7 +1844,7 @@ public class App {
 	 * @see {@link #loadForeignKeyIndexInformation(DatabaseMetaData, String)}
 	 */
     private void createForeignKeyIndexes(Connection conn, Statement stmt) {
-        writeHeader2("creating indexes on foreign keys where required...");
+        writeHeader2Log("creating indexes on foreign keys where required...");
         ResultSet res = null;
         try {
             DatabaseMetaData dmd = conn.getMetaData();
@@ -1834,22 +1862,22 @@ public class App {
                 Set<String> sqllist = loadForeignKeyIndexInformation(dmd, tname);
 
                 if ((sqllist != null) && !sqllist.isEmpty()) {
-                    writeOut("creating required foreign key indexes on table " + tname + "...");
+                    writeLog("creating required foreign key indexes on table " + tname + "...");
                     int cnt = 0;
                     for (String sql : sqllist) {
                         try {
                             stmt.executeQuery(sql);
                             cnt++;
                         } catch (Exception ex) {
-                            writeOut("create index failed: " + sql);
+                            writeLog("create index failed: " + sql);
                         }
                     }
 
-                    writeOut("    " + cnt + " indexes created");
+                    writeLog("    " + cnt + " indexes created");
                 }
             }
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -1886,7 +1914,7 @@ public class App {
                 pstmt.executeUpdate();
 
                 if ((i % 10000) == 0) {
-                    writeOut(i + " krew_doc_hdr_ext_t entries inserted");
+                    writeLog(i + " krew_doc_hdr_ext_t entries inserted");
                 }
 
                 i++;
@@ -1923,7 +1951,7 @@ public class App {
     private void runMiscSql(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        writeHeader2("Executiong miscellaneous post-upgrade sql");
+        writeHeader2Log("Executiong miscellaneous post-upgrade sql");
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/misc.sql"));
 
@@ -1942,15 +1970,15 @@ public class App {
                         } else {
                             stmt.executeUpdate(sql);
                         }
-                        writeOut(sql);
+                        writeLog(sql);
                     } catch (SQLException ex) {
 						// FIXME also log exception; want the stacktrace
-                        writeOut("sql execution failed: " + sql);
+                        writeLog("sql execution failed: " + sql);
                     }
                 }
             }
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             try {
                 if (lnr != null) {
@@ -1994,12 +2022,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeOut("updating credit memo app_doc_stat[" + desc + "] in krew_doc_hdr_t...");
+                writeLog("updating credit memo app_doc_stat[" + desc + "] in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeOut("updating credit memo app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                writeLog("updating credit memo app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2015,12 +2043,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeOut("updating payment request app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                writeLog("updating payment request app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeOut("updating payment request app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                writeLog("updating payment request app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2036,12 +2064,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeOut("updating purchase order app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                writeLog("updating purchase order app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeOut("updating purchase order app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                writeLog("updating purchase order app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2057,12 +2085,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeOut("updating purchase receiving line app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                writeLog("updating purchase receiving line app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeOut("updating purchase receiving line app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                writeLog("updating purchase receiving line app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2078,12 +2106,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeOut("updating requisition app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+                writeLog("updating requisition app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeOut("updating requisition app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+                writeLog("updating requisition app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2091,7 +2119,7 @@ public class App {
 
             upgradeConn.commit();
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
             try {
                 upgradeConn.rollback();
             } catch (Exception ex2) {
@@ -2124,8 +2152,8 @@ public class App {
         try {
             List<String> updates = new ArrayList<String>();
 
-            writeHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
-
+            writeHeader2Log("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
+            
             // find duplicates
             res = stmt.executeQuery("select count(*), NM, NMSPC_CD from KRIM_PERM_T group by NM, NMSPC_CD having count(*) > 1");
 
@@ -2149,14 +2177,14 @@ public class App {
             }
 
             for (String sql : updates) {
-                writeOut("executing: " + sql);
+                writeLog("executing: " + sql);
                 stmt.executeUpdate(sql);
             }
 
             res.close();
             retval = true;
         } catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -2206,8 +2234,10 @@ public class App {
 
             if (retval) {
                 doCommit(conn);
+                writeLog("-- Making KRIM_PERM_T or KRIM_RSP_T Unique Succeeded so Committing changes --");
             } else {
                 doRollback(conn);
+                writeLog("-- Making KRIM_PERM_T or KRIM_RSP_T Unique Failed so RollingBack changes --");
             }
         }
 
@@ -2230,7 +2260,7 @@ public class App {
         Statement stmt = null;
         PreparedStatement pstmt = null;
         ResultSet res = null;
-        writeHeader2("Populating procurement card default table with UA detail data");
+        writeHeader2Log("Populating procurement card default table with UA detail data");
         
         try {
             StringBuilder sql = new StringBuilder(512);
@@ -2308,15 +2338,11 @@ public class App {
                 
                 catch (SQLException ex) {
 					// FIXME also log out exception; want the stack trace
-                    writeOut("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString());
+                    writeLog("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString());
                 }
                 
                 if (((cnt++) % 1000) == 0) {
-					/*
-					 * FIXME use writeOut methods; eventually won't be using
-					 * System.out
-					 */
-                    System.out.println(cnt);;
+                    writeLog(Integer.toString(cnt));
                 }
             }
             
@@ -2324,7 +2350,7 @@ public class App {
         }
         
         catch (Exception ex) {
-            writeOut(ex);
+            writeLog(ex);
             try {
                 conn.rollback();
             }
@@ -2355,15 +2381,15 @@ public class App {
         PreparedStatement pstmt = null;
         Statement stmt = null;
         ResultSet res = null;
-        
+
         try {
-            writeHeader2("Converting legacy maintenance documents to rice 2.0...");
-            
+            writeHeader2Log("Converting legacy maintenance documents to rice 2.0...");
+
             String fname = properties.getProperty("maintenance-document-conversion-rules-file");
-            
+
             if (StringUtils.isNotBlank(fname)) {
                 File f = new File(fname);
-            
+
                 if (f.exists()) {
                     MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(this, f);
                     EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
@@ -2377,7 +2403,7 @@ public class App {
                     while (res.next()) {
                         String docid = res.getString(1);
                         String oldXml = null;
-                        
+
                         if (encryptService.isEnabled()) {
                             oldXml = encryptService.decrypt(res.getString(2));
                         } else {
@@ -2385,17 +2411,17 @@ public class App {
                         }
 
                         String newXml  = null;
-                        
+
                         try {
                             newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml);
                         }
 
                         catch (Exception ex) {
                             newXml = null;
-                            writeOut("error occured while attempting to convert document " + docid);
-                            writeOut("-------------------------------------------- xml ---------------------------------------------");
-                            writeOut(oldXml);
-                            writeOut(ex);
+                            writeLog("error occured while attempting to convert document " + docid);
+                            writeLog("-------------------------------------------- xml ---------------------------------------------");
+                            writeLog(oldXml);
+                            writeLog(ex);
                         }
 
                         if (newXml != null) {
@@ -2408,14 +2434,14 @@ public class App {
                             pstmt.setString(2, docid);
 
                             pstmt.addBatch();
-                        
+
                             cnt++;
 
                             if ((cnt % MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE) == 0) {
                                 pstmt.executeBatch();
-                                
+
                                 if ((cnt % (5 * MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE)) == 0) {
-                                    writeOut(cnt + " documents processed - " + ((System.currentTimeMillis() - start)/1000) + "sec");
+                                    writeLog(cnt + " documents processed - " + ((System.currentTimeMillis() - start)/1000) + "sec");
                                     start = System.currentTimeMillis();
                                 }
                             }
@@ -2428,18 +2454,18 @@ public class App {
 
                     doCommit(upgradeConn);
 
-                    writeOut(cnt + " maintenance documents upgraded.");
+                    writeLog(cnt + " maintenance documents upgraded.");
                 } else {
-                    writeOut("maintenance document conversion rules file " + f.getPath() + " does not exist");
+                    writeLog("maintenance document conversion rules file " + f.getPath() + " does not exist");
                 }
             } else {
-                writeOut("no property 'maintenance-document-conversion-rules-file' entry in property file");
+                writeLog("no property 'maintenance-document-conversion-rules-file' entry in property file");
             }
-        } 
-        
+        }
+
         catch (Exception ex) {
             doRollback(upgradeConn);
-            writeOut(ex);
+            writeLog(ex);
         }
     }
 }
