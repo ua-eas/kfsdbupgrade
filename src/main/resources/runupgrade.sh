@@ -1,11 +1,18 @@
 # run database upgrade scripts
-DBUPGRADE_FILE_PATH=/security/uaf/dbupgrade
+pathToProperties=/security/uaf/dbupgrade/kfsdbupgrade.properties
+
+#if a command line argument is added, assume it is a path to
+#  the .properties file to use instead of the default
+if [[ $1 ]]; then
+	echo "Using argument as path to .properties file: $1"
+	pathToProperties=$1
+fi
 
 if [ -f nohup.out ]; then
 	rm nohup.out
 fi
 
-nohup java -Xmx1g -jar target/kfsdbupgrade.jar $DBUPGRADE_FILE_PATH/kfsdbupgrade.properties
+nohup java -Xmx1g -jar target/kfsdbupgrade.jar $pathToProperties
 
 # the command below will not work unless we get property filtering to work
 #nohup java -Xmx1g -Dua.kfs.dbupgrade.target.db.user=$UA_KFS_DBUPGRADE_TARGET_DB_USER \
