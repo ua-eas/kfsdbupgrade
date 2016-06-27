@@ -90,8 +90,6 @@ public class App {
                 ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
             }
             new App(propertyFileName, ingestWorkflow);
-        } else {
-            System.out.println("usage: java -Xmx500m -jar kfsdbupgrade.jar <property-file-path>");
         }
     }
 
@@ -119,13 +117,12 @@ public class App {
                 doUpgrade();
             }
         } else {
-            System.out.println("invalid properties file: " + propertyFileName);
             writeLog("invalid properties file: " + propertyFileName);            
         }
         
         System.exit(0);
     }
-    
+            
 	/**
 	 * Main entry point for the database upgrade code path.
 	 */
@@ -160,16 +157,52 @@ public class App {
                 doCommit(conn1);
                 stmt.close();
                 stmt = conn2.createStatement();
-                dropTempTables(conn2, stmt);
-                runMiscSql(conn2, stmt);
-                populateProcurementCardTable(conn1);
-                updatePurchasingStatuses(conn1);
-                createExistingIndexes(conn2, stmt);
-                createPublicSynonyms(conn2, stmt);
-                createForeignKeyIndexes(conn2, stmt);
-                createDocumentSearchEntries(conn2, stmt);
-                if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
-                    convertMaintenanceDocuments(conn1);
+                try {
+					dropTempTables(conn2, stmt);
+				} catch (Exception ex) {
+					writeLog("dropTempTables(conn2, stmt); -- FAILED in doUpgrade()");
+				}
+				try {
+					runMiscSql(conn2, stmt);
+				} catch (Exception e) {
+					writeLog("runMiscSql(conn2, stmt); -- FAILED in doUpgrade()" );
+				}
+				try {
+					populateProcurementCardTable(conn1);
+				} catch (Exception e) {
+					writeLog("populateProcurementCardTable(conn1); -- FAILED in doUpgrade() " );
+				}
+				try {
+					updatePurchasingStatuses(conn1);
+				} catch (Exception e) {
+					writeLog("updatePurchasingStatuses(conn1); -- FAILED in doUpgrade() " );
+				}
+				try {
+					createExistingIndexes(conn2, stmt);
+				} catch (Exception e) {
+					writeLog("createExistingIndexes(conn2, stmt); -- FAILED in doUpgrade() " );
+				}
+				try {
+					createPublicSynonyms(conn2, stmt);
+				} catch (Exception e) {
+					writeLog("createPublicSynonyms(conn2, stmt); -- FAILED in doUpgrade() " );
+				}
+				try {
+					createForeignKeyIndexes(conn2, stmt);
+				} catch (Exception e) {
+					writeLog("createForeignKeyIndexes(conn2, stmt) -- FAILED in doUpgrade() ");
+				}
+				try {
+					createDocumentSearchEntries(conn2, stmt);
+				} catch (Exception e) {
+					writeLog("createDocumentSearchEntries(conn2, stmt); -- FAILED in doUpgrade()" );
+				}
+				if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
+                    try {
+						convertMaintenanceDocuments(conn1);
+					} catch (Exception e) {
+						writeLog("convertMaintenanceDocuments(conn1); -- FAILED in doUpgrade() " );
+					}
                 }
                 writeLog("");
                 writeHeader1Log("upgrade completed successfully");
@@ -686,8 +719,9 @@ public class App {
     private void writeOut(Exception ex) {
         System.out.println();
         System.out.println(getTimeString() + ERROR);
+        System.out.println("--" + ex.getClass().getName() + "---===");
+        System.out.println("--" + ex.getMessage() + "--");    
         ex.printStackTrace(System.out);
-        writeLog(ex);
     }
 
 	/**
@@ -705,10 +739,11 @@ public class App {
         try {
             pw = getOutputLogWriter();
             pw.println();
-            pw.println(getTimeString() + ERROR);
-            pw.println("--"+ex.getClass().getName()+"---===");
-            pw.println("--"+ex.getMessage()+"--");            
+            pw.println(getTimeString() + "--" + ERROR);
+            pw.println("--" + ex.getClass().getName() + "---===");
+            pw.println("--" + ex.getMessage() + "--");            
             ex.printStackTrace(pw);
+            writeOut(ex);
         } catch (Exception ex2) {
         } finally {
             try {
@@ -729,8 +764,7 @@ public class App {
 	 * @see {@link #writeLog(String)}
 	 */
     public void writeOut(String msg) {
-        System.out.println(msg);
-        writeLog(msg);
+        System.out.println(getTimeString() + "--" + msg);
     }
 
 	/**
@@ -746,9 +780,11 @@ public class App {
         try {
             pw = getOutputLogWriter();
             if (StringUtils.isNotBlank(msg)) {
-                pw.println(getTimeString() + msg);
+                pw.println(getTimeString() + "--" + msg);
+                writeOut(msg);
             } else {
                 pw.println();
+                writeOut("");
             }
         } catch (Exception ex2) {
         } finally {
@@ -1010,58 +1046,35 @@ public class App {
     }
     
 	/**
-	 * {@link #writeOut(String)} the provided <code>message</code> encased in a
+	 * {@link #writeHeader1Log(String)} the provided <code>message</code> encased in a
 	 * block of '='s for emphasis
 	 * 
 	 * @param msg
 	 */    
     public void writeHeader1Log(String msg) {
         writeLog("");
-        writeLog(HEADER1.replace("?", msg));
+        writeLog(HEADER1.replace("?", getTimeString() + "--" + msg));
         writeLog("");
     }
     
-	/**
-	 * {@link #writeOut(String)} the provided <code>message</code> encased in a
-	 * block of '='s for emphasis
-	 * 
-	 * @param msg
-	 */
-    public void writeHeader1(String msg) {
-        writeOut("");
-        writeOut(HEADER1.replace("?", msg));
-        writeOut("");
-    }
     
 	/**
-	 * {@link #writeOut(String)} the provided <code>message</code> followed by a
+	 * {@link #writeHeader2Log(String)} the provided <code>message</code> followed by a
 	 * line of dashes for emphasis
 	 * 
 	 * @param msg
 	 */    
     public void writeHeader2Log(String msg) {
         writeLog("");
-        writeLog(msg);
+        writeLog(getTimeString() + "--" + msg);
         writeLog(UNDERLINE);
         writeLog("");
     }
     
-	/**
-	 * {@link #writeOut(String)} the provided <code>message</code> followed by a
-	 * line of dashes for emphasis
-	 * 
-	 * @param msg
-	 */
-    public void writeHeader2(String msg) {
-        writeOut("");
-        writeOut(msg);
-        writeOut(UNDERLINE);
-        writeOut("");
-    }
 
 	/**
 	 * 
-	 * @return {@link PrintWriter} targetting the output log file specified by
+	 * @return {@link PrintWriter} targeting the output log file specified by
 	 *         the <code>output-log-file-name</code> {@link Properties} entry
 	 * @throws IOException
 	 *             Any {@link IOException}s encountered will be rethrown
@@ -1091,7 +1104,7 @@ public class App {
         PrintWriter pw = null;
         try {
             pw = getProcessedFilesWriter();
-            pw.println(txt);
+            pw.println(getTimeString() + "--" + txt);
         } catch (Exception ex) {
             writeLog(ex);
         } finally {
@@ -1549,6 +1562,7 @@ public class App {
                     try {
                         stmt.execute(line);
                     } catch (SQLException ex) {
+                    	writeLog(ex);
                         writeLog("failed to create public synonym: " + line);
                     }
                 }
@@ -1561,6 +1575,7 @@ public class App {
                     lnr.close();
                 }
             } catch (Exception ex) {
+            	writeLog(ex);
             };
         }
     }
@@ -1922,19 +1937,20 @@ public class App {
 
             conn.commit();
         } catch (Exception ex) {
-			// FIXME follow writeout path for exceptions
-            ex.printStackTrace();
+        	writeLog(ex);
 
             if (conn != null) {
                 try {
                     conn.rollback();
                 } catch (Exception ex2) {
+                	writeLog(ex);
                 };
             }
         } finally {
             try {
                 closeDbObjects(null, pstmt, res);
             } catch (Exception ex) {
+            	writeLog(ex);
             };
         }
     }
@@ -1972,8 +1988,8 @@ public class App {
                         }
                         writeLog(sql);
                     } catch (SQLException ex) {
-						// FIXME also log exception; want the stacktrace
                         writeLog("sql execution failed: " + sql);
+                        writeLog(ex);
                     }
                 }
             }
@@ -1985,6 +2001,7 @@ public class App {
                     lnr.close();
                 }
             } catch (Exception ex) {
+            	writeLog(ex);
             };
         }
     }
@@ -2337,8 +2354,8 @@ public class App {
                 }
                 
                 catch (SQLException ex) {
-					// FIXME also log out exception; want the stack trace
                     writeLog("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString());
+                    writeLog(ex);
                 }
                 
                 if (((cnt++) % 1000) == 0) {
@@ -2355,7 +2372,9 @@ public class App {
                 conn.rollback();
             }
             
-            catch (Exception ex2) {};
+            catch (Exception ex2) {
+            	writeLog(ex);
+            };
         }
         
         finally {
