@@ -198,7 +198,6 @@ UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Edit When Tagged Prior Fiscal Year' WHERE 
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document IdentityManagementGroupDocument' WHERE PERM_ID = '379';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Modify Maintenance Document Field Asset governmentTagNumber' WHERE PERM_ID = '38';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document GORV' WHERE PERM_ID = '380';
-UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Full Unmask Field PaymentSourceWireTransfer payeeAccountNumber' WHERE PERM_ID = '381';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Edit Document FSSM AdHoc R' WHERE PERM_ID = '382';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Edit Document KFSM AdHoc R' WHERE PERM_ID = '383';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Upload Batch Input File(s) collectorFlatFileInputFileType' WHERE PERM_ID = '385';
@@ -267,7 +266,6 @@ UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document RCV' WHERE PERM_ID = '98
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document EIRT' WHERE PERM_ID = '99';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Copy Document KFS' WHERE PERM_ID = '1101';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Add Message to Route Log KFS' WHERE PERM_ID = '1103';
-UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document ETB' WHERE PERM_ID = '1104';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Upload Batch Input File(s) laborEnterpriseFeederFileSetType' WHERE PERM_ID = '1105';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document ACCT' WHERE PERM_ID = '1106';
 UPDATE KULOWNER.KRIM_PERM_T SET NM = 'Initiate Document AccessSecuritySimpleMaintenanceDocument' WHERE PERM_ID = 'KFSSEC6001';
