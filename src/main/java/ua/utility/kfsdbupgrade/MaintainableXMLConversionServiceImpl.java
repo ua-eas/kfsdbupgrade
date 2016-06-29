@@ -83,8 +83,24 @@ public class MaintainableXMLConversionServiceImpl {
         String newMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String ending = StringUtils.substringAfter(xml, "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
 
-        String convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
-        String convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
+        String convertedOldMaintainableObjectXML = null;
+		try {
+			convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
+		} catch (Exception ex) {
+			app.writeLog("Failed in transformSection(oldMaintainableObjectXML) where oldMaintainableObjectXML=" + oldMaintainableObjectXML);
+			app.writeLog("On Exception:");
+			app.writeLog(ex);			
+			throw ex;
+		}
+        String convertedNewMaintainableObjectXML = null;
+		try {
+			convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
+		} catch (Exception ex) {
+			app.writeLog("Failed in transformSection(newMaintainableObjectXML) where newMaintainableObjectXML=" + newMaintainableObjectXML);
+			app.writeLog("On Exception:");
+			app.writeLog(ex);
+			throw ex;
+		}
 
         String convertedXML =  beginning +
             "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">" + convertedOldMaintainableObjectXML +  "</" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">" +
@@ -106,7 +122,15 @@ public class MaintainableXMLConversionServiceImpl {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
-        Document document = db.parse(new InputSource(new StringReader(xml)));
+        Document document;
+		try {
+			document = db.parse(new InputSource(new StringReader(xml)));
+		} catch (Exception ex) {
+			app.writeLog("Failed in db.parse(new InputSource(new StringReader(xml))) where xml=" + xml);
+			app.writeLog("On Exception:");
+			app.writeLog(ex);	
+			throw ex;
+		}
 
         removePersonObjects(document);
 
