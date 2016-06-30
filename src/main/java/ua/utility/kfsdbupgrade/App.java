@@ -526,16 +526,14 @@ public class App {
     }
 
 	/**
-	 * Half-completed attempt at disaster recovery.
-	 * 
 	 * @param lastProcessedFile
 	 *            {@link String} name of the last processed file, or the empty
 	 *            {@link String} or <code>null</code> if this is a fresh run.
 	 * @return If <code>lastProcessedFile</code> is specified, then will return
-	 *         a {@link List} of {@link String}s of size 1 with the element that
-	 *         is the {@link String} of the file path to the
-	 *         <code>lastProcessedFile</code>'s parent directory; otherwise,
-	 *         will return a copy of {@link #upgradeFolders}
+	 *         a {@link List} of {@link String}s of the directories that still
+	 *         remain to be processed, which will be a subset of
+	 *         {@link #upgradeFolders}; otherwise, will return a full copy of
+	 *         {@link #upgradeFolders}
 	 */
     private List<String> getFolders(String lastProcessedFile) {
         List<String> retval = new ArrayList<String>();
@@ -560,8 +558,6 @@ public class App {
     }
 
 	/**
-	 * Half-completed attempt at disaster recovery.
-	 *
 	 * @param folder
 	 *            {@link String} of the directory path to get the child
 	 *            filenames to process
@@ -569,12 +565,12 @@ public class App {
 	 *            {@link String} name of the last processed file, or the empty
 	 *            {@link String} or <code>null</code> if this is a fresh run.
 	 *
-	 * @return If <code>lastProcessedFile</code> is specified, then will return
-	 *         a {@link List} of {@link String}s of size 1 with the element that
-	 *         is the {@link String} of the file path to the
-	 *         <code>lastProcessedFile</code>'s parent directory; otherwise,
-	 *         will return the {@link List} of {@link String}s in
-	 *         {@link #upgradeFiles} with the key of <code>folder</code>.
+	 * @return If <code>lastProcessedFile</code> is specified and exists in the
+	 *         specified <code>folder</code>, will return a {@link List} of
+	 *         {@link String}s of the files remaining in the <code>folder</code>
+	 *         that still need to be processed; otherwise, will return the
+	 *         {@link List} of {@link String}s in {@link #upgradeFiles} with the
+	 *         key of <code>folder</code>.
 	 */
 	// FIXME use Java builtins for File IO. They're FREE
     private List<String> getFolderFiles(String folder, String lastProcessedFile) {
