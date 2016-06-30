@@ -54,7 +54,7 @@ import liquibase.Liquibase;
 public class App {
     private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
     
-    private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	public static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
     public static final String ERROR = "************************************************* error *************************************************";
     public static final String HEADER1 = "================================================ ? ================================================";
@@ -78,7 +78,9 @@ public class App {
 
     /**
 	 * Main program entry point. Single argument is expected of a path to the
-	 * <code>kfsdbupgrade.properties</code> properties file.
+	 * <code>kfsdbupgrade.properties</code> properties file. Optional second
+	 * argument of "<code>ingestWorkflow</code>" if the ingest workflow code
+	 * path should be followed instead of the database upgrade code path.
 	 * 
 	 * @param args
 	 */
@@ -89,8 +91,13 @@ public class App {
             if (args.length > 1) {
                 ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
             }
-            new App(propertyFileName, ingestWorkflow);
-        }
+			App app = new App(propertyFileName);
+			if (ingestWorkflow) {
+				app.doWorkflow(propertyFileName);
+			} else {
+				app.doUpgrade();
+			}
+		}
     }
 
     /**
@@ -99,28 +106,16 @@ public class App {
 	 * @param propertyFileName
 	 *            {@link String} of the <code>.properties</code> file location
 	 *            to use
-	 * @param ingestWorkflow
-	 *            <code>true</code> if the ingest workflow code path should be
-	 *            executed, <code>false</code> if the upgrade path should be
-	 *            executed.
 	 */
-    public App(String propertyFileName, boolean ingestWorkflow) {
+	public App(String propertyFileName) {
         properties = loadProperties(propertyFileName);
         if (properties != null) {
             upgradeRoot = properties.getProperty("upgrade-base-directory");
             upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
             upgradeFiles = loadFolderFileMap("files-");
-            
-            if (ingestWorkflow) {
-                doWorkflow(propertyFileName);
-            } else {
-                doUpgrade();
-            }
         } else {
             writeLog("invalid properties file: " + propertyFileName);            
         }
-        
-        System.exit(0);
     }
             
 	/**
@@ -154,7 +149,6 @@ public class App {
             }
 
             if (success) {
-                doCommit(conn1);
                 stmt.close();
                 stmt = conn2.createStatement();
                 try {
@@ -301,7 +295,7 @@ public class App {
     private Map<String, List<String>> loadFolderFileMap(String prefix) {
         Map<String, List<String>> retval = new HashMap<String, List<String>>();
 
-        for (Entry e : properties.entrySet()) {
+		for (Entry<Object, Object> e : properties.entrySet()) {
             String key = (String) e.getKey();
             if (key.startsWith(prefix)) {
                 String folder = key.substring(prefix.length());
@@ -350,7 +344,7 @@ public class App {
 
 	/**
 	 * Calls {@link Connection#rollback()}, and if any {@link Exception}s are
-	 * encountered redirects them to {@link #writeOut(Exception)}.
+	 * encountered redirects them to {@link #writeLog(Exception)}.
 	 * 
 	 * @param conn
 	 *            {@link Connection} to rollback.
@@ -365,7 +359,7 @@ public class App {
 
 	/**
 	 * Calls {@link Connection#commit()}, and if any {@link Exception}s are
-	 * encountered redirects them to {@link #writeOut(Exception)}.
+	 * encountered redirects them to {@link #writeLog(Exception)}.
 	 * 
 	 * @param conn
 	 *            {@link Connection} to commit.
@@ -523,7 +517,7 @@ public class App {
 	 * FIXME Use File.getParent() instead. No need to rely on an outside
 	 * 'base-directory' property when all we're doing is basic file IO
 	 */
-    private String getLastProcessedFolder(String lastProcessedFile) {
+	private String getLastProcessedFolder(String lastProcessedFile) {
         String retval = null;
         String s = lastProcessedFile.substring(properties.getProperty("upgrade-base-directory").length() + 1);
         int pos = s.indexOf("/");
@@ -624,13 +618,13 @@ public class App {
         writeHeader1Log("upgrading kfs");
 
         String lastProcessedFile = properties.getProperty("last-processed-file");
-
-        List<String> folders = getFolders(lastProcessedFile);
+		RunRequest runRequest = buildRunRequest(lastProcessedFile);
+		List<String> folders = runRequest.getDirectories();
 
         for (String folder : folders) {
             writeHeader2Log("processing folder " + folder);
 
-            List<String> folderFiles = getFolderFiles(folder, lastProcessedFile);
+			List<String> folderFiles = runRequest.getFilesForDirectory(folder);
             if (folderFiles != null) {
                 for (String fname : folderFiles) {
                     if (isMethodCall(fname)) {
@@ -642,21 +636,23 @@ public class App {
                             if (!runSqlFile(conn1, stmt, f, ";")) {
                                 retval = false;
                                 writeProcessedFileInfo("[failure] " + f.getPath());
+								doRollback(conn1);
+								break;
                             } else {
                                 writeProcessedFileInfo("[success] " + f.getPath());
+								doCommit(conn1);
                             }
                         } else {
                             if (!runLiquibase(conn2, f)) {
                                 retval = false;
                                 writeProcessedFileInfo("[failure] " + f.getPath());
+								doRollback(conn2);
+								break;
                             } else {
                                 writeProcessedFileInfo("[success] " + f.getPath());
+								doCommit(conn2);
                             }
                         }
-                    }
-
-                    if (!retval) {
-                        break;
                     }
                 }
             } else {
@@ -670,6 +666,23 @@ public class App {
 
         return retval;
     }
+
+	/**
+	 * @param lastProcessedFile
+	 *            {@link String} name of the last file that was succesfully
+	 *            processed
+	 * @return {@link RunRequest} containing the directories and files to
+	 *         process based on the provided <code>lastFileProcessed</code>
+	 */
+	public RunRequest buildRunRequest(String lastProcessedFile) {
+		List<String> directories = getFolders(lastProcessedFile);
+		Map<String, List<String>> directoriesToFiles = new HashMap<String, List<String>>();
+		for (String dir : directories) {
+			List<String> directoryFiles = getFolderFiles(dir, lastProcessedFile);
+			directoriesToFiles.put(dir, directoryFiles);
+		}
+		return new RunRequest(directories, directoriesToFiles);
+	}
 
 	/**
 	 * Wrapper method to execute call to Liquibase and handle any exceptions
