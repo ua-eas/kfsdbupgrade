@@ -46,6 +46,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
     
 public class MaintainableXMLConversionServiceImpl {
 	private static final String SERIALIZATION_ATTRIBUTE = "serialization";
@@ -83,24 +85,8 @@ public class MaintainableXMLConversionServiceImpl {
         String newMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String ending = StringUtils.substringAfter(xml, "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
 
-        String convertedOldMaintainableObjectXML = null;
-		try {
-			convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
-		} catch (Exception ex) {
-			app.writeLog("Failed in transformSection(oldMaintainableObjectXML) where oldMaintainableObjectXML=" + oldMaintainableObjectXML);
-			app.writeLog("On Exception:");
-			app.writeLog(ex);			
-			throw ex;
-		}
-        String convertedNewMaintainableObjectXML = null;
-		try {
-			convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
-		} catch (Exception ex) {
-			app.writeLog("Failed in transformSection(newMaintainableObjectXML) where newMaintainableObjectXML=" + newMaintainableObjectXML);
-			app.writeLog("On Exception:");
-			app.writeLog(ex);
-			throw ex;
-		}
+        String convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
+        String convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
 
         String convertedXML =  beginning +
             "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">" + convertedOldMaintainableObjectXML +  "</" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">" +
@@ -110,7 +96,7 @@ public class MaintainableXMLConversionServiceImpl {
 	}
 
     private String transformSection(String xml) throws Exception {
-
+    	String rawXml = xml;
         String maintenanceAction = StringUtils.substringBetween(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">", "</" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
         xml = StringUtils.substringBefore(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
 
@@ -125,11 +111,12 @@ public class MaintainableXMLConversionServiceImpl {
         Document document;
 		try {
 			document = db.parse(new InputSource(new StringReader(xml)));
-		} catch (Exception ex) {
-			app.writeLog("Failed in db.parse(new InputSource(new StringReader(xml))) where xml=" + xml);
-			app.writeLog("On Exception:");
-			app.writeLog(ex);	
-			throw ex;
+		} catch (SAXParseException ex) {
+			String eol = System.getProperty("line.separator");
+			String exMsg = "Failed in db.parse(new InputSource(new StringReader(xml))) where xml=" + xml + eol + 
+					       "of maintenanceAction = " +  maintenanceAction + eol +
+					       "contained in rawXml = " +  rawXml;									
+			throw new SAXParseException(exMsg, (Locator) ex);
 		}
 
         removePersonObjects(document);
@@ -362,7 +349,7 @@ public class MaintainableXMLConversionServiceImpl {
         if (className.startsWith("edu.arizona") || className.startsWith("com.rsmart.")) {
             if (!uaMaintenanceDocClasses.contains(className)) {
                 uaMaintenanceDocClasses.add(className);
-                app.writeOut("non-kuali maintenance document class ignored - " + className);
+                app.writeLog("non-kuali maintenance document class ignored - " + className);
             }
             return false;
         } else {
