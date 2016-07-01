@@ -19,17 +19,19 @@
 package ua.utility.kfsdbupgrade;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.impl.config.property.JAXBConfigImpl;
 import org.kuali.rice.kew.batch.XmlPollerServiceImpl;
@@ -38,12 +40,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class WorkflowImporter {
     private static final String WORKFLOW_PROCESSING_FOLDER = "workflow-processing";
     private static ClassPathXmlApplicationContext context;
-    private App app;
     private String upgradeRoot;
+	private static final Logger LOGGER = Logger.getLogger(WorkflowImporter.class);
     
     public void initializeKfs() {
-        writeHeader1("Initializing Web Context" );
-        writeHeader2( "Calling KualiInitializeListener.contextInitialized" );
+		LOGGER.info("Initializing Web Context");
+		LOGGER.info("Calling KualiInitializeListener.contextInitialized");
         long start = System.currentTimeMillis();
 
         Properties baseProps = new Properties();
@@ -54,12 +56,23 @@ public class WorkflowImporter {
         context = new ClassPathXmlApplicationContext("kfs-workflow-importer-startup.xml");
         context.start();
 
-        writeOut("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start)/1000) + "sec");
+		LOGGER.info("Completed KualiInitializeListener.contextInitialized in "
+				+ ((System.currentTimeMillis() - start) / 1000) + "sec");
     }
 
-    public WorkflowImporter(App app, String upgradeRoot, List <String> upgradeFolders) {
-        this.app = app;
+	public WorkflowImporter(String upgradeRoot, List<String> upgradeFolders) {
         this.upgradeRoot = upgradeRoot;
+		Appender logFileAppender;
+		try {
+			logFileAppender = new FileAppender(new SimpleLayout(), getLogFileName());
+			LOGGER.addAppender(logFileAppender);
+		} catch (IOException e) {
+			/*
+			 * Unable to recover, but still logging to console, so reasonable to
+			 * continue
+			 */
+			LOGGER.error("Unable to log to file " + getLogFileName() + " . IOException encountered: ", e);
+		}
         try {
             initializeKfs();
 
@@ -98,10 +111,10 @@ public class WorkflowImporter {
                     
                     if (!workflowFiles.isEmpty()) {
                         int indx = 1;
-                        writeHeader2("processing workflow files for folder " + folder);
+						LOGGER.info("processing workflow files for folder " + folder);
                         for (File f : workflowFiles) {
                             FileUtils.copyFile(f, getPendingFile(pendingDir, f, folder, indx++));
-                            writeOut("file: " + f.getPath());
+							LOGGER.info("file: " + f.getPath());
                         }
                         
                         parser.run();
@@ -111,11 +124,11 @@ public class WorkflowImporter {
         }
         
         catch (Exception ex) {
-            writeOut(ex);
+			LOGGER.fatal("Exception encountered: ", ex);
         }
         
         finally {
-            writeOut("workflow processing completed");
+			LOGGER.info("workflow processing completed");
         }
     }
     
@@ -185,72 +198,7 @@ public class WorkflowImporter {
         }
     }
 
-    public void writeHeader1(String msg) {
-        writeOut("");
-        writeOut(App.HEADER1.replace("?", msg));
-        writeOut("");
-    }
-
-    public void writeHeader2(String msg) {
-        writeOut("");
-        writeOut(msg);
-        writeOut(App.UNDERLINE);
-        writeOut("");
-    }
-
-    private PrintWriter getOutputLogWriter() throws IOException {
-        return new PrintWriter(new FileWriter(upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER + File.separator + "workflow.log", true));
-    }
-
-    private void writeOut(Exception ex) {
-        System.out.println();
-        System.out.println(app.getTimeString() + App.ERROR);
-        ex.printStackTrace(System.out);
-        writeLog(ex);
-    }
-
-    private void writeLog(Exception ex) {
-        PrintWriter pw = null;
-
-        try {
-            pw = getOutputLogWriter();
-            pw.println();
-            pw.println(app.getTimeString() + App.ERROR);
-            ex.printStackTrace(pw);
-        } catch (Exception ex2) {
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            } catch (Exception ex2) {
-            };
-        }
-    }
-    
-    private void writeOut(String msg) {
-        System.out.println(msg);
-        writeLog(msg);
-    }
-
-    private void writeLog(String msg) {
-        PrintWriter pw = null;
-
-        try {
-            pw = getOutputLogWriter();
-            if (StringUtils.isNotBlank(msg)) {
-                pw.println(app.getTimeString() + msg);
-            } else {
-                pw.println();
-            }
-        } catch (Exception ex2) {
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            } catch (Exception ex2) {
-            };
-        }
+	private String getLogFileName() {
+		return upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER + File.separator + "workflow.log";
     }
 }

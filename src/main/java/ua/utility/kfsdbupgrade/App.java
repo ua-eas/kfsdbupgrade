@@ -222,7 +222,7 @@ public class App {
 	 */
     private void doWorkflow(String propertyFileName) {
         System.getProperties().setProperty("security.property.file", "file:" + propertyFileName);
-        new WorkflowImporter(this, upgradeRoot, upgradeFolders);
+		new WorkflowImporter(upgradeRoot, upgradeFolders);
     }
     
 	/**
@@ -725,7 +725,7 @@ public class App {
 	 *            {@link Exception} to write out
 	 * @see {@link #writeLog(Exception)}
 	 */
-    private void writeOut(Exception ex) {
+	public void writeOut(Exception ex) {
         System.out.println();
         System.out.println(getTimeString() + ERROR);
         System.out.println("--" + ex.getClass().getName() + "---===");
@@ -742,7 +742,7 @@ public class App {
 	 * 
 	 * @see {@link #writeOut(Exception)}
 	 */
-    private void writeLog(Exception ex) {
+	public void writeLog(Exception ex) {
         PrintWriter pw = null;
 
         try {
@@ -783,7 +783,7 @@ public class App {
 	 *            {@link String} to log
 	 * @see {@link #writeLog(String)}
 	 */
-    private void writeLog(String msg) {
+	public void writeLog(String msg) {
         PrintWriter pw = null;
 
         try {
@@ -1109,7 +1109,7 @@ public class App {
 	 * @param txt
 	 * @see {@link #getProcessedFilesWriter()}
 	 */
-    private void writeProcessedFileInfo(String txt) {
+	public void writeProcessedFileInfo(String txt) {
         PrintWriter pw = null;
         try {
             pw = getProcessedFilesWriter();
