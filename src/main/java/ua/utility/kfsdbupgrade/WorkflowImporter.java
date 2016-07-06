@@ -19,17 +19,19 @@
 package ua.utility.kfsdbupgrade;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.impl.config.property.JAXBConfigImpl;
 import org.kuali.rice.kew.batch.XmlPollerServiceImpl;
@@ -38,12 +40,17 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class WorkflowImporter {
     private static final String WORKFLOW_PROCESSING_FOLDER = "workflow-processing";
     private static ClassPathXmlApplicationContext context;
-    private App app;
     private String upgradeRoot;
+	private static final Logger LOGGER = Logger.getLogger(WorkflowImporter.class);
     
-    public void initializeKfs() {
-        writeHeader1("Initializing Web Context" );
-        writeHeader2( "Calling KualiInitializeListener.contextInitialized" );
+	/**
+	 * Initializes the KFS web context components necessary to process the
+	 * Workflow XML. This context is defined in the resource file
+	 * <code>kfs-workflow-importer-startup.xml</code> .
+	 */
+	private void initializeKfs() {
+		LOGGER.info("Initializing Web Context");
+		LOGGER.info("Calling KualiInitializeListener.contextInitialized");
         long start = System.currentTimeMillis();
 
         Properties baseProps = new Properties();
@@ -54,12 +61,37 @@ public class WorkflowImporter {
         context = new ClassPathXmlApplicationContext("kfs-workflow-importer-startup.xml");
         context.start();
 
-        writeOut("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start)/1000) + "sec");
+		LOGGER.info("Completed KualiInitializeListener.contextInitialized in "
+				+ ((System.currentTimeMillis() - start) / 1000) + "sec");
     }
 
-    public WorkflowImporter(App app, String upgradeRoot, List <String> upgradeFolders) {
-        this.app = app;
+	/**
+	 * Constructor and main program entry point.
+	 * 
+	 * @param upgradeRoot
+	 *            {@link String} of the base file path that will be used in
+	 *            {@link #getLogFileName()}
+	 * @param upgradeFolders
+	 *            {@link List} of {@link String} file names representing
+	 *            directories to be processed.
+	 */
+	/*
+	 * TODO extract run of business logic to another method. Constructors should
+	 * just construct, NOT run
+	 */
+	public WorkflowImporter(String upgradeRoot, List<String> upgradeFolders) {
         this.upgradeRoot = upgradeRoot;
+		Appender logFileAppender;
+		try {
+			logFileAppender = new FileAppender(new SimpleLayout(), getLogFileName());
+			LOGGER.addAppender(logFileAppender);
+		} catch (IOException e) {
+			/*
+			 * Unable to recover, but still logging to console, so reasonable to
+			 * continue
+			 */
+			LOGGER.error("Unable to log to file " + getLogFileName() + " . IOException encountered: ", e);
+		}
         try {
             initializeKfs();
 
@@ -69,6 +101,10 @@ public class WorkflowImporter {
                 workflowWorkDir.mkdirs();
             }
             
+			/*
+			 * construct directory structure that the XmlPollerServiceImpl
+			 * expects, deleting any existing directories
+			 */
             File pendingDir = new File(workflowWorkDir.getPath() + File.separator + "pending" );
             File completedDir = new File(workflowWorkDir.getPath() + File.separator + "completed" );
             File failedDir = new File(workflowWorkDir.getPath() + File.separator + "problem");
@@ -88,6 +124,12 @@ public class WorkflowImporter {
             parser.setXmlCompletedLocation(completedDir.getAbsolutePath() );
             parser.setXmlProblemLocation(failedDir.getAbsolutePath() );
 
+			/*
+			 * Iterate over the files in 'upgrade-files' in the current working
+			 * directory, and for each directory, copy the /workflow/*.xml files
+			 * to the 'pending' directory for the XmlPollerServiceImpl to
+			 * process
+			 */
             for (String folder : upgradeFolders) {
                 File fdir = new File("upgrade-files" + File.separator + folder);
                 
@@ -98,27 +140,46 @@ public class WorkflowImporter {
                     
                     if (!workflowFiles.isEmpty()) {
                         int indx = 1;
-                        writeHeader2("processing workflow files for folder " + folder);
+						LOGGER.info("processing workflow files for folder " + folder);
                         for (File f : workflowFiles) {
                             FileUtils.copyFile(f, getPendingFile(pendingDir, f, folder, indx++));
-                            writeOut("file: " + f.getPath());
+							LOGGER.info("file: " + f.getPath());
                         }
                         
                         parser.run();
                     }
                 }
+				/*
+				 * TODO add an 'else' indicating bad configuration; if fdir
+				 * doesn't exist or isn't a directory, than the configuration
+				 * specified a non-processable folder, which is a (minor)
+				 * problem
+				 */
             }
         }
-        
+		/*
+		 * TODO XmlPollerServiceImpl does its own exception handling; all that
+		 * this is catching is the file deletes and file copies. Condense the
+		 * massive try/catch to just be around those individual statements
+		 */
         catch (Exception ex) {
-            writeOut(ex);
+			LOGGER.fatal("Exception encountered: ", ex);
         }
         
         finally {
-            writeOut("workflow processing completed");
+			LOGGER.info("workflow processing completed");
         }
     }
     
+	/**
+	 * For a list of {@link File}s, remove from the list any base files that
+	 * have a modified counterpart. For example, if there is a file
+	 * <code>foo.xml</code> in the list, and a file <code>foo_mod.xml</code>,
+	 * then remove <code>foo.xml</code>.
+	 * 
+	 * @param files
+	 *            {@link List} of {@link File}s that should have base files that have a modified counterpart removed from.
+	 */
     private void removeModifiedBaseWorkflowFiles(List <File> files) {
         Set <String> hs = new HashSet<String>();
         
@@ -145,6 +206,21 @@ public class WorkflowImporter {
         }
     }
     
+	/**
+	 * @param pendingDir
+	 *            {@link File} that is the directory to hold XML files that are
+	 *            pending processing
+	 * @param f
+	 *            {@link File} to create a 'pending file' reference for
+	 * @param parentFolderName
+	 *            {@link File} that is the directory currently being crawled for
+	 *            XML {@link File}s to process
+	 * @param indx
+	 *            <code>int</code> if the 1-based index of the {@link File}
+	 *            <code>f</code> in <code>parentFolderName</code>
+	 * @return {@link File} describing the location that <code>f</code> should
+	 *         be copied to in the <code>pendingDir</code>
+	 */
     private File getPendingFile(File pendingDir, File f, String parentFolderName, int indx) {
         StringBuilder retval = new StringBuilder(256);
         retval.append(pendingDir.getPath());
@@ -158,6 +234,13 @@ public class WorkflowImporter {
         return new File(retval.toString());
     }
     
+	/**
+	 * @param indx
+	 *            <code>int</code> that will be prefixed with some amount of
+	 *            <code>0</code>'s
+	 * @return {@link String} containing the <code>0</code>'s to prefix
+	 *         <code>indx</code> with
+	 */
     private String getFilePrefix(int indx) {
         if (indx > 99) {
             return ("" + indx);
@@ -168,12 +251,23 @@ public class WorkflowImporter {
         }
     }
     
+	/**
+	 * @param curfile
+	 *            {@link File} that is either a directory, or a {@link File} to
+	 *            determine whether to add to <code>workflowFiles</code>
+	 * @param workflowFiles
+	 *            {@link List} of {@link File}s being built for processing
+	 */
     private void loadWorkflowFiles(File curfile, List <File> workflowFiles) {
         if (curfile.isDirectory()) {
             File[] files = curfile.listFiles();
             
             if (files != null) {
                 for (File f : files) {
+					/*
+					 * TODO refactor out into separate method; unnecessary
+					 * recursion
+					 */
                    loadWorkflowFiles(f, workflowFiles);
                 }
             }
@@ -183,74 +277,19 @@ public class WorkflowImporter {
                 workflowFiles.add(curfile);
             }
         }
+		/*
+		 * TODO add a trace level logging if "skipping over" a file that isn't
+		 * '/workflow/*.xml'
+		 */
     }
 
-    public void writeHeader1(String msg) {
-        writeOut("");
-        writeOut(App.HEADER1.replace("?", msg));
-        writeOut("");
-    }
-
-    public void writeHeader2(String msg) {
-        writeOut("");
-        writeOut(msg);
-        writeOut(App.UNDERLINE);
-        writeOut("");
-    }
-
-    private PrintWriter getOutputLogWriter() throws IOException {
-        return new PrintWriter(new FileWriter(upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER + File.separator + "workflow.log", true));
-    }
-
-    private void writeOut(Exception ex) {
-        System.out.println();
-        System.out.println(app.getTimeString() + App.ERROR);
-        ex.printStackTrace(System.out);
-        writeLog(ex);
-    }
-
-    private void writeLog(Exception ex) {
-        PrintWriter pw = null;
-
-        try {
-            pw = getOutputLogWriter();
-            pw.println();
-            pw.println(app.getTimeString() + App.ERROR);
-            ex.printStackTrace(pw);
-        } catch (Exception ex2) {
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            } catch (Exception ex2) {
-            };
-        }
-    }
-    
-    private void writeOut(String msg) {
-        System.out.println(msg);
-        writeLog(msg);
-    }
-
-    private void writeLog(String msg) {
-        PrintWriter pw = null;
-
-        try {
-            pw = getOutputLogWriter();
-            if (StringUtils.isNotBlank(msg)) {
-                pw.println(app.getTimeString() + msg);
-            } else {
-                pw.println();
-            }
-        } catch (Exception ex2) {
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            } catch (Exception ex2) {
-            };
-        }
+	/**
+	 * @return {@link String} of the calculated path to the
+	 *         <code>workflow.log</code> file to use for logging. This is
+	 *         constructed to be <code>[upgradeRoot]/[
+	 *         {@link #WORKFLOW_PROCESSING_FOLDER}]/workflow.log</code>.
+	 */
+	private String getLogFileName() {
+		return upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER + File.separator + "workflow.log";
     }
 }
