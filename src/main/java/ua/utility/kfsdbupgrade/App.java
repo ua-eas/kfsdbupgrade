@@ -153,58 +153,49 @@ public class App {
                 stmt = conn2.createStatement();
                 try {
 					dropTempTables(conn2, stmt);
-				} catch (Exception e) {
+				} catch (Exception ex) {
 					writeLog("dropTempTables(conn2, stmt); -- FAILED in doUpgrade()");
-					writeLog(e);
 				}
 				try {
 					runMiscSql(conn2, stmt);
 				} catch (Exception e) {
 					writeLog("runMiscSql(conn2, stmt); -- FAILED in doUpgrade()" );
-					writeLog(e);
 				}
 				try {
 					populateProcurementCardTable(conn1);
 				} catch (Exception e) {
 					writeLog("populateProcurementCardTable(conn1); -- FAILED in doUpgrade() " );
-					writeLog(e);
 				}
 				try {
 					updatePurchasingStatuses(conn1);
 				} catch (Exception e) {
 					writeLog("updatePurchasingStatuses(conn1); -- FAILED in doUpgrade() " );
-					writeLog(e);
 				}
 				try {
 					createExistingIndexes(conn2, stmt);
 				} catch (Exception e) {
 					writeLog("createExistingIndexes(conn2, stmt); -- FAILED in doUpgrade() " );
-					writeLog(e);
 				}
 				try {
 					createPublicSynonyms(conn2, stmt);
 				} catch (Exception e) {
 					writeLog("createPublicSynonyms(conn2, stmt); -- FAILED in doUpgrade() " );
-					writeLog(e);
 				}
 				try {
 					createForeignKeyIndexes(conn2, stmt);
 				} catch (Exception e) {
 					writeLog("createForeignKeyIndexes(conn2, stmt) -- FAILED in doUpgrade() ");
-					writeLog(e);
 				}
 				try {
 					createDocumentSearchEntries(conn2, stmt);
 				} catch (Exception e) {
 					writeLog("createDocumentSearchEntries(conn2, stmt); -- FAILED in doUpgrade()" );
-					writeLog(e);
 				}
 				if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
                     try {
 						convertMaintenanceDocuments(conn1);
 					} catch (Exception e) {
 						writeLog("convertMaintenanceDocuments(conn1); -- FAILED in doUpgrade() " );
-						writeLog(e);
 					}
                 }
                 writeLog("");
@@ -231,7 +222,7 @@ public class App {
 	 */
     private void doWorkflow(String propertyFileName) {
         System.getProperties().setProperty("security.property.file", "file:" + propertyFileName);
-        new WorkflowImporter(this, upgradeRoot, upgradeFolders);
+		new WorkflowImporter(upgradeRoot, upgradeFolders);
     }
     
 	/**
@@ -278,7 +269,6 @@ public class App {
                     stmt.execute("drop table " + t);
                 } catch (Exception ex) {
                     writeLog("failed to drop temp table " + t);
-					writeLog(ex);
                 }
             }
         } catch (Exception ex) {
@@ -735,7 +725,7 @@ public class App {
 	 *            {@link Exception} to write out
 	 * @see {@link #writeLog(Exception)}
 	 */
-    public void writeOut(Exception ex) {
+	public void writeOut(Exception ex) {
         System.out.println();
         System.out.println(getTimeString() + ERROR);
         System.out.println("--" + ex.getClass().getName() + "---===");
@@ -752,7 +742,7 @@ public class App {
 	 * 
 	 * @see {@link #writeOut(Exception)}
 	 */
-    public void writeLog(Exception ex) {
+	public void writeLog(Exception ex) {
         PrintWriter pw = null;
 
         try {
@@ -793,7 +783,7 @@ public class App {
 	 *            {@link String} to log
 	 * @see {@link #writeLog(String)}
 	 */
-    public void writeLog(String msg) {
+	public void writeLog(String msg) {
         PrintWriter pw = null;
 
         try {
@@ -1119,7 +1109,7 @@ public class App {
 	 * @param txt
 	 * @see {@link #getProcessedFilesWriter()}
 	 */
-    private void writeProcessedFileInfo(String txt) {
+	public void writeProcessedFileInfo(String txt) {
         PrintWriter pw = null;
         try {
             pw = getProcessedFilesWriter();
@@ -1281,7 +1271,6 @@ public class App {
                                 stmt.execute(sql.toString());
                             } catch (SQLException ex) {
                                 writeLog("failed to create index: " + sql.toString());
-                                writeLog(ex);
                             }
                         }
                     }
