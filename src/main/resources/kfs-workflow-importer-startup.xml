@@ -216,6 +216,4 @@
 	<bean id="kfs.import.globalCacheManager" class="org.kuali.rice.krad.config.GlobalResourceLoaderServiceFactoryBean">
 		<property name="serviceName" value="globalCacheManager" />
 	</bean>
-
-	<cache:annotation-driven cache-manager="kfs.import.globalCacheManager" />
 </beans>
