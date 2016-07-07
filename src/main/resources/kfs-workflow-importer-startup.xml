@@ -185,4 +185,37 @@
     <bean id="edlConfigurer" class="org.kuali.rice.edl.impl.config.EDLConfigurer"/> 
     <bean id="krmsConfigurer" class="org.kuali.rice.krms.config.KRMSConfigurer"/> -->
     <bean id="locationConfigurer" class="org.kuali.rice.location.impl.config.LocationConfigurer" />
+	
+	<!-- spring service that should be exposed on the ksb to receive messages from the distributed cache manager -->
+	<bean id="kfs.core.CacheAdminService" class="org.kuali.rice.core.impl.cache.CacheAdminServiceImpl"
+		p:cacheManager-ref="kfs.core.LocalCacheManager" />
+
+	<bean id="kfs.core.LocalCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+		<property name="cacheManager">
+			<bean class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" p:configLocation="${kfs.ehcache.config.location}" />
+		</property>
+	</bean>
+
+	<!-- the distributed cache manager that calls into the CacheAdminService on the ksb -->
+	<bean id="kfs.core.DistributedCacheManager" class="org.kuali.rice.core.impl.cache.DistributedCacheManagerDecorator">
+		<property name="cacheManager" ref="kfs.core.LocalCacheManager" />
+		<property name="serviceName" value="{${kfs.service.namespace.uri}}kfsCoreCacheAdminService" />
+	</bean>
+
+	<bean id="kfs.core.cacheManagerRegistry" class="org.kuali.rice.core.impl.cache.CacheManagerRegistryImpl">
+		<property name="cacheManager" ref="kfs.core.DistributedCacheManager" />
+	</bean>
+
+	<bean id="kfs.core.CacheAdminService.exporter" parent="kfsServiceBusExporter">
+		<property name="serviceDefinition">
+			<bean parent="kfsSoapServiceDefinition" p:service-ref="kfs.core.CacheAdminService" p:localServiceName="kfsCoreCacheAdminService"
+				p:queue="false" p:busSecurity="${cache.service.bus.security.enabled}" />
+		</property>
+	</bean>
+
+	<bean id="kfs.import.globalCacheManager" class="org.kuali.rice.krad.config.GlobalResourceLoaderServiceFactoryBean">
+		<property name="serviceName" value="globalCacheManager" />
+	</bean>
+
+	<cache:annotation-driven cache-manager="kfs.import.globalCacheManager" />
 </beans>
