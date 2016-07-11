@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -39,8 +40,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -61,11 +64,9 @@ public class MaintainableXMLConversionServiceImpl {
     private Map<String, String> dateRuleMap;
     private File rulesXmlFile;
     private Set<String> ignoreClassSet = new HashSet<String>();
-    private App app;
     private Set <String> uaMaintenanceDocClasses = new HashSet <String>();
     
-	public MaintainableXMLConversionServiceImpl(App app, File rulesXmlFile) {
-        this.app = app;
+	public MaintainableXMLConversionServiceImpl(File rulesXmlFile) {
         this.rulesXmlFile = rulesXmlFile;
         
         ignoreClassSet.add("org.kuali.rice.kim.api.identity.Person");
@@ -349,7 +350,8 @@ public class MaintainableXMLConversionServiceImpl {
         if (className.startsWith("edu.arizona") || className.startsWith("com.rsmart.")) {
             if (!uaMaintenanceDocClasses.contains(className)) {
                 uaMaintenanceDocClasses.add(className);
-                app.writeLog("non-kuali maintenance document class ignored - " + className);
+				Logger.getLogger(MaintainableXMLConversionServiceImpl.class)
+						.info("non-kuali maintenance document class ignored - " + className);
             }
             return false;
         } else {

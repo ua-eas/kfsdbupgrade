@@ -47,11 +47,17 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
 
 public class App {
+	private static final Logger LOGGER = Logger.getLogger(App.class);
+
     private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
     
 	public static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -113,8 +119,20 @@ public class App {
             upgradeRoot = properties.getProperty("upgrade-base-directory");
             upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
             upgradeFiles = loadFolderFileMap("files-");
+			Appender logFileAppender;
+			try {
+				logFileAppender = new FileAppender(new SimpleLayout(), properties.getProperty("output-log-file-name"));
+				LOGGER.addAppender(logFileAppender);
+			} catch (IOException e) {
+				/*
+				 * Unable to recover, but still logging to console, so
+				 * reasonable to continue
+				 */
+				LOGGER.error("Unable to log to file " + properties.getProperty("output-log-file-name")
+						+ " . IOException encountered: ", e);
+			}
         } else {
-            writeLog("invalid properties file: " + propertyFileName);            
+			LOGGER.fatal("invalid properties file: " + propertyFileName);
         }
     }
             
@@ -138,8 +156,7 @@ public class App {
             stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
             stmt.close();
             stmt = conn1.createStatement();
-            writeLog("Starting KFS database upgrade process...");
-            writeLog("");
+			LOGGER.info("Starting KFS database upgrade process...");
 
             if (doInitialProcessing(conn1, stmt)) {
                 doCommit(conn1);
@@ -154,66 +171,56 @@ public class App {
                 try {
 					dropTempTables(conn2, stmt);
 				} catch (Exception e) {
-					writeLog("dropTempTables(conn2, stmt); -- FAILED in doUpgrade()");
-					writeLog(e);
+					LOGGER.error("dropTempTables(conn2, stmt); -- FAILED in doUpgrade()", e);
 				}
 				try {
 					runMiscSql(conn2, stmt);
 				} catch (Exception e) {
-					writeLog("runMiscSql(conn2, stmt); -- FAILED in doUpgrade()" );
-					writeLog(e);
+					LOGGER.error("runMiscSql(conn2, stmt); -- FAILED in doUpgrade()", e);
 				}
 				try {
 					populateProcurementCardTable(conn1);
 				} catch (Exception e) {
-					writeLog("populateProcurementCardTable(conn1); -- FAILED in doUpgrade() " );
-					writeLog(e);
+					LOGGER.error("populateProcurementCardTable(conn1); -- FAILED in doUpgrade() ", e);
 				}
 				try {
 					updatePurchasingStatuses(conn1);
 				} catch (Exception e) {
-					writeLog("updatePurchasingStatuses(conn1); -- FAILED in doUpgrade() " );
-					writeLog(e);
+					LOGGER.error("updatePurchasingStatuses(conn1); -- FAILED in doUpgrade() ", e);
 				}
 				try {
 					createExistingIndexes(conn2, stmt);
 				} catch (Exception e) {
-					writeLog("createExistingIndexes(conn2, stmt); -- FAILED in doUpgrade() " );
-					writeLog(e);
+					LOGGER.error("createExistingIndexes(conn2, stmt); -- FAILED in doUpgrade() ", e);
 				}
 				try {
 					createPublicSynonyms(conn2, stmt);
 				} catch (Exception e) {
-					writeLog("createPublicSynonyms(conn2, stmt); -- FAILED in doUpgrade() " );
-					writeLog(e);
+					LOGGER.error("createPublicSynonyms(conn2, stmt); -- FAILED in doUpgrade() ", e);
 				}
 				try {
 					createForeignKeyIndexes(conn2, stmt);
 				} catch (Exception e) {
-					writeLog("createForeignKeyIndexes(conn2, stmt) -- FAILED in doUpgrade() ");
-					writeLog(e);
+					LOGGER.error("createForeignKeyIndexes(conn2, stmt) -- FAILED in doUpgrade() ", e);
 				}
 				try {
 					createDocumentSearchEntries(conn2, stmt);
 				} catch (Exception e) {
-					writeLog("createDocumentSearchEntries(conn2, stmt); -- FAILED in doUpgrade()" );
-					writeLog(e);
+					LOGGER.error("createDocumentSearchEntries(conn2, stmt); -- FAILED in doUpgrade()", e);
 				}
 				if (StringUtils.equalsIgnoreCase(properties.getProperty("run-maintenance-document-conversion"), "true")) {
                     try {
 						convertMaintenanceDocuments(conn1);
 					} catch (Exception e) {
-						writeLog("convertMaintenanceDocuments(conn1); -- FAILED in doUpgrade() " );
-						writeLog(e);
+						LOGGER.error("convertMaintenanceDocuments(conn1); -- FAILED in doUpgrade() ", e);
 					}
                 }
-                writeLog("");
-                writeHeader1Log("upgrade completed successfully");
+                logHeader1("upgrade completed successfully");
             }
         } 
 
         catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.fatal(ex);
         } 
 
         finally {
@@ -262,7 +269,7 @@ public class App {
 	 *            {@link Statement} to use to execute the SQL query.
 	 */
     private void dropTempTables(Connection conn, Statement stmt) {
-        writeHeader2Log("Dropping temporary tables");
+        logHeader2("Dropping temporary tables");
 
         List<String> tables = new ArrayList<String>();
         ResultSet res = null;
@@ -277,12 +284,11 @@ public class App {
                 try {
                     stmt.execute("drop table " + t);
                 } catch (Exception ex) {
-                    writeLog("failed to drop temp table " + t);
-                    writeLog(ex);
+					LOGGER.error("failed to drop temp table " + t, ex);
                 }
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -363,7 +369,7 @@ public class App {
         try {
             conn.rollback();
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         }
     }
 
@@ -381,7 +387,7 @@ public class App {
         try {
             conn.commit();
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
             retval = false;
         }
 
@@ -405,12 +411,12 @@ public class App {
 	 */
     private boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
         boolean retval = true;
-        writeHeader2Log("processing sql file " + f.getPath());
+        logHeader2("processing sql file " + f.getPath());
         List<String> sqlStatements = getSqlStatements(f);
 
         if (!sqlStatements.isEmpty()) {
             for (String sql : sqlStatements) {
-                writeLog(sql);
+				LOGGER.info("Executing sql: " + sql);
                 if (!executeSql(conn, stmt, sql)) {
                     retval = false;
                     break;
@@ -424,7 +430,7 @@ public class App {
             }
         } else {
             retval = false;
-            writeLog(new Exception("no sql statements found"));
+			LOGGER.error("no sql statements found!");
         }
 
         return retval;
@@ -474,7 +480,7 @@ public class App {
                 retval.add(sql.toString());
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             try {
                 if (lnr != null) {
@@ -621,14 +627,14 @@ public class App {
 	 */
     private boolean doUpgrade(Connection conn1, Connection conn2, Statement stmt) {
         boolean retval = true;
-        writeHeader1Log("upgrading kfs");
+        logHeader1("upgrading kfs");
 
         String lastProcessedFile = properties.getProperty("last-processed-file");
 		RunRequest runRequest = buildRunRequest(lastProcessedFile);
 		List<String> folders = runRequest.getDirectories();
 
         for (String folder : folders) {
-            writeHeader2Log("processing folder " + folder);
+            logHeader2("processing folder " + folder);
 
 			List<String> folderFiles = runRequest.getFilesForDirectory(folder);
             if (folderFiles != null) {
@@ -703,12 +709,13 @@ public class App {
 	 */
     private boolean runLiquibase(Connection conn, File f) {
         boolean retval = true;
-        writeHeader2Log("processing liquibase file " + f.getPath());
+        logHeader2("processing liquibase file " + f.getPath());
         PrintWriter pw = null;
         try {
             Liquibase liquibase = new Liquibase(f.getName(), new FileSystemFileOpener(f.getParentFile().getPath()), conn);
             liquibase.getDatabase().setAutoCommit(true);
-            liquibase.reportStatus(true, null, pw = getOutputLogWriter());
+			// TODO will need to test to see how this interacts with log4j
+			liquibase.reportStatus(true, null, pw = getOutputLogWriter());
             liquibase.update(null);
             retval = true;
         } catch (Exception ex) {
@@ -717,7 +724,7 @@ public class App {
                 pw.close();
             }
             pw = null;
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             if (pw != null) {
                 pw.close();
@@ -725,94 +732,7 @@ public class App {
         }
 
         return retval;
-    }
-
-	/**
-	 * Write out the {@link Exception} and its stacktrace to STDOUT as well as
-	 * the logging mechanism
-	 * 
-	 * @param ex
-	 *            {@link Exception} to write out
-	 * @see {@link #writeLog(Exception)}
-	 */
-    public void writeOut(Exception ex) {
-        System.out.println();
-        System.out.println(getTimeString() + ERROR);
-        System.out.println("--" + ex.getClass().getName() + "---===");
-        System.out.println("--" + ex.getMessage() + "--");    
-        ex.printStackTrace(System.out);
-    }
-
-	/**
-	 * Write out the {@link Exception} and its stacktrace to the logging
-	 * mechanism
-	 * 
-	 * @param ex
-	 *            {@link Exception} to log
-	 * 
-	 * @see {@link #writeOut(Exception)}
-	 */
-	public void writeLog(Exception ex) {
-        PrintWriter pw = null;
-        try {
-            pw = getOutputLogWriter();
-            pw.println();
-            pw.println(getTimeString() + "--" + ERROR);
-            pw.println("--" + ex.getClass().getName() + "---===");
-            pw.println("--" + ex.getMessage() + "--");            
-            ex.printStackTrace(pw);
-            writeOut(ex);
-        } catch (Exception ex2) {
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            } catch (Exception ex2) {
-            };
-        }
-    }
-
-	/**
-	 * Write out the provided {@link String} to STDOUT as well as the logging
-	 * mechanism.
-	 * 
-	 * @param msg
-	 *            {@link String} to write out
-	 * @see {@link #writeLog(String)}
-	 */
-    public void writeOut(String msg) {
-        System.out.println(getTimeString() + "--" + msg);
-    }
-
-	/**
-	 * Log the provided {@link String}
-	 * 
-	 * @param msg
-	 *            {@link String} to log
-	 * @see {@link #writeLog(String)}
-	 */
-	public void writeLog(String msg) {
-        PrintWriter pw = null;
-        try {
-            pw = getOutputLogWriter();
-            if (StringUtils.isNotBlank(msg)) {
-                pw.println(getTimeString() + "--" + msg);
-                writeOut(msg);
-            } else {
-                pw.println();
-                writeOut("");
-            }
-        } catch (Exception ex2) {
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-            } catch (Exception ex2) {
-            };
-        }
-    }
+	}
 
 	/**
 	 * @return {@link String} of the current {@link Date} formatted in a way
@@ -842,16 +762,16 @@ public class App {
         props.setProperty("user", properties.getProperty("database-user"));
         props.setProperty("password", properties.getProperty("database-password"));
 
-        writeLog("Connecting to db " + properties.getProperty("database-name") + "...");
-        writeLog("url=" + url);
+		LOGGER.info("Connecting to db " + properties.getProperty("database-name") + "...");
+		LOGGER.info("url=" + url);
 
         Class.forName(properties.getProperty("database-driver"));
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-        writeLog("connected to database " + properties.getProperty("database-name"));
-        writeLog("");
+		LOGGER.info("connected to database " + properties.getProperty("database-name"));
+		LOGGER.info("");
 
         return retval;
     }
@@ -876,16 +796,15 @@ public class App {
         props.setProperty("user", properties.getProperty("legacy-database-user"));
         props.setProperty("password", properties.getProperty("legacy-database-password"));
 
-        writeLog("Connecting to db " + properties.getProperty("legacy-database-name") + "...");
-        writeLog("url=" + url);
+		LOGGER.info("Connecting to db " + properties.getProperty("legacy-database-name") + "...");
+		LOGGER.info("url=" + url);
 
         Class.forName(properties.getProperty("legacy-database-driver"));
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-        writeLog("connected to database " + properties.getProperty("legacy-database-name"));
-        writeLog("");
+		LOGGER.info("connected to database " + properties.getProperty("legacy-database-name"));
 
         return retval;
 
@@ -947,7 +866,7 @@ public class App {
 
             retval = true;
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         }
 
         return retval;
@@ -1002,8 +921,8 @@ public class App {
             deleteFile(new File(properties.getProperty("output-log-file-name")));
             deleteFile(new File(properties.getProperty("processed-files-file-name")));
 
-            writeHeader1Log("pre-upgrade processing");
-            writeHeader2Log("dropping materialized view logs...");
+            logHeader1("pre-upgrade processing");
+            logHeader2("dropping materialized view logs...");
             res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
 
             List<String> logs = new ArrayList<String>();
@@ -1014,12 +933,12 @@ public class App {
 
             for (String log : logs) {
                 stmt.execute("drop materialized view log on " + log);
-                writeLog("dropped materialized view log on " + log);
+				LOGGER.info("dropped materialized view log on " + log);
             }
 
             res.close();
 
-            writeHeader2Log("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
+            logHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
 
             StringBuilder sql = new StringBuilder(256);
             sql.append("select count(*), SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
@@ -1053,7 +972,7 @@ public class App {
 
             retval = true;
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             closeDbObjects(null, null, res);
             closeDbObjects(null, stmt2, res2);
@@ -1063,31 +982,26 @@ public class App {
     }
     
 	/**
-	 * {@link #writeHeader1Log(String)} the provided <code>message</code> encased in a
-	 * block of '='s for emphasis
+	 * {@link Logger#info(Object)} the provided <code>message</code> encased in
+	 * a block of '='s for emphasis
 	 * 
 	 * @param msg
 	 */    
-    public void writeHeader1Log(String msg) {
-        writeLog("");
-        writeLog(HEADER1.replace("?", getTimeString() + "--" + msg));
-        writeLog("");
+    public void logHeader1(String msg) {
+		LOGGER.info(HEADER1.replace("?", msg));
     }
     
     
 	/**
-	 * {@link #writeHeader2Log(String)} the provided <code>message</code> followed by a
-	 * line of dashes for emphasis
+	 * {@link Logger#info(Object)} the provided <code>message</code> followed by
+	 * a line of dashes for emphasis
 	 * 
 	 * @param msg
 	 */    
-    public void writeHeader2Log(String msg) {
-        writeLog("");
-        writeLog(getTimeString() + "--" + msg);
-        writeLog(UNDERLINE);
-        writeLog("");
+    public void logHeader2(String msg) {
+		LOGGER.info(msg);
+		LOGGER.info(UNDERLINE);
     }
-    
 
 	/**
 	 * 
@@ -1096,9 +1010,9 @@ public class App {
 	 * @throws IOException
 	 *             Any {@link IOException}s encountered will be rethrown
 	 */
-    private PrintWriter getOutputLogWriter() throws IOException {
-        return new PrintWriter(new FileWriter(properties.getProperty("output-log-file-name"), true));
-    }
+	private PrintWriter getOutputLogWriter() throws IOException {
+		return new PrintWriter(new FileWriter(properties.getProperty("output-log-file-name"), true));
+	}
 
 	/**
 	 * @return {@link PrintWriter} targetting the processed files log file
@@ -1123,7 +1037,7 @@ public class App {
             pw = getProcessedFilesWriter();
             pw.println(getTimeString() + "--" + txt);
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             try {
                 if (pw != null) {
@@ -1231,7 +1145,7 @@ public class App {
     private void createExistingIndexes(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        writeHeader2Log("creating KFS indexes that existed prior to upgrade where required ");
+        logHeader2("creating KFS indexes that existed prior to upgrade where required ");
 
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql"));
@@ -1278,15 +1192,14 @@ public class App {
                             try {
                                 stmt.execute(sql.toString());
                             } catch (SQLException ex) {
-                                writeLog("failed to create index: " + sql.toString());
-                                writeLog(ex);
+								LOGGER.error("failed to create index: " + sql.toString(), ex);
                             }
                         }
                     }
                 }
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             try {
                 if (lnr != null) {
@@ -1566,7 +1479,7 @@ public class App {
     private void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        writeHeader2Log("creating KFS public synonyms that existed prior to upgrade where required ");
+        logHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
 
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql"));
@@ -1580,20 +1493,19 @@ public class App {
                     try {
                         stmt.execute(line);
                     } catch (SQLException ex) {
-                    	writeLog(ex);
-                        writeLog("failed to create public synonym: " + line);
+						LOGGER.error("failed to create public synonym: " + line, ex);
                     }
                 }
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             try {
                 if (lnr != null) {
                     lnr.close();
                 }
             } catch (Exception ex) {
-            	writeLog(ex);
+				LOGGER.error(ex);
             };
         }
     }
@@ -1673,7 +1585,7 @@ public class App {
                 }
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -1877,7 +1789,7 @@ public class App {
 	 * @see {@link #loadForeignKeyIndexInformation(DatabaseMetaData, String)}
 	 */
     private void createForeignKeyIndexes(Connection conn, Statement stmt) {
-        writeHeader2Log("creating indexes on foreign keys where required...");
+        logHeader2("creating indexes on foreign keys where required...");
         ResultSet res = null;
         try {
             DatabaseMetaData dmd = conn.getMetaData();
@@ -1895,22 +1807,22 @@ public class App {
                 Set<String> sqllist = loadForeignKeyIndexInformation(dmd, tname);
 
                 if ((sqllist != null) && !sqllist.isEmpty()) {
-                    writeLog("creating required foreign key indexes on table " + tname + "...");
+					LOGGER.info("creating required foreign key indexes on table " + tname + "...");
                     int cnt = 0;
                     for (String sql : sqllist) {
                         try {
                             stmt.executeQuery(sql);
                             cnt++;
                         } catch (Exception ex) {
-                            writeLog("create index failed: " + sql);
+							LOGGER.error("create index failed: " + sql, ex);
                         }
                     }
 
-                    writeLog("    " + cnt + " indexes created");
+					LOGGER.info("    " + cnt + " indexes created");
                 }
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.info(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -1947,7 +1859,7 @@ public class App {
                 pstmt.executeUpdate();
 
                 if ((i % 10000) == 0) {
-                    writeLog(i + " krew_doc_hdr_ext_t entries inserted");
+					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
                 }
 
                 i++;
@@ -1955,20 +1867,20 @@ public class App {
 
             conn.commit();
         } catch (Exception ex) {
-        	writeLog(ex);
+			LOGGER.error(ex);
 
             if (conn != null) {
                 try {
                     conn.rollback();
                 } catch (Exception ex2) {
-                	writeLog(ex);
+					LOGGER.error(ex);
                 };
             }
         } finally {
             try {
                 closeDbObjects(null, pstmt, res);
             } catch (Exception ex) {
-            	writeLog(ex);
+				LOGGER.error(ex);
             };
         }
     }
@@ -1985,7 +1897,7 @@ public class App {
     private void runMiscSql(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        writeHeader2Log("Executiong miscellaneous post-upgrade sql");
+        logHeader2("Executiong miscellaneous post-upgrade sql");
         try {
             lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/misc.sql"));
 
@@ -2004,22 +1916,21 @@ public class App {
                         } else {
                             stmt.executeUpdate(sql);
                         }
-                        writeLog(sql);
+						LOGGER.info(sql);
                     } catch (SQLException ex) {
-                        writeLog("sql execution failed: " + sql);
-                        writeLog(ex);
+						LOGGER.error("sql execution failed: " + sql, ex);
                     }
                 }
             }
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             try {
                 if (lnr != null) {
                     lnr.close();
                 }
             } catch (Exception ex) {
-            	writeLog(ex);
+				LOGGER.error(ex);
             };
         }
     }
@@ -2057,12 +1968,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeLog("updating credit memo app_doc_stat[" + desc + "] in krew_doc_hdr_t...");
+				LOGGER.info("updating credit memo app_doc_stat[" + desc + "] in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeLog("updating credit memo app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+				LOGGER.info("updating credit memo app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2078,12 +1989,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeLog("updating payment request app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+				LOGGER.info("updating payment request app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeLog("updating payment request app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+				LOGGER.info("updating payment request app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2099,12 +2010,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeLog("updating purchase order app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+				LOGGER.info("updating purchase order app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeLog("updating purchase order app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+				LOGGER.info("updating purchase order app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2120,12 +2031,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeLog("updating purchase receiving line app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+				LOGGER.info("updating purchase receiving line app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeLog("updating purchase receiving line app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+				LOGGER.info("updating purchase receiving line app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2141,12 +2052,12 @@ public class App {
                 String cd = legacyRes.getString(1);
                 String desc = legacyRes.getString(2);
 
-                writeLog("updating requisition app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
+				LOGGER.info("updating requisition app_doc_stat[" + desc + "]  in krew_doc_hdr_t...");
                 upgradeStmt1.setString(1, desc.replace("&", "and"));
                 upgradeStmt1.setString(2, cd);
                 upgradeStmt1.executeUpdate();
 
-                writeLog("updating requisition app_doc_stat[" + desc + "]  in fs_doc_header_t...");
+				LOGGER.info("updating requisition app_doc_stat[" + desc + "]  in fs_doc_header_t...");
                 upgradeStmt2.setString(1, desc.replace("&", "and"));
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
@@ -2154,7 +2065,7 @@ public class App {
 
             upgradeConn.commit();
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
             try {
                 upgradeConn.rollback();
             } catch (Exception ex2) {
@@ -2187,7 +2098,7 @@ public class App {
         try {
             List<String> updates = new ArrayList<String>();
 
-            writeHeader2Log("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
+            logHeader2("ensuring combination of (NM, NMSPC_CD) unique on KRIM_PERM_T and  KRIM_RSP_T...");
             
             // find duplicates
             res = stmt.executeQuery("select count(*), NM, NMSPC_CD from KRIM_PERM_T group by NM, NMSPC_CD having count(*) > 1");
@@ -2212,14 +2123,14 @@ public class App {
             }
 
             for (String sql : updates) {
-                writeLog("executing: " + sql);
+				LOGGER.info("executing: " + sql);
                 stmt.executeUpdate(sql);
             }
 
             res.close();
             retval = true;
         } catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
         } finally {
             closeDbObjects(null, null, res);
         }
@@ -2269,10 +2180,10 @@ public class App {
 
             if (retval) {
                 doCommit(conn);
-                writeLog("-- Making KRIM_PERM_T or KRIM_RSP_T Unique Succeeded so Committing changes --");
+				LOGGER.info("-- Making KRIM_PERM_T or KRIM_RSP_T Unique Succeeded so Committing changes --");
             } else {
                 doRollback(conn);
-                writeLog("-- Making KRIM_PERM_T or KRIM_RSP_T Unique Failed so RollingBack changes --");
+				LOGGER.error("-- Making KRIM_PERM_T or KRIM_RSP_T Unique Failed so RollingBack changes --");
             }
         }
 
@@ -2295,7 +2206,7 @@ public class App {
         Statement stmt = null;
         PreparedStatement pstmt = null;
         ResultSet res = null;
-        writeHeader2Log("Populating procurement card default table with UA detail data");
+        logHeader2("Populating procurement card default table with UA detail data");
         
         try {
             StringBuilder sql = new StringBuilder(512);
@@ -2372,12 +2283,11 @@ public class App {
                 }
                 
                 catch (SQLException ex) {
-                    writeLog("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString());
-                    writeLog(ex);
+					LOGGER.error("error on record cc_nbr=" + res.getString("CC_NBR") + " - " + ex.toString(), ex);
                 }
                 
                 if (((cnt++) % 1000) == 0) {
-                    writeLog(Integer.toString(cnt));
+					LOGGER.info(Integer.toString(cnt));
                 }
             }
             
@@ -2385,13 +2295,13 @@ public class App {
         }
         
         catch (Exception ex) {
-            writeLog(ex);
+			LOGGER.error(ex);
             try {
                 conn.rollback();
             }
             
             catch (Exception ex2) {
-            	writeLog(ex);
+				LOGGER.error(ex);
             };
         }
         
@@ -2420,7 +2330,7 @@ public class App {
         ResultSet res = null;
 
         try {
-            writeHeader2Log("Converting legacy maintenance documents to rice 2.0...");
+            logHeader2("Converting legacy maintenance documents to rice 2.0...");
 
             String fname = properties.getProperty("maintenance-document-conversion-rules-file");
 
@@ -2428,7 +2338,8 @@ public class App {
                 File f = new File(fname);
 
                 if (f.exists()) {
-                    MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(this, f);
+					MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
+							f);
                     EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
                     pstmt = upgradeConn.prepareStatement("update krns_maint_doc_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
                     stmt = upgradeConn.createStatement();
@@ -2455,10 +2366,11 @@ public class App {
 
                         catch (Exception ex) {
                             newXml = null;
-                            writeLog("error occured while attempting to convert document " + docid);
-                            writeLog("-------------------------------------------- xml ---------------------------------------------");
-                            writeLog(oldXml);
-                            writeLog(ex);
+							LOGGER.error("error occured while attempting to convert document " + docid, ex);
+							LOGGER.error(
+									"-------------------------------------------- xml ---------------------------------------------");
+							LOGGER.error(oldXml);
+							LOGGER.error(ex);
                         }
 
                         if (newXml != null) {
@@ -2478,7 +2390,8 @@ public class App {
                                 pstmt.executeBatch();
 
                                 if ((cnt % (5 * MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE)) == 0) {
-                                    writeLog(cnt + " documents processed - " + ((System.currentTimeMillis() - start)/1000) + "sec");
+									LOGGER.info(cnt + " documents processed - "
+											+ ((System.currentTimeMillis() - start) / 1000) + "sec");
                                     start = System.currentTimeMillis();
                                 }
                             }
@@ -2491,18 +2404,18 @@ public class App {
 
                     doCommit(upgradeConn);
 
-                    writeLog(cnt + " maintenance documents upgraded.");
+					LOGGER.info(cnt + " maintenance documents upgraded.");
                 } else {
-                    writeLog("maintenance document conversion rules file " + f.getPath() + " does not exist");
+					LOGGER.error("maintenance document conversion rules file " + f.getPath() + " does not exist");
                 }
             } else {
-                writeLog("no property 'maintenance-document-conversion-rules-file' entry in property file");
+				LOGGER.error("no property 'maintenance-document-conversion-rules-file' entry in property file");
             }
         }
 
         catch (Exception ex) {
             doRollback(upgradeConn);
-            writeLog(ex);
+			LOGGER.error(ex);
         }
     }
 }
