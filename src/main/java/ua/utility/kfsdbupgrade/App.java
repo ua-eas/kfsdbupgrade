@@ -70,6 +70,13 @@ public class App {
 	 * entry
 	 */
     private static String upgradeRoot;
+
+	/**
+	 * Populated by the <code>post-upgrade-directory</code> {@link Properties}
+	 * entry if set, otherwise defaults to {@link #upgradeRoot}
+	 * <code>/post-upgrade/sql</code>.
+	 */
+	private final File postUpgradeDirectory;
 	/**
 	 * {@link List} of {@link String} file paths loaded from the {@link App}'s
 	 * {@link Properties} <code>upgrade-folders</code> property.
@@ -81,6 +88,13 @@ public class App {
 	 * {@link List} of {@link String} names of files to process
 	 */
     private Map<String, List<String>> upgradeFiles;
+
+	/**
+	 * {@link Set} of post-upgrade {@link File}s that were processed. At end of
+	 * processing, should check if there are any files in the post-processing
+	 * directory that were not configured to run.
+	 */
+	private final Set<File> postUpgradeFilesProcessed = new HashSet<File>();
 
     /**
 	 * Main program entry point. Single argument is expected of a path to the
@@ -117,6 +131,17 @@ public class App {
         properties = loadProperties(propertyFileName);
         if (properties != null) {
             upgradeRoot = properties.getProperty("upgrade-base-directory");
+			/*
+			 * If the post-upgrade-directory property is specified, use it as
+			 * the path for the directory; otherwise, default to
+			 * {upgrade-root}/post-upgrade/sql
+			 */
+			String postUpgradeDirectoryProperty = properties.getProperty("post-upgrade-directory");
+			if (postUpgradeDirectoryProperty != null) {
+				postUpgradeDirectory = new File(postUpgradeDirectoryProperty);
+			} else {
+				postUpgradeDirectory = new File(upgradeRoot + "/post-upgrade/sql");
+			}
             upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
             upgradeFiles = loadFolderFileMap("files-");
 			Appender logFileAppender;
@@ -133,6 +158,7 @@ public class App {
 			}
         } else {
 			LOGGER.fatal("invalid properties file: " + propertyFileName);
+			postUpgradeDirectory = null;
         }
     }
             
@@ -217,7 +243,13 @@ public class App {
                 }
                 logHeader1("upgrade completed successfully");
             }
-        } 
+			Set<File> unprocessedPostUpgradeFiles = getUnprocessedFiles(postUpgradeDirectory,
+					postUpgradeFilesProcessed);
+			for (File unprocessedFile : unprocessedPostUpgradeFiles) {
+				LOGGER.warn("The file " + unprocessedFile.getAbsolutePath()
+						+ " in the post-upgrade directory was not processed, it is most likely missing from the .properties used for this upgrade execution.");
+			}
+		}
 
         catch (Exception ex) {
 			LOGGER.fatal(ex);
@@ -432,7 +464,7 @@ public class App {
             retval = false;
 			LOGGER.error("no sql statements found!");
         }
-
+		postUpgradeFilesProcessed.add(f);
         return retval;
     }
 
@@ -1146,9 +1178,9 @@ public class App {
         LineNumberReader lnr = null;
 
         logHeader2("creating KFS indexes that existed prior to upgrade where required ");
-
+		File kfsIndexesSqlFile = new File(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql");
         try {
-            lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql"));
+			lnr = new LineNumberReader(new FileReader(kfsIndexesSqlFile));
 
             String line = null;
 
@@ -1208,6 +1240,7 @@ public class App {
             } catch (Exception ex) {
             };
         }
+		postUpgradeFilesProcessed.add(kfsIndexesSqlFile);
     }
 
 	/**
@@ -1475,14 +1508,14 @@ public class App {
 	 * @param stmt
 	 *            {@link Statement} to use to execute SQL statements
 	 */
-	// FIXME only exception handling is to log out exception... very brittle
     private void createPublicSynonyms(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
         logHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
 
+		File kfsPublicSynonymsSqlFile = new File(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql");
         try {
-            lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql"));
+			lnr = new LineNumberReader(new FileReader(kfsPublicSynonymsSqlFile));
 
             String line = null;
 
@@ -1508,6 +1541,7 @@ public class App {
 				LOGGER.error(ex);
             };
         }
+		postUpgradeFilesProcessed.add(kfsPublicSynonymsSqlFile);
     }
 
 	/**
@@ -1897,9 +1931,10 @@ public class App {
     private void runMiscSql(Connection conn, Statement stmt) {
         LineNumberReader lnr = null;
 
-        logHeader2("Executiong miscellaneous post-upgrade sql");
+		logHeader2("Executing miscellaneous post-upgrade sql");
+		File miscSqlFile = new File(upgradeRoot + "/post-upgrade/sql/misc.sql");
         try {
-            lnr = new LineNumberReader(new FileReader(upgradeRoot + "/post-upgrade/sql/misc.sql"));
+			lnr = new LineNumberReader(new FileReader(miscSqlFile));
 
             String sql = null;
 
@@ -1933,6 +1968,7 @@ public class App {
 				LOGGER.error(ex);
             };
         }
+		postUpgradeFilesProcessed.add(miscSqlFile);
     }
 
 	/**
@@ -2417,5 +2453,26 @@ public class App {
             doRollback(upgradeConn);
 			LOGGER.error(ex);
         }
+    }
+
+	/**
+	 * @param directory
+	 *            {@link File} representing a directory containing {@link File}s
+	 *            to be processed.
+	 * @param processedFiles
+	 *            {@link Set} of {@link File}s that were actually processed
+	 * @return Unmodifiable {@link Set} of any {@link File}s that were in the
+	 *         provided <code>directory</code> but not contained in
+	 *         <code>processedFiles</code>.
+	 */
+	public static Set<File> getUnprocessedFiles(File directory, Set<File> processedFiles){
+    	Set<File> unprocessed = new HashSet<File>();
+    	File[] children = directory.listFiles();
+    	for(File child : children){
+			if (!processedFiles.contains(child)) {
+				unprocessed.add(child);
+			}
+    	}
+		return Collections.unmodifiableSet(unprocessed);
     }
 }

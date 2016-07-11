@@ -2,7 +2,9 @@ package ua.utility.kfsdbupgrade;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -112,6 +114,48 @@ public class AppTest {
 		files.add("db/master-constraint-script.xml");
 		files.add("db/master-data-script.xml");
 		return files;
+	}
+
+	@Test
+	public void unprocessedFilesLogic() {
+		Set<File> processed = new HashSet<File>();
+		// Note: Assuming that the testing directory has at least 3 child files
+		File directory = new File(System.getProperty("user.dir") + File.separator + "src" + File.separator + "main"
+				+ File.separator + "resources" + File.separator + "upgrade-files" + File.separator + "post-upgrade"
+				+ File.separator + "sql");
+		File[] children = directory.listFiles();
+
+		for (File child : children) {
+			processed.add(child);
+		}
+
+		Set<File> unprocessedFiles = App.getUnprocessedFiles(directory, processed);
+
+		// since all files are processed, unprocessedFiles should be empty
+		Assert.assertTrue(unprocessedFiles.isEmpty());
+
+		// remove a single file from processing configuration, verify logic
+		File toRemove = processed.iterator().next();
+		processed.remove(toRemove);
+
+		unprocessedFiles = App.getUnprocessedFiles(directory, processed);
+		Assert.assertFalse(unprocessedFiles.isEmpty());
+		Assert.assertEquals(1, unprocessedFiles.size());
+		Assert.assertTrue(unprocessedFiles.contains(toRemove));
+
+		// remove some additional files
+		Set<File> removed = new HashSet<File>();
+		removed.add(toRemove);
+		for (int i = 0; i < 2; i++) {
+			toRemove = processed.iterator().next();
+			processed.remove(toRemove);
+			removed.add(toRemove);
+		}
+
+		unprocessedFiles = App.getUnprocessedFiles(directory, processed);
+		Assert.assertFalse(unprocessedFiles.isEmpty());
+		Assert.assertEquals(3, unprocessedFiles.size());
+		Assert.assertTrue(unprocessedFiles.containsAll(removed));
 	}
 
 }
