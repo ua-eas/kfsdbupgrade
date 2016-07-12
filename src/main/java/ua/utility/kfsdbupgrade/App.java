@@ -242,13 +242,13 @@ public class App {
 					}
                 }
                 logHeader1("upgrade completed successfully");
+				Set<File> unprocessedPostUpgradeFiles = getUnprocessedFiles(postUpgradeDirectory,
+						postUpgradeFilesProcessed);
+				for (File unprocessedFile : unprocessedPostUpgradeFiles) {
+					LOGGER.warn("The file " + unprocessedFile.getAbsolutePath()
+							+ " in the post-upgrade directory was not processed, it is most likely missing from the .properties used for this upgrade execution.");
+				}
             }
-			Set<File> unprocessedPostUpgradeFiles = getUnprocessedFiles(postUpgradeDirectory,
-					postUpgradeFilesProcessed);
-			for (File unprocessedFile : unprocessedPostUpgradeFiles) {
-				LOGGER.warn("The file " + unprocessedFile.getAbsolutePath()
-						+ " in the post-upgrade directory was not processed, it is most likely missing from the .properties used for this upgrade execution.");
-			}
 		}
 
         catch (Exception ex) {
