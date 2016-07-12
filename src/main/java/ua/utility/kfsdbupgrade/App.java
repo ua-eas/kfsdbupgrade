@@ -16,6 +16,7 @@
 package ua.utility.kfsdbupgrade;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -144,7 +145,7 @@ public class App {
 			if (postUpgradeDirectoryProperty != null) {
 				postUpgradeDirectory = new File(postUpgradeDirectoryProperty);
 			} else {
-				postUpgradeDirectory = new File(upgradeRoot + "/post-upgrade/sql");
+				postUpgradeDirectory = new File(upgradeRoot + "/post-upgrade");
 			}
             upgradeFolders = loadList(properties.getProperty("upgrade-folders"));
             upgradeFiles = loadFolderFileMap("files-");
@@ -247,7 +248,20 @@ public class App {
                 }
                 logHeader1("upgrade completed successfully");
             }
-			Set<File> unprocessedPostUpgradeFiles = getUnprocessedFiles(postUpgradeDirectory,
+			/*
+			 * In default configuration, post-upgrade directory has a child
+			 * directory of 'sql', and the entries in 'files-post-upgrade' all
+			 * prepend 'sql/' to their path. So, have to replicate that logic
+			 * here before calculating if there are any missing files.
+			 */
+			File sqlSubdirectory = postUpgradeDirectory.listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+
+					return pathname.getPath().equals("sql");
+				}
+			})[0];
+			Set<File> unprocessedPostUpgradeFiles = getUnprocessedFiles(sqlSubdirectory,
 					postUpgradeFilesProcessed);
 			for (File unprocessedFile : unprocessedPostUpgradeFiles) {
 				LOGGER.warn("The file " + unprocessedFile.getAbsolutePath()
