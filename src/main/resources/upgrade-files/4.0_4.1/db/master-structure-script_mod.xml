@@ -21,7 +21,9 @@
     <!--
 	<include file="01_structure/kc-integration-structure.xml"/>
         -->
+<!-- Lingering change from UAF-2544. Discovered while testing UAF-2859
 	<include file="01_structure/endowment-module-structure-updates.xml"/>
+-->
 	<include file="01_structure/rice-client-structure.xml"/>
 	<include file="01_structure/ar-module-structure-updates.xml"/>
 

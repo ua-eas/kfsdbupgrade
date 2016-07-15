@@ -66,6 +66,10 @@ public class App {
     public static final String ERROR = "************************************************* error *************************************************";
     public static final String HEADER1 = "================================================ ? ================================================";
     private static final String INDEX_NAME_TEMPLATE = "[table-name]I{index}";
+
+	private static final String MISC_SQL_PATH = "sql/misc.sql";
+	private static final String KFS_INDEXES_SQL_PATH = "sql/kfs-indexes.sql";
+	private static final String KFS_PUBLIC_SYNONYMS_SQL_PATH = "sql/kfs-public-synonyms.sql";
 	/**
 	 * Populated by the <code>upgrade-base-directory</code> {@link Properties}
 	 * entry
@@ -656,6 +660,30 @@ public class App {
                 }
             }
         }
+		/*
+		 * if getting for the post-upgrade directory, purge any "special" files
+		 * that are hardcoded into methods
+		 */
+		if (folder.equals(postUpgradeDirectory.getName())) {
+			if (retval.contains(MISC_SQL_PATH)) {
+				LOGGER.warn("Manual configuration for " + MISC_SQL_PATH + " in " + postUpgradeDirectory.getName()
+						+ ". This file is automatically picked up and executed"
+						+ " and should not be in the configuration. Ignoring.");
+				retval.remove(MISC_SQL_PATH);
+			}
+			if (retval.contains(KFS_INDEXES_SQL_PATH)) {
+				LOGGER.warn("Manual configuration for " + KFS_INDEXES_SQL_PATH + " in " + postUpgradeDirectory.getName()
+						+ ". This file is automatically picked up and executed"
+						+ " and should not be in the configuration. Ignoring.");
+				retval.remove(KFS_INDEXES_SQL_PATH);
+			}
+			if (retval.contains(KFS_PUBLIC_SYNONYMS_SQL_PATH)) {
+				LOGGER.warn("Manual configuration for " + KFS_PUBLIC_SYNONYMS_SQL_PATH + " in "
+						+ postUpgradeDirectory.getName() + ". This file is automatically picked up and executed"
+						+ " and should not be in the configuration. Ignoring.");
+				retval.remove(KFS_PUBLIC_SYNONYMS_SQL_PATH);
+			}
+		}
         return retval;
     }
 
@@ -1192,7 +1220,7 @@ public class App {
         LineNumberReader lnr = null;
 
         logHeader2("creating KFS indexes that existed prior to upgrade where required ");
-		File kfsIndexesSqlFile = new File(upgradeRoot + "/post-upgrade/sql/kfs-indexes.sql");
+		File kfsIndexesSqlFile = new File(postUpgradeDirectory + KFS_INDEXES_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(kfsIndexesSqlFile));
 
@@ -1527,7 +1555,7 @@ public class App {
 
         logHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
 
-		File kfsPublicSynonymsSqlFile = new File(upgradeRoot + "/post-upgrade/sql/kfs-public-synonyms.sql");
+		File kfsPublicSynonymsSqlFile = new File(postUpgradeDirectory + KFS_PUBLIC_SYNONYMS_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(kfsPublicSynonymsSqlFile));
 
@@ -1946,7 +1974,7 @@ public class App {
         LineNumberReader lnr = null;
 
 		logHeader2("Executing miscellaneous post-upgrade sql");
-		File miscSqlFile = new File(upgradeRoot + "/post-upgrade/sql/misc.sql");
+		File miscSqlFile = new File(postUpgradeDirectory + MISC_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(miscSqlFile));
 

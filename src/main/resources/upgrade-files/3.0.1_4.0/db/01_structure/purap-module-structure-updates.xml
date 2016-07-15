@@ -28,6 +28,7 @@
 		</modifySql>
 	</changeSet>
 
+<!-- This column already exists in our KFS 3. Discovered while running for UAF- 2859
 	<changeSet author="David" id="KFS_40_PURAP_ADD_ACTIVE_ELEC_INV">
 		<comment>Needs to add a new column to AP_ELCTRNC_INV_MAP_T</comment>
 		<addColumn tableName="AP_ELCTRNC_INV_MAP_T">
@@ -40,7 +41,7 @@
 			<replace replace="VARCHAR2" with="VARCHAR" />
 			<replace replace="varchar2" with="VARCHAR" />
 		</modifySql>
-	</changeSet>
+	</changeSet> -->
 
 	<changeSet id="KFS_40_PURAP_ADD_ACTIVE_PUR_PO_QT_LST_VNDR_T" author="kfs">
 		<addColumn tableName="PUR_PO_QT_LST_VNDR_T">
