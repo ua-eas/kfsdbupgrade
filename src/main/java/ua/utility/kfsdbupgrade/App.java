@@ -258,7 +258,8 @@ public class App {
 				@Override
 				public boolean accept(File pathname) {
 
-					return pathname.getPath().equals("sql");
+					return pathname.getName().equals("sql");
+
 				}
 			})[0];
 			Set<File> unprocessedPostUpgradeFiles = getUnprocessedFiles(sqlSubdirectory,
