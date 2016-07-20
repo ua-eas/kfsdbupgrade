@@ -1221,7 +1221,7 @@ public class App {
         LineNumberReader lnr = null;
 
         logHeader2("creating KFS indexes that existed prior to upgrade where required ");
-		File kfsIndexesSqlFile = new File(postUpgradeDirectory + KFS_INDEXES_SQL_PATH);
+		File kfsIndexesSqlFile = new File(postUpgradeDirectory + File.separator + KFS_INDEXES_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(kfsIndexesSqlFile));
 
@@ -1556,7 +1556,7 @@ public class App {
 
         logHeader2("creating KFS public synonyms that existed prior to upgrade where required ");
 
-		File kfsPublicSynonymsSqlFile = new File(postUpgradeDirectory + KFS_PUBLIC_SYNONYMS_SQL_PATH);
+		File kfsPublicSynonymsSqlFile = new File(postUpgradeDirectory + File.separator + KFS_PUBLIC_SYNONYMS_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(kfsPublicSynonymsSqlFile));
 
@@ -1975,7 +1975,7 @@ public class App {
         LineNumberReader lnr = null;
 
 		logHeader2("Executing miscellaneous post-upgrade sql");
-		File miscSqlFile = new File(postUpgradeDirectory + MISC_SQL_PATH);
+		File miscSqlFile = new File(postUpgradeDirectory + File.separator + MISC_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(miscSqlFile));
 
