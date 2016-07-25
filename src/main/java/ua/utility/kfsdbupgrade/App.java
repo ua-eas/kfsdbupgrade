@@ -1568,7 +1568,7 @@ public class App {
                 if (!synonymExists(conn, stmt, synonymName)) {
                     try {
 						// if there is a trailing semicolon, remove it
-						int pos = line.indexOf(';');
+						int pos = line.lastIndexOf(';');
 						if (pos == line.length() - 1) {
 							line = line.substring(0, line.length() - 1);
 						}
