@@ -17,10 +17,6 @@
             </list>
         </property>
     </bean>
-
-	<bean id="kewDistributedCacheManager" class="org.kuali.rice.core.impl.cache.DistributedCacheManagerDecorator"
-        p:cacheManager-ref="kewLocalCacheManager"
-        p:serviceName="{http://rice.kuali.org/kew/v2_0}kewCacheAdminService" />
 	
     <bean id="transactionManagerXAPool" class="org.springframework.transaction.jta.JotmFactoryBean" lazy-init="true">
         <property name="defaultTimeout" value="${transaction.timeout}"/>
