@@ -298,5 +298,23 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+			<id>ua-eas-ksd-nexus-releases</id>
+			<name>University of Arizona Nexus Repository</name>
+			<url>https://ka-tools.mosaic.arizona.edu/nexus/content/repositories/releases</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+		</repository>
+		<repository>
+			<id>ua-eas-ksd-nexus-snapshots</id>
+			<name>University of Arizona Nexus Repository</name>
+			<url>https://ka-tools.mosaic.arizona.edu/nexus/content/repositories/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
     </repositories>
 </project>
