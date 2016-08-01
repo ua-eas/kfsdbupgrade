@@ -43,11 +43,11 @@
             <artifactId>commons-beanutils</artifactId>
             <version>1.8.3-kuali-4</version>
         </dependency>        
-        <!--  <dependency>
+        <dependency>
             <groupId>org.kuali.kfs</groupId>
-            <artifactId>kfs</artifactId>
+            <artifactId>kfs-core</artifactId>
             <version>${kuali.financials.version}</version>
-        </dependency> -->
+        </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
             <artifactId>rice-core-api</artifactId>
