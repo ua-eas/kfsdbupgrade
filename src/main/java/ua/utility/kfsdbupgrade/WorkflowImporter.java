@@ -169,7 +169,7 @@ public class WorkflowImporter {
         finally {
 			LOGGER.info("workflow processing completed");
 			/*
-			 * End of execution isn't executing as some database connections are
+			 * End of execution isn't exiting as some database connections are
 			 * staying open FIXME actually track down errant threads and kill;
 			 * awful hack
 			 */
