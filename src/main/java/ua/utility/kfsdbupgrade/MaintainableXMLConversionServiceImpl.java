@@ -134,12 +134,6 @@ public class MaintainableXMLConversionServiceImpl {
         String newMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String ending = StringUtils.substringAfter(xml, "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
 
-		// FIXME later, change to use XPath (will require parsing into Document)
-		// xpath query: //*/newMaintainableObject/*/documentNumber
-		String documentNumber = StringUtils.substringBetween(newMaintainableObjectXML, "<documentNumber>",
-				"</documentNumber>");
-		LOGGER.info("Converting maintainable xml with document number: " + documentNumber);
-
         String convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
         String convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
 
@@ -261,8 +255,19 @@ public class MaintainableXMLConversionServiceImpl {
 				LOGGER.info("Removing PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
                 tempNode.getParentNode().removeChild(tempNode);
             }
+            
+            //FIXME remove
+            /*
+             * debugging logging to see if another PersonImpl class is sneaking through
+             */
+            XPathExpression otherPersonImplClass = xpath.compile("//*[@class='org.kuali.rice.kim.bo.impl.PersonImpl']");
+            matchingNodes = (NodeList) otherPersonImplClass.evaluate( doc, XPathConstants.NODESET );
+			if (matchingNodes != null && matchingNodes.getLength() > 0) {
+				LOGGER.info(
+						"Document has instances of org.kuali.rice.kim.bo.impl.PersonImpl which is NOT programatically removed.");
+			}
         } catch (XPathExpressionException e) {
-
+			LOGGER.error("XPathException encountered: ", e);
         }
     }
 

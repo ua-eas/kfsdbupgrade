@@ -2440,6 +2440,7 @@ public class App {
                         String newXml  = null;
 
                         try {
+							LOGGER.info("Converting maintainable xml with document number: " + docid);
                             newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml);
                         }
 
