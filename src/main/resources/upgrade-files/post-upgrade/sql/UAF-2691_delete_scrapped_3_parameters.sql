@@ -1,0 +1,4 @@
+-- =======================================================================================================================
+-- (UAF-2691) : Delete Scrapped 3.0 Parameters from 6.0. Subtask of (UAF-92)
+-- =======================================================================================================================
+DELETE FROM KULOWNER.KRCR_PARM_T WHERE PARM_NM in ('AUTOMATIC_PURCHASE_ORDER_DEFAULT_LIMIT_AMOUNT','ADDITIONAL_CHARGES_CLEARING_ACCOUNT','ADDITIONAL_CHARGES_CLEARING_CHART_OF_ACCOUNTS','ADDITIONAL_CHARGES_CLEARING_OBJECT_CODE','B2B_DIRECT_SHIP_CAMPUS_CODES','AUTO_CLOSE_PO_NUMBER_LOWER','AUTO_CLOSE_PO_NUMBER_UPPER');
