@@ -85,8 +85,48 @@
       <replacement>org.kuali.kfs.module.cam.document.AssetMaintainableImpl</replacement>
     </pattern>
     <pattern>
-      <match>edu.arizona.kfs.vnd.document.VendorMaintainableImpl</match>
-      <replacement>org.kuali.kfs.vnd.document.VendorMaintainableImpl</replacement>
+      <match>edu.arizona.kfs.prje.document.PRJEAccountLineMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.prje.document.PRJETypeMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.prje.document.PRJEBaseObjectMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.prje.document.PRJESetMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.prje.document.PRJEBaseAccountMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.sys.document.OutboundMessageQueueMaintainable</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.gl.document.GlobalTransactionEditMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.PaymentMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.module.purap.document.PurchasingPdfLanguageMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.tax.document.PayeeMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kns.web.struts.action.KFSMaintenanceDocumentAction</match>
+      <replacement>org.kuali.rice.kns.web.struts.action.KualiMaintenanceDocumentAction</replacement>
     </pattern>
   </rule>
 
