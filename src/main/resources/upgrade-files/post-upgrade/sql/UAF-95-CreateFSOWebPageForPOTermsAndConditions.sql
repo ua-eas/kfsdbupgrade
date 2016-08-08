@@ -14,4 +14,4 @@ d. University is exempt from federal excise tax. Certificate of registry is A-18
 e. Transaction privilege tax no. 20221243.
 f. Out of state vendors charging Arizona sales tax must show permit number.
 g. For invoicing and payment information contact Accounts Payable at address above or at
-accts_pay@fso.arizona.edu. Fax invoices to 520-626-1243 or email invoices to invoices@fso.arizona.' WHERE DOBJ_MAINT_CD_ACTV_IND = 'Y' AND CMP_CD IN ('MC','AH','OC','SV');
+accts_pay@fso.arizona.edu. Fax invoices to 520-626-1243 or email invoices to invoices@fso.arizona.edu' WHERE DOBJ_MAINT_CD_ACTV_IND = 'Y' AND CMP_CD IN ('MC','AH','OC','SV');
