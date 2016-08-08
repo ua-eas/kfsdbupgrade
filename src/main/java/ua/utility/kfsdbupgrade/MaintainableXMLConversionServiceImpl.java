@@ -181,6 +181,11 @@ public class MaintainableXMLConversionServiceImpl {
         removePersonObjects(document);
 
         for(Node childNode = document.getFirstChild(); childNode != null;) {
+			/*
+			 * TODO investigate; this doesn't appear that depth would be
+			 * traversed... Adding logging statement before return to see if
+			 * replacement classes are missed
+			 */
             Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
             childNode = nextChild;
@@ -202,8 +207,16 @@ public class MaintainableXMLConversionServiceImpl {
 		 * "remove any empty lines"
 		 */
         xml = writer.toString().replaceAll("(?m)^\\s+\\n", "");
+		xml = xml + "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">" + maintenanceAction + "</"
+				+ MAINTENANCE_ACTION_ELEMENT_NAME + ">";
 
-        return xml + "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">" + maintenanceAction + "</" + MAINTENANCE_ACTION_ELEMENT_NAME + ">";
+		// TODO remove investigative logging
+		for (String oldClassName : classNameRuleMap.keySet()) {
+			if (xml.contains(oldClassName)) {
+				LOGGER.info("Document has classname in contents that should have been mapped: " + oldClassName);
+			}
+		}
+		return xml;
     }
 
 
@@ -245,6 +258,14 @@ public class MaintainableXMLConversionServiceImpl {
 	 *            elements from
 	 */
     public void removePersonObjects( Document doc ) {
+		/*
+		 * FIXME evaluate this method...
+		 * class='org.kuali.rice.kim.impl.identity.PersonImpl' is a replacement
+		 * class for class='org.kuali.rice.kim.bo.impl.PersonImpl', so there
+		 * shouldn't be any instances of this 'new' class yet. Why is this
+		 * method here? Was it some kind of cleanup in between runs while
+		 * testing?
+		 */
         XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression personProperties = null;
         try {
@@ -255,17 +276,6 @@ public class MaintainableXMLConversionServiceImpl {
 				LOGGER.info("Removing PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
                 tempNode.getParentNode().removeChild(tempNode);
             }
-            
-            //FIXME remove
-            /*
-             * debugging logging to see if another PersonImpl class is sneaking through
-             */
-            XPathExpression otherPersonImplClass = xpath.compile("//*[@class='org.kuali.rice.kim.bo.impl.PersonImpl']");
-            matchingNodes = (NodeList) otherPersonImplClass.evaluate( doc, XPathConstants.NODESET );
-			if (matchingNodes != null && matchingNodes.getLength() > 0) {
-				LOGGER.info(
-						"Document has instances of org.kuali.rice.kim.bo.impl.PersonImpl which is NOT programatically removed.");
-			}
         } catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);
         }
