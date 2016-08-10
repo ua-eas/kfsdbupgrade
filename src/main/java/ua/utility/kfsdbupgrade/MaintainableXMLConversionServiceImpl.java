@@ -116,6 +116,9 @@ public class MaintainableXMLConversionServiceImpl {
         // in this context (no spring). The classes are relatively simple so bypassing them should not be an issue
         ignoreClassSet.add("org.kuali.kfs.coa.businessobject.IndirectCostRecoveryRate");
         ignoreClassSet.add("org.kuali.kfs.module.purap.businessobject.PurchaseOrderContractLanguage");
+
+		// ignore the builtin xml #text
+		ignoreClassSet.add("#text");
      }
 
 	/**
