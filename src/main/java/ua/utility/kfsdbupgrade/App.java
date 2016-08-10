@@ -1925,6 +1925,7 @@ public class App {
 	 *            removed as a parameter
 	 */
     private void createDocumentSearchEntries(Connection conn, Statement stmt) {
+		logHeader2("Creating document search entries.");
         PreparedStatement pstmt = null;
         ResultSet res = null;
         try {
@@ -2034,6 +2035,7 @@ public class App {
 	 * on its own
 	 */
     private void updatePurchasingStatuses(Connection upgradeConn) {
+		logHeader2("Updating purchasing statuses.");
         Connection legacyConn = null;
         Statement legacyStmt = null;
         ResultSet legacyRes = null;
