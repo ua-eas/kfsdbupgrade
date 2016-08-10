@@ -184,9 +184,26 @@ public class MaintainableXMLConversionServiceImpl {
 			/*
 			 * TODO investigate; this doesn't appear that depth would be
 			 * traversed... Adding logging statement before return to see if
-			 * replacement classes are missed
+			 * replacement classes are missed.
+			 * 
 			 */
-            Node nextChild = childNode.getNextSibling();
+			/*
+			 * FIXME this traversal logic is all over the place, probably
+			 * missing a lot more than we think, evaluate. Others appear to
+			 * traverse depth via recursion
+			 */
+			/*
+			 * If this node has a child, it's the next node to process.
+			 * Otherwise, get the next sibling. If there is no next sibling,
+			 * back up the tree to the parent.
+			 */
+			Node nextChild = childNode.getFirstChild();
+			if (nextChild == null) {
+				nextChild = childNode.getNextSibling();
+			}
+			if (nextChild == null) {
+				nextChild = childNode.getParentNode();
+			}
             transformClassNode(document, childNode);
             childNode = nextChild;
         }
@@ -213,7 +230,7 @@ public class MaintainableXMLConversionServiceImpl {
 		// TODO remove investigative logging
 		for (String oldClassName : classNameRuleMap.keySet()) {
 			if (xml.contains(oldClassName)) {
-				LOGGER.info("Document has classname in contents that should have been mapped: " + oldClassName);
+				LOGGER.warn("Document has classname in contents that should have been mapped: " + oldClassName);
 			}
 		}
 		return xml;
@@ -310,6 +327,13 @@ public class MaintainableXMLConversionServiceImpl {
 			className = newClassName;
 		}
 
+		/*
+		 * FIXME submethod transformNode recurses over children, this method
+		 * does not, so only top-level class is transformed. Need to potentially
+		 * transform classes of children. For now, handling by traversing tree
+		 * in calling method, however this has the unintended side effect of
+		 * recursing over each element in this submethod as well....
+		 */
         if (isValidClass(className)) {
             Class<?> dataObjectClass = Class.forName(className);
 
