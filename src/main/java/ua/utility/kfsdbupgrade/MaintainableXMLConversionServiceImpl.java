@@ -181,8 +181,6 @@ public class MaintainableXMLConversionServiceImpl {
 			throw new SAXParseException(exMsg, null, ex);
 		}
 
-        removePersonObjects(document);
-
         for(Node childNode = document.getFirstChild(); childNode != null;) {
 			/*
 			 * TODO investigate; this doesn't appear that depth would be
@@ -200,16 +198,26 @@ public class MaintainableXMLConversionServiceImpl {
 			 * Otherwise, get the next sibling. If there is no next sibling,
 			 * back up the tree to the parent.
 			 */
-			Node nextChild = childNode.getFirstChild();
-			if (nextChild == null) {
-				nextChild = childNode.getNextSibling();
-			}
-			if (nextChild == null) {
-				nextChild = childNode.getParentNode();
-			}
+			/*
+			 * started hitting a bunch of not-ignored classes in the full xml
+			 * traversal, so backing out and dealing with migrating PersonImpl
+			 * and KualiCodeBase individually
+			 */
+			// TODO clean up commented out code
+			// Node nextChild = childNode.getFirstChild();
+			// if (nextChild == null) {
+			// nextChild = childNode.getNextSibling();
+			// }
+			// if (nextChild == null) {
+			// nextChild = childNode.getParentNode();
+			// }
+			Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
             childNode = nextChild;
         }
+
+		migratePersonObjects(document);
+		migrateKualiCodeBaseObjects(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer trans = transFactory.newTransformer();
@@ -268,16 +276,13 @@ public class MaintainableXMLConversionServiceImpl {
     }
 
 	/**
-	 * Removes any elements with the <code>class</code> of
-	 * <code>org.kuali.rice.kim.impl.identity.PersonImpl</code> from the
-	 * provided {@link Document}.
+	 * Migrate any elements with the <code>class</code> containing
+	 * <code>PersonImpl</code> from the provided {@link Document} if there is a
+	 * mapping in {@link #classNameRuleMap}.
 	 * 
 	 * @param doc
-	 *            {@link Document} to remove
-	 *            <code>org.kuali.rice.kim.impl.identity.PersonImpl</code>
-	 *            elements from
 	 */
-    public void removePersonObjects( Document doc ) {
+    public void migratePersonObjects( Document doc ) {
 		/*
 		 * FIXME evaluate this method...
 		 * class='org.kuali.rice.kim.impl.identity.PersonImpl' is a replacement
@@ -289,17 +294,70 @@ public class MaintainableXMLConversionServiceImpl {
         XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression personProperties = null;
         try {
-            personProperties = xpath.compile("//*[@class='org.kuali.rice.kim.impl.identity.PersonImpl']");
+			String personImplClassName = null;
+			for (String key : classNameRuleMap.keySet()) {
+				if (key.endsWith("PersonImpl")) {
+					personImplClassName = key;
+				}
+			}
+			// if no mapping, nothing to do here
+			if (personImplClassName == null) {
+				return;
+			}
+			personProperties = xpath.compile("//*[@class='" + personImplClassName + "']");
             NodeList matchingNodes = (NodeList)personProperties.evaluate( doc, XPathConstants.NODESET );
             for(int i = 0; i < matchingNodes.getLength(); i++) {
                 Node tempNode = matchingNodes.item(i);
-				LOGGER.info("Removing PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
-                tempNode.getParentNode().removeChild(tempNode);
+				LOGGER.info("Migrating PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				String newClassName = this.classNameRuleMap.get(personImplClassName);
+				doc.renameNode(tempNode, null, newClassName);
             }
         } catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);
         }
     }
+
+	/**
+	 * Migrate any elements with the <code>class</code> containing
+	 * <code>KualiCodeBase</code> from the provided {@link Document} if there is
+	 * a mapping in {@link #classNameRuleMap}.
+	 * 
+	 * @param doc
+	 */
+	public void migrateKualiCodeBaseObjects(Document doc) {
+		/*
+		 * FIXME evaluate this method...
+		 * class='org.kuali.rice.kim.impl.identity.PersonImpl' is a replacement
+		 * class for class='org.kuali.rice.kim.bo.impl.PersonImpl', so there
+		 * shouldn't be any instances of this 'new' class yet. Why is this
+		 * method here? Was it some kind of cleanup in between runs while
+		 * testing?
+		 */
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression personProperties = null;
+		try {
+			String kualiCodeBaseClassName = null;
+			for (String key : classNameRuleMap.keySet()) {
+				if (key.endsWith("KualiCodeBase")) {
+					kualiCodeBaseClassName = key;
+				}
+			}
+			// if no mapping, nothing to do here
+			if (kualiCodeBaseClassName == null) {
+				return;
+			}
+			personProperties = xpath.compile("//*[@class='" + kualiCodeBaseClassName + "']");
+			NodeList matchingNodes = (NodeList) personProperties.evaluate(doc, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.info("Migrating KualiCodeBase node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				String newClassName = this.classNameRuleMap.get(kualiCodeBaseClassName);
+				doc.renameNode(tempNode, null, newClassName);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
 
 	/**
 	 * If a mapping for the <code>node</code> class exists in
