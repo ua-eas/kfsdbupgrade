@@ -310,7 +310,8 @@ public class MaintainableXMLConversionServiceImpl {
                 Node tempNode = matchingNodes.item(i);
 				LOGGER.info("Migrating PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
 				String newClassName = this.classNameRuleMap.get(personImplClassName);
-				doc.renameNode(tempNode, null, newClassName);
+				Node classAttr = tempNode.getAttributes().getNamedItem("class");
+				classAttr.setNodeValue(newClassName);
             }
         } catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);
