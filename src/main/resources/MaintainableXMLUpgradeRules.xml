@@ -85,6 +85,14 @@
       <replacement>org.kuali.kfs.module.cam.document.AssetMaintainableImpl</replacement>
     </pattern>
     <pattern>
+      <match>edu.arizona.kfs.vnd.document.VendorMaintainableImpl</match>
+      <replacement>org.kuali.kfs.vnd.document.VendorMaintainableImpl</replacement>
+    </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.vnd.document.VendorMaintainableImpl</match>
+      <replacement>org.kuali.kfs.vnd.document.VendorMaintainableImpl</replacement>
+    </pattern>
+    <pattern>
       <match>edu.arizona.kfs.prje.document.PRJEAccountLineMaintainableImpl</match>
       <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
     </pattern>
