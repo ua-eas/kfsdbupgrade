@@ -23,35 +23,24 @@ delete from kulowner.QRTZ_TRIGGERS;
 delete from kulowner.QRTZ_JOB_DETAILS;
 
 
--- Clear all the roles for any existing kfs-test-sec* or kfs-test-sys* users
---Q: Why only sys10 and sys8, what about the other test-sys?
+-- Clear all the roles for any existing kfs-test-sec* or kfs-test-sys8 and sys10 users
+-- Other sys users should have their roles left intact, and are not included in this delete
 delete from krim_role_mbr_t 
 where mbr_typ_cd = 'P' and mbr_id in 
 	( select prncpl_id from kulowner.krim_entity_cache_t 
       where prncpl_nm like 'kfs-test-sec%' 
-          --or prncpl_nm like 'kfs-test-sys%'
             or prncpl_nm in ('kfs-test-sys10', 'kfs-test-sys8')
 	) 
 ;
 
--- re-add all kfs-test-sec* and kfs-test-sys* to role basic role Financial System User - 54 
---Q: Why only sys10 and sys8, what about the other test-sys?
+-- re-add all kfs-test-sec* and kfs-test-sys8 and sys10 to role basic role Financial System User - 54 
+-- Only sys8 and sys10 users specifically need role 54; other sys users should not have it
 insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd, actv_frm_dt, actv_to_dt ) 
   select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '54', prncpl_id, 'P', null, null 
   from kulowner.krim_entity_cache_t 
   where prncpl_nm like 'kfs-test-sec%' 
         or prncpl_nm in ('kfs-test-sys10', 'kfs-test-sys8') 
 ;
-
--- Make sure all deactivated KFS-TEST-SEC* users are re-activated 
--- Note: this is useless: it's already beeing set to NULL in the previous query
---Q: How is something activated by setting it to NULL?
--- UPDATE krim_role_mbr_t SET actv_to_dt = NULL 
--- WHERE mbr_typ_cd = 'P' and mbr_id IN 
---    ( SELECT prncpl_id FROM krim_entity_cache_t 
---      WHERE prncpl_nm LIKE 'kfs-test-sec%');
-
-
 
 -- Make sure all users have an options record, defaulted to no email notifications
 insert into krew_usr_optn_t ( PRNCPL_ID, PRSN_OPTN_ID, VAL, VER_NBR ) 
@@ -225,7 +214,7 @@ values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1051033', 'T0000000000000054
 
 -- Set BI_REPORT_URL to https://eiasupbi.uaccess.arizona.edu/analytics/
 update kulowner.krcr_parm_t set val = 'https://eiasupetlbi.uaccess.arizona.edu/analytics/'
-where nmspc_cd = 'KFS-SYS' and parm_typ_cd = 'All' and parm_nm = 'BI_REPORT_URL'
+where nmspc_cd = 'KFS-SYS' and cmpnt_cd = 'All' and parm_nm = 'BI_REPORT_URL'
 ;
 
 
@@ -521,22 +510,10 @@ insert into krim_grp_mbr_t ( grp_mbr_id, ver_nbr, obj_id, grp_id, mbr_id, mbr_ty
 values ( KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1050703', 'T000000000000005406', 'P')
 ; 
 
---OLD add kfs-test-sec15 to UA SPS Team 8 Group (#1050040)
-insert into krim_grp_mbr_t ( grp_mbr_id, ver_nbr, obj_id, grp_id, mbr_id, mbr_typ_cd ) 
-values ( KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1050040', 'T000000000000005406', 'P')
-; 
-
 --OLD add kfs-test-sec15 to UA PACS Postal Services Service Billers Group (#1050639)
 insert into krim_grp_mbr_t ( grp_mbr_id, ver_nbr, obj_id, grp_id, mbr_id, mbr_typ_cd ) 
 values ( KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1050639', 'T000000000000005406', 'P')
 ; 
-
---OLD add kfs-test-sec15 to UA SPS Team 7 Group (#1050087)
-insert into krim_grp_mbr_t ( grp_mbr_id, ver_nbr, obj_id, grp_id, mbr_id, mbr_typ_cd ) 
-values ( KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1050087', 'T000000000000005406', 'P')
-; 
-
-
 
 -- ====================================================================================================================
 -- 22) Add 'administer workflow' permission to UA Super User Role (#11513) for Rice Documents (so kfs-test-sec25 can approve any group docs)
@@ -979,5 +956,5 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) 
   select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), prncpl_id, 'P' 
   from kulowner.krim_entity_cache_t 
-  where prncpl_nm in ('kbasu', 'gurtonj', 'akhilashokk', 'elvirag', 'jpfennig', 'kosta', 'jwingate', 'mccunej', 'maryb', 'sandovar', 'kbrook', 'robbiem', 'fischerm', 'mmoen', 'ketchmark', 'lilas', 'jnschool', 'melissav73', 'sskinner', 'rdubisar', 'marcel', 'janifisk', 'sandberm', 'mhohl', 'ake27', 'hlo', 'kristinalopez1', 'leahasullivan', 'alee', 'perryg', 'maramian', 'rblank', 'tammyv', 'buchanaw', 'jreese','quikkian','tounou','amyrodriguez')
+  where prncpl_nm in ('kbasu', 'gurtonj', 'akhilashokk', 'elvirag', 'jpfennig', 'kosta', 'jwingate', 'mccunej', 'maryb', 'sandovar', 'kbrook', 'robbiem', 'fischerm', 'mmoen', 'ketchmark', 'lilas', 'jnschool', 'melissav73', 'sskinner', 'rdubisar', 'marcel', 'janifisk', 'sandberm', 'mhohl', 'ake27', 'hlo', 'kristinalopez1', 'leahasullivan', 'alee', 'perryg', 'maramian', 'rblank', 'tammyv', 'buchanaw', 'jreese','quikkian','tounou','amyrodriguez','wames')
 ;
