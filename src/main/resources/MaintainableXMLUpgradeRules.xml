@@ -353,6 +353,26 @@
         <replacement>id</replacement>
       </pattern>
     </pattern>
+    <!-- UA additions -->
+    <pattern>
+      <class>org.kuali.kfs.coa.businessobject.Account</class>
+      <pattern>
+        <match>indirectCostRcvyFinCoaCode</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>incomeStreamFinancialCoaCode</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>indirectCostRecoveryAcctNbr</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>taxRegionCodeExt</match>
+        <replacement>taxRegionCode</replacement>
+      </pattern>
+    </pattern>
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The

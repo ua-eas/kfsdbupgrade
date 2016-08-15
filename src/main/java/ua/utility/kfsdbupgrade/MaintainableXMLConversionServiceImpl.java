@@ -218,6 +218,7 @@ public class MaintainableXMLConversionServiceImpl {
 
 		migratePersonObjects(document);
 		migrateKualiCodeBaseObjects(document);
+		migrateAccountExtensionObjects(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer trans = transFactory.newTransformer();
@@ -244,16 +245,41 @@ public class MaintainableXMLConversionServiceImpl {
 				LOGGER.warn("Document has classname in contents that should have been mapped: " + oldClassName);
 			}
 		}
+		checkForElementsWithClassAttribute(document);
 		return xml;
     }
 
 
     /**
-     * Upgrades the old Bo notes tag that was part of the maintainable to the new notes tag.
-     *
-     * @param oldXML - the xml to upgrade
-     * @throws Exception
-     */
+	 * Investigative logging. Log if there are any elements with an \@class
+	 * attribute
+	 * 
+	 * @param document
+	 */
+	private void checkForElementsWithClassAttribute(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//*[@class]");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				String className = matchingNodes.item(i).getAttributes().getNamedItem("class").getTextContent();
+				LOGGER.info("In element " + matchingNodes.item(i).getNodeName() + " @class attribute of " + className);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+
+	}
+
+	/**
+	 * Upgrades the old Bo notes tag that was part of the maintainable to the
+	 * new notes tag.
+	 *
+	 * @param oldXML
+	 *            - the xml to upgrade
+	 * @throws Exception
+	 */
     private String upgradeBONotes(String oldXML) throws Exception {
         // Get the old bo note xml
         String notesXml = StringUtils.substringBetween(oldXML, "<boNotes>", "</boNotes>");
@@ -308,7 +334,74 @@ public class MaintainableXMLConversionServiceImpl {
             NodeList matchingNodes = (NodeList)personProperties.evaluate( doc, XPathConstants.NODESET );
             for(int i = 0; i < matchingNodes.getLength(); i++) {
                 Node tempNode = matchingNodes.item(i);
-				LOGGER.info("Migrating PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				LOGGER.trace("Migrating PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				// first, migrate address pieces to an EntityAddress node
+				NodeList childNodes = tempNode.getChildNodes();
+				String line1 = null, line2 = null, line3 = null, city = null, stateProvinceCode = null,
+						postalCode = null, countryCode = null;
+				for (int j = 0; j < childNodes.getLength(); j++) {
+					Node child = childNodes.item(j);
+					// FIXME magic strings
+					if (child.getNodeName().equals("addressLine1")) {
+						line1 = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressLine2")) {
+						line2 = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressLine3")) {
+						line3 = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressCityName")) {
+						city = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressStateCode")) {
+						stateProvinceCode = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressPostalCode")) {
+						postalCode = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressCountryCode")) {
+						countryCode = child.getTextContent();
+						tempNode.removeChild(child);
+					}
+				}
+				Node entityAddress = doc.createElement("org.kuali.rice.kim.api.identity.address.EntityAddress");
+				Node line1Node = doc.createElement("line1");
+				line1Node.setTextContent(line1);
+				entityAddress.appendChild(line1Node);
+
+				Node line2Node = doc.createElement("line2");
+				line2Node.setTextContent(line2);
+				entityAddress.appendChild(line2Node);
+
+				Node line3Node = doc.createElement("line3");
+				line3Node.setTextContent(line3);
+				entityAddress.appendChild(line3Node);
+
+				Node cityNode = doc.createElement("city");
+				cityNode.setTextContent(city);
+				entityAddress.appendChild(cityNode);
+
+				Node stateProvinceCodeNode = doc.createElement("stateProvinceCode");
+				stateProvinceCodeNode.setTextContent(stateProvinceCode);
+				entityAddress.appendChild(stateProvinceCodeNode);
+
+				Node postalCodeNode = doc.createElement("postalCode");
+				postalCodeNode.setTextContent(postalCode);
+				entityAddress.appendChild(postalCodeNode);
+
+				Node countryCodeNode = doc.createElement("countryCode");
+				countryCodeNode.setTextContent(countryCode);
+				entityAddress.appendChild(countryCodeNode);
+
+				tempNode.appendChild(entityAddress);
+
 				String newClassName = this.classNameRuleMap.get(personImplClassName);
 				Node classAttr = tempNode.getAttributes().getNamedItem("class");
 				classAttr.setNodeValue(newClassName);
@@ -351,9 +444,35 @@ public class MaintainableXMLConversionServiceImpl {
 			NodeList matchingNodes = (NodeList) personProperties.evaluate(doc, XPathConstants.NODESET);
 			for (int i = 0; i < matchingNodes.getLength(); i++) {
 				Node tempNode = matchingNodes.item(i);
-				LOGGER.info("Migrating KualiCodeBase node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				LOGGER.trace("Migrating KualiCodeBase node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
 				String newClassName = this.classNameRuleMap.get(kualiCodeBaseClassName);
 				doc.renameNode(tempNode, null, newClassName);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+
+	public void migrateAccountExtensionObjects(Document doc) {
+		// FIXME all sorts of magic strings
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression accountExtensionProperties = null;
+		try {
+			accountExtensionProperties = xpath
+					.compile("//*[@class='edu.arizona.kfs.coa.businessobject.AccountExtension']");
+			NodeList matchingNodes = (NodeList) accountExtensionProperties.evaluate(doc, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.trace(
+						"Migrating AccountExtension node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				// migrate taxRegionCodeExt -> taxRegionCode
+				NodeList children = tempNode.getChildNodes();
+				for (int j = 0; j < children.getLength(); j++) {
+					Node child = children.item(j);
+					if (child.getNodeName().equals("taxRegionCodeExt")) {
+						doc.renameNode(child, null, "taxRegionCode");
+					}
+				}
 			}
 		} catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);
