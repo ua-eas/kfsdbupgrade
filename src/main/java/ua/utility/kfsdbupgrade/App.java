@@ -852,40 +852,6 @@ public class App {
     }
 
 	/**
-	 * @return {@link Connection} to the database with the URL of
-	 *         <code>legacy-database-url</code> in this {@link App}s
-	 *         {@link Properties} . Uses the <code>legacy-database-user</code>,
-	 *         <code>legacy-database-password</code>,
-	 *         <code>legacy-database-name</code>, and
-	 *         <code>legacy-database-driver</code> {@link Properties} entries
-	 *         for connection details. Read-only and auto-commit for the
-	 *         {@link Connection} are both set to <code>false</code>.
-	 * @throws Exception
-	 *             Any {@link Exception}s encountered will be rethrown.
-	 */
-    private Connection getLegacyConnection() throws Exception {
-        Connection retval = null;
-        String url = properties.getProperty("legacy-database-url");
-
-        Properties props = new Properties();
-        props.setProperty("user", properties.getProperty("legacy-database-user"));
-        props.setProperty("password", properties.getProperty("legacy-database-password"));
-
-		LOGGER.info("Connecting to db " + properties.getProperty("legacy-database-name") + "...");
-		LOGGER.info("url=" + url);
-
-        Class.forName(properties.getProperty("legacy-database-driver"));
-        retval = DriverManager.getConnection(url, props);
-        retval.setReadOnly(false);
-        retval.setAutoCommit(false);
-
-		LOGGER.info("connected to database " + properties.getProperty("legacy-database-name"));
-
-        return retval;
-
-    }
-
-	/**
 	 * Wrapper to do exception handling around closing database objects.
 	 * 
 	 * @param conn
@@ -2036,17 +2002,16 @@ public class App {
 	 */
     private void updatePurchasingStatuses(Connection upgradeConn) {
 		logHeader2("Updating purchasing statuses.");
-        Connection legacyConn = null;
         Statement legacyStmt = null;
         ResultSet legacyRes = null;
         PreparedStatement upgradeStmt1 = null;
         PreparedStatement upgradeStmt2 = null;
         try {
             // load status names from legacy status tables
-            legacyConn = getLegacyConnection();
-            legacyStmt = legacyConn.createStatement();
+			legacyStmt = upgradeConn.createStatement();
 
-            legacyRes = legacyStmt.executeQuery("select CRDT_MEMO_STAT_CD, CRDT_MEMO_STAT_DESC from AP_CRDT_MEMO_STAT_T");
+			legacyRes = legacyStmt
+					.executeQuery("select CRDT_MEMO_STAT_CD, CRDT_MEMO_STAT_DESC from DEPR_AP_CRDT_MEMO_STAT_T");
 
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_CRDT_MEMO_T where DEPR_CRDT_MEMO_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from AP_CRDT_MEMO_T where DEPR_CRDT_MEMO_STAT_CD = ?)");
@@ -2068,7 +2033,8 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
-            legacyRes = legacyStmt.executeQuery("select PMT_RQST_STAT_CD, PMT_RQST_STAT_DESC from AP_PMT_RQST_STAT_T");
+			legacyRes = legacyStmt
+					.executeQuery("select PMT_RQST_STAT_CD, PMT_RQST_STAT_DESC from DEPR_AP_PMT_RQST_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
             while (legacyRes.next()) {
@@ -2089,7 +2055,7 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
-            legacyRes = legacyStmt.executeQuery("select PO_STAT_CD, PO_STAT_DESC from PUR_PO_STAT_T");
+			legacyRes = legacyStmt.executeQuery("select PO_STAT_CD, PO_STAT_DESC from DEPR_PUR_PO_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
             while (legacyRes.next()) {
@@ -2110,7 +2076,8 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
-            legacyRes = legacyStmt.executeQuery("select RCVNG_LN_STAT_CD, RCVNG_LN_STAT_DESC from PUR_RCVNG_LN_STAT_T");
+			legacyRes = legacyStmt
+					.executeQuery("select RCVNG_LN_STAT_CD, RCVNG_LN_STAT_DESC from DEPR_PUR_RCVNG_LN_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
             while (legacyRes.next()) {
@@ -2131,7 +2098,7 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
-            legacyRes = legacyStmt.executeQuery("select REQS_STAT_CD, REQS_STAT_DESC from PUR_REQS_STAT_T");
+			legacyRes = legacyStmt.executeQuery("select REQS_STAT_CD, REQS_STAT_DESC from DEPR_PUR_REQS_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
             while (legacyRes.next()) {
@@ -2157,7 +2124,7 @@ public class App {
             } catch (Exception ex2) {
             };
         } finally {
-            closeDbObjects(legacyConn, legacyStmt, legacyRes);
+			closeDbObjects(null, legacyStmt, legacyRes);
             closeDbObjects(null, upgradeStmt1, null);
             closeDbObjects(null, upgradeStmt2, null);
         }
