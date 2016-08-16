@@ -182,40 +182,16 @@ public class MaintainableXMLConversionServiceImpl {
 		}
 
         for(Node childNode = document.getFirstChild(); childNode != null;) {
-			/*
-			 * TODO investigate; this doesn't appear that depth would be
-			 * traversed... Adding logging statement before return to see if
-			 * replacement classes are missed.
-			 * 
-			 */
-			/*
-			 * FIXME this traversal logic is all over the place, probably
-			 * missing a lot more than we think, evaluate. Others appear to
-			 * traverse depth via recursion
-			 */
-			/*
-			 * If this node has a child, it's the next node to process.
-			 * Otherwise, get the next sibling. If there is no next sibling,
-			 * back up the tree to the parent.
-			 */
-			/*
-			 * started hitting a bunch of not-ignored classes in the full xml
-			 * traversal, so backing out and dealing with migrating PersonImpl
-			 * and KualiCodeBase individually
-			 */
-			// TODO clean up commented out code
-			// Node nextChild = childNode.getFirstChild();
-			// if (nextChild == null) {
-			// nextChild = childNode.getNextSibling();
-			// }
-			// if (nextChild == null) {
-			// nextChild = childNode.getParentNode();
-			// }
 			Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
             childNode = nextChild;
         }
 
+		/*
+		 * the default logic that traverses over the document tree doesn't
+		 * handle classes that are in an @class attribute, so we deal with those
+		 * individually.
+		 */
 		migratePersonObjects(document);
 		migrateKualiCodeBaseObjects(document);
 		migrateAccountExtensionObjects(document);
@@ -239,7 +215,7 @@ public class MaintainableXMLConversionServiceImpl {
 		xml = xml + "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">" + maintenanceAction + "</"
 				+ MAINTENANCE_ACTION_ELEMENT_NAME + ">";
 
-		// TODO remove investigative logging
+		// investigative logging, still useful as a smoke test
 		for (String oldClassName : classNameRuleMap.keySet()) {
 			if (xml.contains(oldClassName)) {
 				LOGGER.warn("Document has classname in contents that should have been mapped: " + oldClassName);
@@ -264,7 +240,7 @@ public class MaintainableXMLConversionServiceImpl {
 			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
 			for (int i = 0; i < matchingNodes.getLength(); i++) {
 				String className = matchingNodes.item(i).getAttributes().getNamedItem("class").getTextContent();
-				LOGGER.info("In element " + matchingNodes.item(i).getNodeName() + " @class attribute of " + className);
+				LOGGER.trace("In element " + matchingNodes.item(i).getNodeName() + " @class attribute of " + className);
 			}
 		} catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);
@@ -309,14 +285,6 @@ public class MaintainableXMLConversionServiceImpl {
 	 * @param doc
 	 */
     public void migratePersonObjects( Document doc ) {
-		/*
-		 * FIXME evaluate this method...
-		 * class='org.kuali.rice.kim.impl.identity.PersonImpl' is a replacement
-		 * class for class='org.kuali.rice.kim.bo.impl.PersonImpl', so there
-		 * shouldn't be any instances of this 'new' class yet. Why is this
-		 * method here? Was it some kind of cleanup in between runs while
-		 * testing?
-		 */
         XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression personProperties = null;
         try {
@@ -419,14 +387,6 @@ public class MaintainableXMLConversionServiceImpl {
 	 * @param doc
 	 */
 	public void migrateKualiCodeBaseObjects(Document doc) {
-		/*
-		 * FIXME evaluate this method...
-		 * class='org.kuali.rice.kim.impl.identity.PersonImpl' is a replacement
-		 * class for class='org.kuali.rice.kim.bo.impl.PersonImpl', so there
-		 * shouldn't be any instances of this 'new' class yet. Why is this
-		 * method here? Was it some kind of cleanup in between runs while
-		 * testing?
-		 */
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		XPathExpression personProperties = null;
 		try {
@@ -453,6 +413,11 @@ public class MaintainableXMLConversionServiceImpl {
 		}
 	}
 
+	/**
+	 * TODO comment
+	 * 
+	 * @param doc
+	 */
 	public void migrateAccountExtensionObjects(Document doc) {
 		// FIXME all sorts of magic strings
 		XPath xpath = XPathFactory.newInstance().newXPath();
@@ -508,13 +473,6 @@ public class MaintainableXMLConversionServiceImpl {
 			className = newClassName;
 		}
 
-		/*
-		 * FIXME submethod transformNode recurses over children, this method
-		 * does not, so only top-level class is transformed. Need to potentially
-		 * transform classes of children. For now, handling by traversing tree
-		 * in calling method, however this has the unintended side effect of
-		 * recursing over each element in this submethod as well....
-		 */
         if (isValidClass(className)) {
             Class<?> dataObjectClass = Class.forName(className);
 
