@@ -49,23 +49,61 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
     
 public class MaintainableXMLConversionServiceImpl {
+	private static final Logger LOGGER = Logger.getLogger(MaintainableXMLConversionServiceImpl.class);
 	private static final String SERIALIZATION_ATTRIBUTE = "serialization";
 	private static final String CLASS_ATTRIBUTE = "class";
 	private static final String MAINTENANCE_ACTION_ELEMENT_NAME = "maintenanceAction";
     private static final String OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME = "oldMaintainableObject";
     private static final String NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME = "newMaintainableObject";
 
+	/**
+	 * Populated by the <code>pattern</code> elements in the <code>rule</code>
+	 * named <code>maint_doc_classname_changes</code> in {@link #rulesXmlFile}.
+	 * See the {@link #rulesXmlFile} for more detail.
+	 */
     private Map<String, String> classNameRuleMap;
+	/**
+	 * Populated by the <code>pattern</code> elements in the <code>rule</code>
+	 * named <code>maint_doc_changed_class_properties</code> in
+	 * {@link #rulesXmlFile}. {@link #setupConfigurationMaps()} also
+	 * pre-populates with some values that are applicable to all BOs. See the
+	 * {@link #rulesXmlFile} for more detail.
+	 */
 	private Map<String, Map<String, String>> classPropertyRuleMap;
+	/**
+	 * Populated by the <code>pattern</code> elements in the <code>rule</code>
+	 * named <code>maint_doc_date_changes</code> in {@link #rulesXmlFile}. See
+	 * the {@link #rulesXmlFile} for more detail.
+	 */
     private Map<String, String> dateRuleMap;
-    private File rulesXmlFile;
+	/**
+	 * {@link File} containing the rule maps that will be used to transform the
+	 * maintainable document XML.
+	 */
+	private final File rulesXmlFile;
+	/**
+	 * {@link Set} of {@link String}s representing classnames to ignore during
+	 * transformation. Values are hardcoded and passed in during construction.
+	 */
     private Set<String> ignoreClassSet = new HashSet<String>();
+	/**
+	 * If a {@link String} classname that begins with <code>edu.arizona</code>
+	 * or <code>com.rsmart</code> is encountered in {@link #isValidClass(Class)}
+	 * , that classname will be added to this {@link Set}. If it's the first
+	 * time such a class has been encountered, it will be logged that that class
+	 * is being skipped by processing.
+	 */
     private Set <String> uaMaintenanceDocClasses = new HashSet <String>();
     
+	/**
+	 * Constructor
+	 * 
+	 * @param rulesXmlFile
+	 *            Value for {@link #rulesXmlFile}
+	 */
 	public MaintainableXMLConversionServiceImpl(File rulesXmlFile) {
         this.rulesXmlFile = rulesXmlFile;
         
@@ -78,8 +116,21 @@ public class MaintainableXMLConversionServiceImpl {
         // in this context (no spring). The classes are relatively simple so bypassing them should not be an issue
         ignoreClassSet.add("org.kuali.kfs.coa.businessobject.IndirectCostRecoveryRate");
         ignoreClassSet.add("org.kuali.kfs.module.purap.businessobject.PurchaseOrderContractLanguage");
+
+		// ignore the builtin xml #text
+		ignoreClassSet.add("#text");
      }
 
+	/**
+	 * Transforms the given <code>xml</code> that is in KFS3 format to KFS6
+	 * format.
+	 * 
+	 * @param xml
+	 *            {@link String} of the XML to transform
+	 * @return {@link String} of the transformed XML
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown
+	 */
 	public String transformMaintainableXML(String xml) throws Exception {
 	    String beginning = StringUtils.substringBefore(xml, "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String oldMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
@@ -96,6 +147,16 @@ public class MaintainableXMLConversionServiceImpl {
         return convertedXML;
 	}
 
+	/**
+	 * Transforms the given <code>xml</code> section from KFS3 format to KFS6
+	 * format.
+	 * 
+	 * @param xml
+	 *            {@link String} of the XML to transform
+	 * @return {@link String} of the transformed XML
+	 * @throws Exception
+	 *             Any {@link Exception}s encountered will be rethrown.
+	 */
     private String transformSection(String xml) throws Exception {
     	String rawXml = xml;
         String maintenanceAction = StringUtils.substringBetween(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">", "</" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
@@ -117,16 +178,23 @@ public class MaintainableXMLConversionServiceImpl {
 			String exMsg = "Failed in db.parse(new InputSource(new StringReader(xml))) where xml=" + xml + eol + 
 					       "of maintenanceAction = " +  maintenanceAction + eol +
 					       "contained in rawXml = " +  rawXml;									
-			throw new SAXParseException(exMsg, (Locator) ex);
+			throw new SAXParseException(exMsg, null, ex);
 		}
 
-        removePersonObjects(document);
-
         for(Node childNode = document.getFirstChild(); childNode != null;) {
-            Node nextChild = childNode.getNextSibling();
+			Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
             childNode = nextChild;
         }
+
+		/*
+		 * the default logic that traverses over the document tree doesn't
+		 * handle classes that are in an @class attribute, so we deal with those
+		 * individually.
+		 */
+		migratePersonObjects(document);
+		migrateKualiCodeBaseObjects(document);
+		migrateAccountExtensionObjects(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer trans = transFactory.newTransformer();
@@ -137,22 +205,62 @@ public class MaintainableXMLConversionServiceImpl {
         StreamResult result = new StreamResult(writer);
         DOMSource source = new DOMSource(document);
         trans.transform(source, result);
+		/*
+		 * (?m) puts the regex into multiline mode:
+		 * https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.
+		 * html#MULTILINE So the effect of this statement is
+		 * "remove any empty lines"
+		 */
         xml = writer.toString().replaceAll("(?m)^\\s+\\n", "");
+		xml = xml + "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">" + maintenanceAction + "</"
+				+ MAINTENANCE_ACTION_ELEMENT_NAME + ">";
 
-        return xml + "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">" + maintenanceAction + "</" + MAINTENANCE_ACTION_ELEMENT_NAME + ">";
+		// investigative logging, still useful as a smoke test
+		for (String oldClassName : classNameRuleMap.keySet()) {
+			if (xml.contains(oldClassName)) {
+				LOGGER.warn("Document has classname in contents that should have been mapped: " + oldClassName);
+			}
+		}
+		checkForElementsWithClassAttribute(document);
+		return xml;
     }
 
 
     /**
-     * Upgrades the old Bo notes tag that was part of the maintainable to the new notes tag.
-     *
-     * @param oldXML - the xml to upgrade
-     * @throws Exception
-     */
+	 * Investigative logging. Log if there are any elements with an \@class
+	 * attribute
+	 * 
+	 * @param document
+	 */
+	private void checkForElementsWithClassAttribute(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//*[@class]");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				String className = matchingNodes.item(i).getAttributes().getNamedItem("class").getTextContent();
+				LOGGER.trace("In element " + matchingNodes.item(i).getNodeName() + " @class attribute of " + className);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+
+	}
+
+	/**
+	 * Upgrades the old Bo notes tag that was part of the maintainable to the
+	 * new notes tag.
+	 *
+	 * @param oldXML
+	 *            - the xml to upgrade
+	 * @throws Exception
+	 */
     private String upgradeBONotes(String oldXML) throws Exception {
         // Get the old bo note xml
         String notesXml = StringUtils.substringBetween(oldXML, "<boNotes>", "</boNotes>");
         if (notesXml != null) {
+			LOGGER.trace("BO Notes present, upgrading.");
             notesXml = notesXml.replace("org.kuali.rice.kns.bo.Note", "org.kuali.rice.krad.bo.Note");
             notesXml = "<org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl>\n"
                     + notesXml
@@ -169,23 +277,196 @@ public class MaintainableXMLConversionServiceImpl {
         return oldXML;
     }
 
-    public void removePersonObjects( Document doc ) {
+	/**
+	 * Migrate any elements with the <code>class</code> containing
+	 * <code>PersonImpl</code> from the provided {@link Document} if there is a
+	 * mapping in {@link #classNameRuleMap}.
+	 * 
+	 * @param doc
+	 */
+    public void migratePersonObjects( Document doc ) {
         XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression personProperties = null;
         try {
-            personProperties = xpath.compile("//*[@class='org.kuali.rice.kim.impl.identity.PersonImpl']");
+			String personImplClassName = null;
+			for (String key : classNameRuleMap.keySet()) {
+				if (key.endsWith("PersonImpl")) {
+					personImplClassName = key;
+				}
+			}
+			// if no mapping, nothing to do here
+			if (personImplClassName == null) {
+				return;
+			}
+			personProperties = xpath.compile("//*[@class='" + personImplClassName + "']");
             NodeList matchingNodes = (NodeList)personProperties.evaluate( doc, XPathConstants.NODESET );
             for(int i = 0; i < matchingNodes.getLength(); i++) {
                 Node tempNode = matchingNodes.item(i);
-                tempNode.getParentNode().removeChild(tempNode);
+				LOGGER.trace("Migrating PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				// first, migrate address pieces to an EntityAddress node
+				NodeList childNodes = tempNode.getChildNodes();
+				String line1 = null, line2 = null, line3 = null, city = null, stateProvinceCode = null,
+						postalCode = null, countryCode = null;
+				for (int j = 0; j < childNodes.getLength(); j++) {
+					Node child = childNodes.item(j);
+					// FIXME magic strings
+					if (child.getNodeName().equals("addressLine1")) {
+						line1 = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressLine2")) {
+						line2 = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressLine3")) {
+						line3 = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressCityName")) {
+						city = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressStateCode")) {
+						stateProvinceCode = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressPostalCode")) {
+						postalCode = child.getTextContent();
+						tempNode.removeChild(child);
+						continue;
+					} else if (child.getNodeName().equals("addressCountryCode")) {
+						countryCode = child.getTextContent();
+						tempNode.removeChild(child);
+					}
+				}
+				Node entityAddress = doc.createElement("org.kuali.rice.kim.api.identity.address.EntityAddress");
+				Node line1Node = doc.createElement("line1");
+				line1Node.setTextContent(line1);
+				entityAddress.appendChild(line1Node);
+
+				Node line2Node = doc.createElement("line2");
+				line2Node.setTextContent(line2);
+				entityAddress.appendChild(line2Node);
+
+				Node line3Node = doc.createElement("line3");
+				line3Node.setTextContent(line3);
+				entityAddress.appendChild(line3Node);
+
+				Node cityNode = doc.createElement("city");
+				cityNode.setTextContent(city);
+				entityAddress.appendChild(cityNode);
+
+				Node stateProvinceCodeNode = doc.createElement("stateProvinceCode");
+				stateProvinceCodeNode.setTextContent(stateProvinceCode);
+				entityAddress.appendChild(stateProvinceCodeNode);
+
+				Node postalCodeNode = doc.createElement("postalCode");
+				postalCodeNode.setTextContent(postalCode);
+				entityAddress.appendChild(postalCodeNode);
+
+				Node countryCodeNode = doc.createElement("countryCode");
+				countryCodeNode.setTextContent(countryCode);
+				entityAddress.appendChild(countryCodeNode);
+
+				tempNode.appendChild(entityAddress);
+
+				String newClassName = this.classNameRuleMap.get(personImplClassName);
+				Node classAttr = tempNode.getAttributes().getNamedItem("class");
+				classAttr.setNodeValue(newClassName);
             }
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+			LOGGER.error("XPathException encountered: ", e);
         }
     }
 
+	/**
+	 * Migrate any elements with the <code>class</code> containing
+	 * <code>KualiCodeBase</code> from the provided {@link Document} if there is
+	 * a mapping in {@link #classNameRuleMap}.
+	 * 
+	 * @param doc
+	 */
+	public void migrateKualiCodeBaseObjects(Document doc) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression personProperties = null;
+		try {
+			String kualiCodeBaseClassName = null;
+			for (String key : classNameRuleMap.keySet()) {
+				if (key.endsWith("KualiCodeBase")) {
+					kualiCodeBaseClassName = key;
+				}
+			}
+			// if no mapping, nothing to do here
+			if (kualiCodeBaseClassName == null) {
+				return;
+			}
+			personProperties = xpath.compile("//*[@class='" + kualiCodeBaseClassName + "']");
+			NodeList matchingNodes = (NodeList) personProperties.evaluate(doc, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.trace("Migrating KualiCodeBase node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				String newClassName = this.classNameRuleMap.get(kualiCodeBaseClassName);
+				doc.renameNode(tempNode, null, newClassName);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+
+	/**
+	 * TODO comment
+	 * 
+	 * @param doc
+	 */
+	public void migrateAccountExtensionObjects(Document doc) {
+		// FIXME all sorts of magic strings
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression accountExtensionProperties = null;
+		try {
+			accountExtensionProperties = xpath
+					.compile("//*[@class='edu.arizona.kfs.coa.businessobject.AccountExtension']");
+			NodeList matchingNodes = (NodeList) accountExtensionProperties.evaluate(doc, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.trace(
+						"Migrating AccountExtension node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				// migrate taxRegionCodeExt -> taxRegionCode
+				NodeList children = tempNode.getChildNodes();
+				for (int j = 0; j < children.getLength(); j++) {
+					Node child = children.item(j);
+					if (child.getNodeName().equals("taxRegionCodeExt")) {
+						doc.renameNode(child, null, "taxRegionCode");
+					}
+				}
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+
+	/**
+	 * If a mapping for the <code>node</code> class exists in
+	 * {@link #classNameRuleMap}, the given <code>node</code> is renamed. Then,
+	 * if the <code>node</code> is a valid class, it is passed to the
+	 * {@link #transformNode(Document, Node, Class, Map)} method first with the
+	 * {@link #classPropertyRuleMap} value for the classname, then with the
+	 * {@link #classPropertyRuleMap} value for "<code>*</code>".
+	 * 
+	 * @param document
+	 *            Root level {@link Document}
+	 * @param node
+	 *            {@link Node} to transform
+	 * @throws ClassNotFoundException
+	 * @throws XPathExpressionException
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws InstantiationException
+	 */
     private void transformClassNode(Document document, Node node) throws ClassNotFoundException, XPathExpressionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+
 		String className = node.getNodeName();
+		LOGGER.trace("Transforming class node for : " + node.getBaseURI() + "/" + className);
 		if(this.classNameRuleMap.containsKey(className)) {
 			String newClassName = this.classNameRuleMap.get(className);
 			document.renameNode(node, null, newClassName);
@@ -203,9 +484,39 @@ public class MaintainableXMLConversionServiceImpl {
         }
 	}
 
+	/**
+	 * Does the following:
+	 * <ol>
+	 * <li>Recursively calls this method on all child elements of
+	 * <code>talist</code> to handle any child lists first
+	 * <li>Remove the attributes {@link #SERIALIZATION_ATTRIBUTE} and
+	 * {@link #CLASS_ATTRIBUTE} of <code>talist</code></li>
+	 * <li>If
+	 * <code>//[talist.getNodeName()]/org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl/default/size/</code>
+	 * evaluates to a value >1, indicating elements in this list, call
+	 * {@link #transformClassNode(Document, Node)} on that element and store to
+	 * readd</li>
+	 * <li>Remove all child elements of <code>talist</code></li>
+	 * <li>Readd list elements calculated and transformed above</li>
+	 * </ol>
+	 * 
+	 * @param document
+	 *            Root {@link Document}
+	 * @param xpath
+	 *            {@link XPath} to use during evaluation
+	 * @param talist
+	 *            {@link Element} to process typed array lists on
+	 * @throws XPathExpressionException
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws InstantiationException
+	 */
     private void handleTypedArrayList(Document document, XPath xpath , Element talist) throws XPathExpressionException, ClassNotFoundException, IllegalAccessException, InvocationTargetException, InvocationTargetException, NoSuchMethodException, InstantiationException {
         NodeList nodeList = talist.getElementsByTagName(talist.getNodeName());
-        
+		LOGGER.trace("Handling typed array list: " + talist.getBaseURI());
         // handle any child lists first
         for (int i = 0; i < nodeList.getLength(); ++i) {
             handleTypedArrayList(document, xpath , (Element)nodeList.item(i));
@@ -237,7 +548,22 @@ public class MaintainableXMLConversionServiceImpl {
         }
     }
     
+	/**
+	 * For each child of <code>node</code>
+	 * 
+	 * @param document
+	 * @param node
+	 * @param currentClass
+	 * @param propertyMappings
+	 * @throws ClassNotFoundException
+	 * @throws XPathExpressionException
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws InstantiationException
+	 */
 	private void transformNode(Document document, Node node, Class<?> currentClass, Map<String, String> propertyMappings) throws ClassNotFoundException, XPathExpressionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+		LOGGER.trace("Transforming node: " + node.getBaseURI() + "/" + node.getNodeName());
 		for(Node childNode = node.getFirstChild(); childNode != null;) {
 			Node nextChild = childNode.getNextSibling();
 			String propertyName = childNode.getNodeName();
@@ -248,33 +574,6 @@ public class MaintainableXMLConversionServiceImpl {
 					Node classAttribute = childNode.getAttributes().getNamedItem(CLASS_ATTRIBUTE);
 					if(classAttribute != null && StringUtils.equals(classAttribute.getNodeValue(), "org.kuali.rice.kns.util.TypedArrayList")) {
                         handleTypedArrayList(document, xpath, (Element)childNode);
-/*
-                        
-                        ((Element)childNode).removeAttribute(SERIALIZATION_ATTRIBUTE);
-						((Element)childNode).removeAttribute(CLASS_ATTRIBUTE);
-						XPathExpression listSizeExpression = xpath.compile("//" + propertyName + "/org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl/default/size/text()");
-						String size = (String)listSizeExpression.evaluate(childNode, XPathConstants.STRING);
-						List<Node> nodesToAdd = new ArrayList<Node>();
-						if(StringUtils.isNotBlank(size) && Integer.valueOf(size) > 0) {
-							XPathExpression listTypeExpression = xpath.compile("//" + propertyName + "/org.kuali.rice.kns.util.TypedArrayList/default/listObjectType/text()");
-							String listType = (String)listTypeExpression.evaluate(childNode, XPathConstants.STRING);
-							XPathExpression listContentsExpression = xpath.compile("//" + propertyName + "/org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl/" + listType);
-							NodeList listContents = (NodeList)listContentsExpression.evaluate(childNode, XPathConstants.NODESET);
-							for(int i = 0; i < listContents.getLength(); i++) {
-								Node tempNode = listContents.item(i);
-								transformClassNode(document, tempNode);
-								nodesToAdd.add(tempNode);
-							}
-						}
-						for(Node removeNode = childNode.getFirstChild(); removeNode != null;) {
-							Node nextRemoveNode = removeNode.getNextSibling();
-							childNode.removeChild(removeNode);
-							removeNode = nextRemoveNode;
-						}
-						for(Node nodeToAdd : nodesToAdd) {
-							childNode.appendChild(nodeToAdd);
-						}
-                        */
 					} else {
 						((Element)childNode).removeAttribute(SERIALIZATION_ATTRIBUTE);
 						
@@ -342,16 +641,30 @@ public class MaintainableXMLConversionServiceImpl {
 		}
 	}
     
-    private boolean isValidClass(Class c) {
+	/**
+	 * Storefront to call {@link #isValidClass(String)} with
+	 * {@link Class#getName()}
+	 * 
+	 * @param c
+	 * @return value of {@link #isValidClass(String)} with
+	 *         {@link Class#getName()}
+	 */
+	private boolean isValidClass(Class<?> c) {
         return isValidClass(c.getName());
     }
 
+	/**
+	 * @param className
+	 *            {@link String} of a classname to check the validity of
+	 * @return <code>true</code> if <code>className</code> does NOT start with
+	 *         <code>edu.arizona</code> or <code>com.rsmart.</code>, and
+	 *         <code>className</code> is not in the {@link #ignoreClassSet}.
+	 */
     private boolean isValidClass(String className) {
         if (className.startsWith("edu.arizona") || className.startsWith("com.rsmart.")) {
             if (!uaMaintenanceDocClasses.contains(className)) {
                 uaMaintenanceDocClasses.add(className);
-				Logger.getLogger(MaintainableXMLConversionServiceImpl.class)
-						.info("non-kuali maintenance document class ignored - " + className);
+				LOGGER.info("non-kuali maintenance document class ignored - " + className);
             }
             return false;
         } else {
@@ -408,7 +721,11 @@ public class MaintainableXMLConversionServiceImpl {
             dateRuleMap.put(matchText, replaceText);
         }
 	}
-	
+
+	/**
+	 * Constructs the various instance variable maps and pre-populates
+	 * {@link #classPropertyRuleMap} with some values which apply to all BOs.
+	 */
 	private void setupConfigurationMaps() {
 		classNameRuleMap = new HashMap<String, String>();
 		classPropertyRuleMap = new HashMap<String, Map<String,String>>();
