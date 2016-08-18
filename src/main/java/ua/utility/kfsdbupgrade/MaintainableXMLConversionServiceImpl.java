@@ -44,12 +44,18 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.kuali.rice.kim.api.identity.address.EntityAddress;
+import org.kuali.rice.kim.impl.identity.address.EntityAddressBo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.DomWriter;
     
 public class MaintainableXMLConversionServiceImpl {
 	private static final Logger LOGGER = Logger.getLogger(MaintainableXMLConversionServiceImpl.class);
@@ -339,36 +345,18 @@ public class MaintainableXMLConversionServiceImpl {
 						tempNode.removeChild(child);
 					}
 				}
-				Node entityAddress = doc.createElement("org.kuali.rice.kim.api.identity.address.EntityAddress");
-				Node line1Node = doc.createElement("line1");
-				line1Node.setTextContent(line1);
-				entityAddress.appendChild(line1Node);
+				EntityAddressBo bo = new EntityAddressBo();
+				bo.setLine1(line1);
+				bo.setLine2(line2);
+				bo.setLine3(line3);
+				bo.setCity(city);
+				bo.setStateProvinceCode(stateProvinceCode);
+				bo.setPostalCode(postalCode);
+				bo.setCountryCode(countryCode);
+				EntityAddress address = EntityAddress.Builder.create(bo).build();
 
-				Node line2Node = doc.createElement("line2");
-				line2Node.setTextContent(line2);
-				entityAddress.appendChild(line2Node);
-
-				Node line3Node = doc.createElement("line3");
-				line3Node.setTextContent(line3);
-				entityAddress.appendChild(line3Node);
-
-				Node cityNode = doc.createElement("city");
-				cityNode.setTextContent(city);
-				entityAddress.appendChild(cityNode);
-
-				Node stateProvinceCodeNode = doc.createElement("stateProvinceCode");
-				stateProvinceCodeNode.setTextContent(stateProvinceCode);
-				entityAddress.appendChild(stateProvinceCodeNode);
-
-				Node postalCodeNode = doc.createElement("postalCode");
-				postalCodeNode.setTextContent(postalCode);
-				entityAddress.appendChild(postalCodeNode);
-
-				Node countryCodeNode = doc.createElement("countryCode");
-				countryCodeNode.setTextContent(countryCode);
-				entityAddress.appendChild(countryCodeNode);
-
-				tempNode.appendChild(entityAddress);
+				XStream xStream = new XStream(new DomDriver());
+				xStream.marshal(address, new DomWriter((Element) tempNode));
 
 				String newClassName = this.classNameRuleMap.get(personImplClassName);
 				Node classAttr = tempNode.getAttributes().getNamedItem("class");
