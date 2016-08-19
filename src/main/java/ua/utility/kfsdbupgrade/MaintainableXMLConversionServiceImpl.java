@@ -109,9 +109,11 @@ public class MaintainableXMLConversionServiceImpl {
 	 * 
 	 * @param rulesXmlFile
 	 *            Value for {@link #rulesXmlFile}
+	 * @throws Exception
 	 */
-	public MaintainableXMLConversionServiceImpl(File rulesXmlFile) {
+	public MaintainableXMLConversionServiceImpl(File rulesXmlFile) throws Exception {
         this.rulesXmlFile = rulesXmlFile;
+		setRuleMaps();
         
         ignoreClassSet.add("org.kuali.rice.kim.api.identity.Person");
         ignoreClassSet.add("org.kuali.rice.krad.bo.PersistableBusinessObjectExtension");
@@ -143,6 +145,15 @@ public class MaintainableXMLConversionServiceImpl {
         String newMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String ending = StringUtils.substringAfter(xml, "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
 
+		// quick hack to catch top-level class replacements
+		for (String className : classNameRuleMap.keySet()) {
+			if (beginning.contains("maintainableImplClass=\"" + className + "\"")) {
+				LOGGER.trace("Replacing top-level maintainableImplClass attribute: " + className + " with: "
+						+ classNameRuleMap.get(className));
+				beginning = beginning.replace("maintainableImplClass=\"" + className + "\"",
+					"maintainableImplClass=\"" + classNameRuleMap.get(className) + "\"");
+			}
+		}
         String convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
         String convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
 
@@ -201,6 +212,8 @@ public class MaintainableXMLConversionServiceImpl {
 		migratePersonObjects(document);
 		migrateKualiCodeBaseObjects(document);
 		migrateAccountExtensionObjects(document);
+		migrateClassAsAttribute(document);
+		removeAutoIncrementSetElements(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer trans = transFactory.newTransformer();
@@ -232,7 +245,109 @@ public class MaintainableXMLConversionServiceImpl {
     }
 
 
-    /**
+	/**
+	 * Migrate @class attributes which are missed by the main iteration
+	 * 
+	 * @param document
+	 */
+	private void migrateClassAsAttribute(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		for (String className : classNameRuleMap.keySet()) {
+			try {
+				String targetClassName = classNameRuleMap.get(className);
+				expr = xpath.compile("//*[@class='" + className + "']");
+				NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+				for (int i = 0; i < matchingNodes.getLength(); i++) {
+					Node classAttr = matchingNodes.item(i).getAttributes().getNamedItem("class");
+					classAttr.setNodeValue(targetClassName);
+					LOGGER.trace("In element " + matchingNodes.item(i).getNodeName() + " migrating @class attribute of "
+							+ className + " to " + targetClassName);
+				}
+			} catch (XPathExpressionException e) {
+				LOGGER.error("XPathException encountered: ", e);
+			}
+		}
+	}
+
+	/**
+	 * Migrate @maintainableImplClass attributes which are missed by the main
+	 * iteration
+	 * 
+	 * @param document
+	 */
+	/*
+	 * this has to be hacked around at the top-level before the DOM is even
+	 * created; leaving code in place to hopefully someday do this at the DOM
+	 * level
+	 */
+	@SuppressWarnings("unused")
+	private void migrateMaintainableImplClassAsAttribute(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		for (String className : classNameRuleMap.keySet()) {
+			try {
+				String targetClassName = classNameRuleMap.get(className);
+				expr = xpath.compile("//*[@maintainableImplClass='" + className + "']");
+				NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+				for (int i = 0; i < matchingNodes.getLength(); i++) {
+					Node classAttr = matchingNodes.item(i).getAttributes().getNamedItem("class");
+					classAttr.setNodeValue(targetClassName);
+					LOGGER.info("In element " + matchingNodes.item(i).getNodeName()
+							+ " migrating @maintainableImplClass attribute of "
+							+ className + " to " + targetClassName);
+				}
+			} catch (XPathExpressionException e) {
+				LOGGER.error("XPathException encountered: ", e);
+			}
+		}
+	}
+
+	/*
+	 * main traversal not finding and removing all autoIncrementSet elements, so
+	 * cleaning up after it. TODO remove this method once main traversal is
+	 * fixed
+	 */
+	private void removeAutoIncrementSetElements(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//autoIncrementSet");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node match = matchingNodes.item(i);
+				Node parent = match.getParentNode();
+				LOGGER.trace("Removing element 'autoIncrementSet' in " + parent.getNodeName());
+				parent.removeChild(match);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	/*
+	 * used when debugging, might need to re-enable, not throwing away code just
+	 * yet
+	 */
+	private void removeAssetExtensionElements(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//*[@class='edu.arizona.kfs.module.cam.businessobject.AssetExtension']");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node match = matchingNodes.item(i);
+				Node parent = match.getParentNode();
+				LOGGER.info("Removing element 'edu.arizona.kfs.module.cam.businessobject.AssetExtension' in "
+						+ parent.getNodeName());
+				parent.removeChild(match);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+	/**
 	 * Investigative logging. Log if there are any elements with an \@class
 	 * attribute
 	 * 
@@ -272,12 +387,13 @@ public class MaintainableXMLConversionServiceImpl {
                     + notesXml
                     + "\n</org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl>";
             
-            int pos1 = oldXML.indexOf("<boNotes>");
-            int pos2 = oldXML.indexOf("</boNotes>", pos1);
-            
-            if ((pos1 > -1) && (pos2 > pos1)) {
-                oldXML = (oldXML.substring(0, pos1) + ">\n<notes>\n" + notesXml + "\n</notes>" + oldXML.substring(pos2 + "</boNotes>".length()));
-            }
+			int pos1 = oldXML.indexOf("<boNotes>");
+			int pos2 = oldXML.indexOf("</boNotes>", pos1);
+
+			if ((pos1 > -1) && (pos2 > pos1)) {
+				oldXML = (oldXML.substring(0, pos1) + ">\n<boNotes>\n" + notesXml + "\n</boNotes>"
+						+ oldXML.substring(pos2 + "</boNotes>".length()));
+			}
         }
         
         return oldXML;
@@ -345,19 +461,21 @@ public class MaintainableXMLConversionServiceImpl {
 						tempNode.removeChild(child);
 					}
 				}
-				EntityAddressBo bo = new EntityAddressBo();
-				bo.setLine1(line1);
-				bo.setLine2(line2);
-				bo.setLine3(line3);
-				bo.setCity(city);
-				bo.setStateProvinceCode(stateProvinceCode);
-				bo.setPostalCode(postalCode);
-				bo.setCountryCode(countryCode);
-				EntityAddress address = EntityAddress.Builder.create(bo).build();
+				if (!line1.isEmpty() || !line2.isEmpty() || !line3.isEmpty() || !city.isEmpty()
+						|| !stateProvinceCode.isEmpty() || !postalCode.isEmpty() || !countryCode.isEmpty()) {
+					EntityAddressBo bo = new EntityAddressBo();
+					bo.setLine1(line1);
+					bo.setLine2(line2);
+					bo.setLine3(line3);
+					bo.setCity(city);
+					bo.setStateProvinceCode(stateProvinceCode);
+					bo.setPostalCode(postalCode);
+					bo.setCountryCode(countryCode);
+					EntityAddress address = EntityAddress.Builder.create(bo).build();
 
-				XStream xStream = new XStream(new DomDriver());
-				xStream.marshal(address, new DomWriter((Element) tempNode));
-
+					XStream xStream = new XStream(new DomDriver());
+					xStream.marshal(address, new DomWriter((Element) tempNode));
+				}
 				String newClassName = this.classNameRuleMap.get(personImplClassName);
 				Node classAttr = tempNode.getAttributes().getNamedItem("class");
 				classAttr.setNodeValue(newClassName);

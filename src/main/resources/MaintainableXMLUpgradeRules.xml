@@ -380,6 +380,13 @@
         <replacement></replacement>
       </pattern>
     </pattern>
+    <pattern>
+      <class>org.kuali.kfs.cam.businessobject.Asset</class>
+      <pattern>
+        <match>boNotes</match>
+        <replacement></replacement>
+      </pattern>
+    </pattern>
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
