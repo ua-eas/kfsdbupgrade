@@ -461,8 +461,11 @@ public class MaintainableXMLConversionServiceImpl {
 						tempNode.removeChild(child);
 					}
 				}
-				if (!line1.isEmpty() || !line2.isEmpty() || !line3.isEmpty() || !city.isEmpty()
-						|| !stateProvinceCode.isEmpty() || !postalCode.isEmpty() || !countryCode.isEmpty()) {
+				if (!(line1 == null || line1.isEmpty()) || !(line2 == null || line2.isEmpty())
+						|| !(line3 == null || line3.isEmpty()) || !(city == null || city.isEmpty())
+						|| !(stateProvinceCode == null || stateProvinceCode.isEmpty())
+						|| !(postalCode == null || postalCode.isEmpty())
+						|| !(countryCode == null || countryCode.isEmpty())) {
 					EntityAddressBo bo = new EntityAddressBo();
 					bo.setLine1(line1);
 					bo.setLine2(line2);
