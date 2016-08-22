@@ -43,6 +43,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.kuali.rice.kim.api.identity.address.EntityAddress;
 import org.kuali.rice.kim.impl.identity.address.EntityAddressBo;
@@ -129,6 +130,11 @@ public class MaintainableXMLConversionServiceImpl {
 		ignoreClassSet.add("#text");
      }
 
+	public MaintainableXMLConversionServiceImpl(File rulesXmlFile, Level logLevel) throws Exception {
+		this(rulesXmlFile);
+		LOGGER.setLevel(logLevel);
+	}
+
 	/**
 	 * Transforms the given <code>xml</code> that is in KFS3 format to KFS6
 	 * format.
@@ -214,6 +220,7 @@ public class MaintainableXMLConversionServiceImpl {
 		migrateAccountExtensionObjects(document);
 		migrateClassAsAttribute(document);
 		removeAutoIncrementSetElements(document);
+		catchMissedTypedArrayListElements(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer trans = transFactory.newTransformer();
@@ -244,6 +251,37 @@ public class MaintainableXMLConversionServiceImpl {
 		return xml;
     }
 
+
+	/**
+	 * There is an edge case in the main traversal such that a TypedArrayList
+	 * element that is a child of a non-TypedArrayList element will be missed by
+	 * processing. The traversal logic is tangled to the point that (correctly)
+	 * fixing at that level will likely introduce more bugs, so doing cleanup
+	 * after the fact instead.
+	 * 
+	 * @param document
+	 * @throws InstantiationException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws ClassNotFoundException
+	 */
+	private void catchMissedTypedArrayListElements(Document document) throws ClassNotFoundException,
+			IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+		LOGGER.trace("Cleaning up missed org.kuali.rice.kns.util.TypedArrayList elements.");
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+
+		try {
+			expr = xpath.compile("//*[@class='org.kuali.rice.kns.util.TypedArrayList']");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				handleTypedArrayList(document, xpath, (Element) matchingNodes.item(i));
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
 
 	/**
 	 * Migrate @class attributes which are missed by the main iteration
@@ -624,11 +662,14 @@ public class MaintainableXMLConversionServiceImpl {
 	 * @throws InstantiationException
 	 */
     private void handleTypedArrayList(Document document, XPath xpath , Element talist) throws XPathExpressionException, ClassNotFoundException, IllegalAccessException, InvocationTargetException, InvocationTargetException, NoSuchMethodException, InstantiationException {
-        NodeList nodeList = talist.getElementsByTagName(talist.getNodeName());
-		LOGGER.trace("Handling typed array list: " + talist.getBaseURI());
+		LOGGER.trace("Handling typed array list: " + talist.getNodeName());
+		XPathExpression getChildTypedArrayLists = xpath
+				.compile(".//*[@class='org.kuali.rice.kns.util.TypedArrayList']");
+		NodeList nodeList = (NodeList) getChildTypedArrayLists.evaluate(talist, XPathConstants.NODESET);
         // handle any child lists first
         for (int i = 0; i < nodeList.getLength(); ++i) {
-            handleTypedArrayList(document, xpath , (Element)nodeList.item(i));
+			Node item = nodeList.item(i);
+			handleTypedArrayList(document, xpath, (Element) item);
         }
         
         talist.removeAttribute(SERIALIZATION_ATTRIBUTE);
