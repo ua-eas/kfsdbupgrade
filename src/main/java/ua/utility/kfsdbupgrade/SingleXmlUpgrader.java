@@ -3,6 +3,7 @@ package ua.utility.kfsdbupgrade;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class SingleXmlUpgrader {
@@ -13,7 +14,7 @@ public class SingleXmlUpgrader {
 		if (args.length != 2) {
 			LOGGER.fatal("Usage: Decrypter.jar encryptionKey fileToUpgrade.xml ");
 		}
-
+		LOGGER.setLevel(Level.TRACE);
 		String docNumber = args[1].split("-")[0];
 		// decrypt file, write to disk
 		EncryptionService encryptService = new EncryptionService(args[0]);
@@ -24,7 +25,7 @@ public class SingleXmlUpgrader {
 		// upgrade file
 		File f = new File("src/main/resources/MaintainableXMLUpgradeRules.xml");
 		MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
-				f);
+				f, Level.TRACE);
 		String newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(decrypted);
 		FileUtils.writeStringToFile(new File(docNumber + "-KFS6.xml"), newXml);
 
