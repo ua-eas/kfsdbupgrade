@@ -1905,14 +1905,19 @@ public class App {
 
             while (res.next()) {
                 pstmt.setString(1, res.getString(1));
-                pstmt.executeUpdate();
+				pstmt.addBatch();
 
                 if ((i % 10000) == 0) {
+					pstmt.executeBatch();
 					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
                 }
 
                 i++;
             }
+
+			// catch any straggler statements
+			pstmt.executeBatch();
+			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
 
             conn.commit();
         } catch (Exception ex) {
