@@ -402,6 +402,21 @@
         <replacement>crossOrganizationDescription</replacement>
       </pattern>
     </pattern>
+    <pattern>
+      <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>
+      <pattern>
+        <match>description</match>
+        <replacement>budgetShellDescription</replacement>
+      </pattern>
+      <pattern>
+        <match>code</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>name</match>
+        <replacement></replacement>
+      </pattern>
+    </pattern>
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
