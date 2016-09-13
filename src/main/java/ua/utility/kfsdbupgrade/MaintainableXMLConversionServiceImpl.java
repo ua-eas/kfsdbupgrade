@@ -327,7 +327,7 @@ public class MaintainableXMLConversionServiceImpl {
 							 * if map target is empty, remove the node.
 							 * Otherwise, rename to value.
 							 */
-							if (mapTo == null) {
+							if (mapTo == null || mapTo.isEmpty()) {
 								LOGGER.trace("Removing property " + propertyName);
 								propertyNodes.item(j).getParentNode().removeChild(propertyNodes.item(j));
 							} else {
