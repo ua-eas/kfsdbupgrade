@@ -329,7 +329,7 @@ public class MaintainableXMLConversionServiceImpl {
 							 */
 							if (mapTo == null) {
 								LOGGER.trace("Removing property " + propertyName);
-								matchingNodes.item(i).removeChild(propertyNodes.item(j));
+								propertyNodes.item(j).getParentNode().removeChild(propertyNodes.item(j));
 							} else {
 								LOGGER.trace("Renaming property " + propertyName + " to " + mapTo);
 								document.renameNode(propertyNodes.item(j), null, mapTo);
