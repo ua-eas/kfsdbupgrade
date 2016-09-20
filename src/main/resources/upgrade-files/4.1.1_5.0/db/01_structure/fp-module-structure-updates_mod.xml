@@ -345,7 +345,8 @@
             <column name="CARD_HLDR_WRK_PHN_NBR" type="VARCHAR2(10)" />
             <column name="CARD_LMT" type="NUMBER(19,2)" />
             <column name="CARD_CYCLE_AMT_LMT" type="NUMBER(19,2)" />
-            <column name="CARD_CYCLE_VOL_LMT" type="NUMBER(19,2)" />
+            <column name="CARD_CYCLE_VOL_LMT" type="NUMBER(12,0)" />
+            <column name="CARD_MONTHLY_NUMBER" type="number(12,0)"/>
             <column name="CARD_STAT_CD" type="VARCHAR2(2)" />
             <column name="CARD_NTE_TXT" type="VARCHAR2(50)" />
             <column name="FIN_COA_CD" type="VARCHAR2(2)" />
@@ -354,6 +355,13 @@
             <column name="FIN_OBJECT_CD" type="VARCHAR2(4)" />
             <column name="FIN_SUB_OBJ_CD" type="VARCHAR2(3)" />
             <column name="PROJECT_CD" type="VARCHAR2(10)" />
+            <column name="ORG_CD" type="varchar(4)"/>
+            <column name="CARD_HLDR_NET_ID" type="varchar(40)"/>
+            <column name="CARD_GRP_ID" type="varchar(40)"/>
+            <column name="CARD_CANCEL_CD" type="varchar(1)"/>
+            <column name="CARD_OPEN_DT" type="date"/>
+            <column name="CARD_CANCEL_DT" type="date"/>
+            <column name="CARD_EXPIRE_DT" type="date"/>
             <column name="ROW_ACTV_IND" type="VARCHAR2(1)" />
         </createTable>
 		<modifySql dbms='mysql'>
