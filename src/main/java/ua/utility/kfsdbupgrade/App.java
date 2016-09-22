@@ -2272,36 +2272,37 @@ public class App {
             sql.append("insert into fp_prcrmnt_card_dflt_t (");
             sql.append("ID,"); // 1
             sql.append("CC_NBR,"); // 2
-            sql.append("VER_NBR,"); // 3
-            sql.append("OBJ_ID,"); // 4
-            sql.append("CARD_HLDR_NM,"); // 5
-            sql.append("CARD_HLDR_ALTRNT_NM,"); // 6
-            sql.append("CARD_HLDR_LN1_ADDR,"); // 7
-            sql.append("CARD_HLDR_LN2_ADDR,"); // 8
-            sql.append("CARD_HLDR_CTY_NM,"); // 9
-            sql.append("CARD_HLDR_ST_CD,"); // 10
-            sql.append("CARD_HLDR_ZIP_CD,"); // 11
-            sql.append("CARD_HLDR_WRK_PHN_NBR,"); // 12
-            sql.append("CARD_LMT,"); // 13
-            sql.append("CARD_CYCLE_AMT_LMT,"); // 14
-            sql.append("CARD_CYCLE_VOL_LMT,"); // 15
-            sql.append("CARD_MONTHLY_NUMBER,"); // 16
-            sql.append("CARD_STAT_CD,"); // 17
-            sql.append("CARD_NTE_TXT,"); // 18
-            sql.append("FIN_COA_CD,"); // 19
-            sql.append("ACCOUNT_NBR,"); // 20
-            sql.append("SUB_ACCT_NBR,"); // 21
-            sql.append("FIN_OBJECT_CD,"); // 22
-            sql.append("FIN_SUB_OBJ_CD,"); // 23
-            sql.append("PROJECT_CD,"); // 24
-            sql.append("ORG_CD,"); // 25
-            sql.append("CARD_HLDR_NET_ID,"); // 26
-            sql.append("CARD_GRP_ID,"); // 27
-            sql.append("CARD_CANCEL_CD,"); // 28
-            sql.append("CARD_OPEN_DT,"); // 29
-            sql.append("CARD_CANCEL_DT,"); // 30
-            sql.append("CARD_EXPIRE_DT,"); // 31
-            sql.append("ROW_ACTV_IND"); // 32
+            sql.append("CC_LAST_FOUR,"); // 3
+            sql.append("VER_NBR,"); // 4
+            sql.append("OBJ_ID,"); // 5
+            sql.append("CARD_HLDR_NM,"); // 6
+            sql.append("CARD_HLDR_ALTRNT_NM,"); // 7
+            sql.append("CARD_HLDR_LN1_ADDR,"); // 8
+            sql.append("CARD_HLDR_LN2_ADDR,"); // 9
+            sql.append("CARD_HLDR_CTY_NM,"); // 10
+            sql.append("CARD_HLDR_ST_CD,"); // 11
+            sql.append("CARD_HLDR_ZIP_CD,"); // 12
+            sql.append("CARD_HLDR_WRK_PHN_NBR,"); // 13
+            sql.append("CARD_LMT,"); // 14
+            sql.append("CARD_CYCLE_AMT_LMT,"); // 15
+            sql.append("CARD_CYCLE_VOL_LMT,"); // 16
+            sql.append("CARD_MONTHLY_NUMBER,"); // 17
+            sql.append("CARD_STAT_CD,"); // 18
+            sql.append("CARD_NTE_TXT,"); // 19
+            sql.append("FIN_COA_CD,"); // 20
+            sql.append("ACCOUNT_NBR,"); // 21
+            sql.append("SUB_ACCT_NBR,"); // 22
+            sql.append("FIN_OBJECT_CD,"); // 23
+            sql.append("FIN_SUB_OBJ_CD,"); // 24
+            sql.append("PROJECT_CD,"); // 25
+            sql.append("ORG_CD,"); // 26
+            sql.append("CARD_HLDR_NET_ID,"); // 27
+            sql.append("CARD_GRP_ID,"); // 28
+            sql.append("CARD_CANCEL_CD,"); // 29
+            sql.append("CARD_OPEN_DT,"); // 30
+            sql.append("CARD_CANCEL_DT,"); // 31
+            sql.append("CARD_EXPIRE_DT,"); // 32
+            sql.append("ROW_ACTV_IND"); // 33
             sql.append(") values (FP_PRCRMNT_CARD_DFLT_SEQ.nextVal, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             pstmt = conn.prepareStatement(sql.toString());
@@ -2310,6 +2311,7 @@ public class App {
             sql.setLength(0);
             sql.append("select ");
             sql.append("CC_NBR,"); // 2
+            sql.append("CARD_APPROVE_OFFICIAL,"); // 2
             sql.append("VER_NBR,"); // 3
             sql.append("OBJ_ID,"); // 4
             sql.append("CARD_HLDR_NM,"); // 5
