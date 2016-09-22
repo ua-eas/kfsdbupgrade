@@ -388,21 +388,6 @@
       </pattern>
     </pattern>
     <pattern>
-      <class>edu.arizona.kfs.coa.businessobject.CrossOrganizationCode</class>
-      <pattern>
-        <match>boNotes</match>
-        <replacement></replacement>
-      </pattern>
-      <pattern>
-        <match>code</match>
-        <replacement>crossOrganizationCode</replacement>
-      </pattern>
-      <pattern>
-        <match>name</match>
-        <replacement>crossOrganizationDescription</replacement>
-      </pattern>
-    </pattern>
-    <pattern>
       <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>
       <pattern>
         <match>description</match>
