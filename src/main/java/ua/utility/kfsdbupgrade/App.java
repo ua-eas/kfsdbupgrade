@@ -468,7 +468,7 @@ public class App {
         if (!sqlStatements.isEmpty()) {
             for (String sql : sqlStatements) {
 				LOGGER.info("Executing sql: " + sql);
-                if (!executeSql(conn, stmt, sql)) {
+				if (!executeSql(conn, stmt, sql)) {
                     retval = false;
                     break;
                 }

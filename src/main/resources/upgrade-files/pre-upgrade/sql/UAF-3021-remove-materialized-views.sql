@@ -1,1 +1,1 @@
-exec mv_replicate.remove_mv('KULOWNER','Y')
+call mv_replicate.remove_mv('KULOWNER','Y')
