@@ -23,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -469,13 +468,7 @@ public class App {
         if (!sqlStatements.isEmpty()) {
             for (String sql : sqlStatements) {
 				LOGGER.info("Executing sql: " + sql);
-				if (sql.startsWith("call")) {
-					try {
-						callSqlCommand(conn, sql);
-					} catch (SQLException e) {
-						LOGGER.error(e);
-					}
-				} else if (!executeSql(conn, stmt, sql)) {
+				if (!executeSql(conn, stmt, sql)) {
                     retval = false;
                     break;
                 }
@@ -493,11 +486,6 @@ public class App {
 		postUpgradeFilesProcessed.add(f);
         return retval;
     }
-
-	private void callSqlCommand(Connection conn, String sql) throws SQLException {
-		CallableStatement cstmt = conn.prepareCall(sql);
-		cstmt.executeUpdate();
-	}
 
 	/**
 	 * Read SQL statements from the provided {@link File} into a {@link List} of
