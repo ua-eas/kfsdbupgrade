@@ -1,10 +1,10 @@
 -- ======================================================================================================                  
 -- (UAF-2043) : Update Phase 2 Parameters in Upgrade Scripts. Subtask of (UAF-92)
--- set define off;   -- Disables definintion of substitution variables to allow 'Ampersand character' within strings and comments this maybe only needed in SQLDeveloper tho
 -- ======================================================================================================
 UPDATE KULOWNER.KRCR_PARM_T SET VAL = 'E=CASS,COMM,COS,DEPO,EQUP,LIC,MISC,OSUP,OTHM,OUTP,PRIN,RMSP,RMSV,UTIL,TXEX;F=COMM,DEPO,LIC,MISC,OSUP,OTHM,OUTP,PRIN,RMSP,RMSV,TXEX;G=DEPO,OUTP;H=DEPO,MISC;TXEX;I=CASS,COMM,DEPO,OTHM,OUTP,PRIN,RMSP,RMSV,TXEX;K=CASS,COMM,COS,DEPO,MISC,TXEX,UTIL;M=DEPO,MISC,TXEX;N=DEPO,OUTP,STUD,TXEX;P=DEPO,LIC;T=DEPO,RECV,COMM,LIC,MISC,OSUP,OTHM,OUTP,TRAV,TXEX;V=DEPO,RECV;Y=DEPO,LIC,MISC,OUTP,TRAV,TXEX' WHERE PARM_NM = 'VALID_OBJECT_LEVELS_BY_PAYMENT_REASON';
 update KRCR_PARM_T set VAL = 'A=V;B=E,V;E=E,V;F=V;H=E,V;I=V;K=V;M=E;N=E,V;P=E,V;T=E,V;X=E,V;Y=E,V;V=E'  where PARM_NM = 'VALID_PAYEE_TYPES_BY_PAYMENT_REASON';
-set define off;  
+-- Disables definition of substitution variables to allow 'Ampersand character' within strings and comments this is only needed in SQLDeveloper
+--set define off;
 update KRCR_PARM_T set VAL = 'Click on the category link to connect to the Federal, State of Arizona and Foreign web site listing their official per diem rates. Once you have determined the correct M & IE rate, please enter the amount in the Per Diem Rate field. You will have to manually calculate the per diem amount and enter it in the Per Diem Actual Amount field. The Travel Office will verify the per diem amount from the lodging receipts included with the supporting documentation.'  where PARM_NM = 'TRAVEL_PER_DIEM_LINK_PAGE_MESSAGE';
 update KRCR_PARM_T set VAL = '14'  where PARM_NM = 'AUTO_APPROVE_NUMBER_OF_DAYS';
 update KRCR_PARM_T set VAL = 'TXEX;LIBR'  where PARM_NM = 'TAXABLE_OBJECT_LEVELS_FOR_NON_TAXABLE_STATES';
