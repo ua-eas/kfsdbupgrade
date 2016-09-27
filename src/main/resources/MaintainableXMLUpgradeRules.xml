@@ -79,6 +79,10 @@
       <match>org.kuali.rice.kns.bo.CountyImpl</match>
       <replacement>org.kuali.rice.location.impl.county.CountyBo</replacement>
     </pattern>
+    <pattern>
+      <match>org.kuali.rice.kns.document.ParameterMaintainable</match>
+      <replacement>org.kuali.rice.coreservice.web.parameter.ParameterMaintainableImpl</replacement>
+    </pattern>
  <!-- revert to kuali version for the following to objects -->
     <pattern>
       <match>edu.arizona.kfs.module.cam.document.AssetMaintainableImpl</match>
