@@ -211,6 +211,7 @@ public class MaintainableXMLConversionServiceImpl {
 			throw new SAXParseException(exMsg, null, ex);
 		}
 
+		// FIXME this traversal isn't guaranteed to get the full depth
         for(Node childNode = document.getFirstChild(); childNode != null;) {
 			Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
@@ -226,6 +227,7 @@ public class MaintainableXMLConversionServiceImpl {
 		migrateKualiCodeBaseObjects(document);
 		migrateAccountExtensionObjects(document);
 		migrateClassAsAttribute(document);
+		migrateCrossOrganizationCode(document);
 		removeAutoIncrementSetElements(document);
 		catchMissedTypedArrayListElements(document);
 
@@ -258,6 +260,139 @@ public class MaintainableXMLConversionServiceImpl {
 		return xml;
     }
 
+
+	private void migrateCrossOrganizationCode(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression personProperties = null;
+		try {
+			// FIXME magic strings
+			personProperties = xpath.compile("//edu.arizona.kfs.coa.businessobject.CrossOrganizationCode/code");
+			NodeList matchingNodes = (NodeList) personProperties.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.trace("Migrating CrossOrganizationCode/code node: " + tempNode.getNodeName() + "/"
+						+ tempNode.getNodeValue());
+				String newClassName = "crossOrganizationCode";
+				document.renameNode(tempNode, null, newClassName);
+			}
+			personProperties = xpath.compile("//edu.arizona.kfs.coa.businessobject.CrossOrganizationCode/name");
+			matchingNodes = (NodeList) personProperties.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.trace("Migrating CrossOrganizationCode/name node: " + tempNode.getNodeName() + "/"
+						+ tempNode.getNodeValue());
+				String newClassName = "crossOrganizationDescription";
+				document.renameNode(tempNode, null, newClassName);
+			}
+			removeBoNotesXpath(document);
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+
+	private void removeBoNotesXpath(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression personProperties = null;
+		try {
+			personProperties = xpath.compile("//boNotes");
+			NodeList matchingNodes = (NodeList) personProperties.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node tempNode = matchingNodes.item(i);
+				LOGGER.trace("Remove boNotes node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
+				tempNode.getParentNode().removeChild(tempNode);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+
+	/*
+	 * works more predictably and completely than existing traversal, however
+	 * eats up much more time and resources (takes 6x longer to run, and pegs
+	 * the toolsbox cpu the whole time)
+	 */
+	@SuppressWarnings("unused")
+	private void doXpathTransformations(Document document) {
+		/*
+		 * note that order matters; if we map classnames first, class
+		 * properties' XPaths will fail
+		 */
+		mapClassPropertiesWithXPath(document);
+		mapClassNamesWithXPath(document);
+		/*
+		 * leaving date transformation in original traversal, and also leaving
+		 * original as there is additional transformation business logic in that
+		 * code. So some duplication, but much correctness
+		 */
+	}
+
+	/**
+	 * Map the classnames as described in {@link #classNameRuleMap}, finding the
+	 * elements to transform via XPath against the top level {@link Document}.
+	 * 
+	 * @param document
+	 */
+	private void mapClassNamesWithXPath(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		LOGGER.trace("Doing XPath transformations for classnames.");
+		for (String classname : classNameRuleMap.keySet()) {
+			try {
+				expr = xpath.compile("//" + classname);
+				NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+				for (int i = 0; i < matchingNodes.getLength(); i++) {
+					String mapTo = classNameRuleMap.get(classname);
+					LOGGER.trace("Renaming class " + classname + " to " + mapTo);
+					document.renameNode(matchingNodes.item(i), null, mapTo);
+				}
+			} catch (XPathExpressionException e) {
+				LOGGER.error("XPathException encountered: ", e);
+			}
+		}
+
+	}
+
+	/**
+	 * Map the class properties as described in {@link #classPropertyRuleMap},
+	 * finding the elements to transform via XPath against the top level
+	 * {@Link Document}.
+	 * 
+	 * @param document
+	 */
+	private void mapClassPropertiesWithXPath(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		LOGGER.trace("Doing XPath transformations for class properties.");
+		for (String classname : classPropertyRuleMap.keySet()) {
+			try {
+				expr = xpath.compile("//" + classname);
+				NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+				for (int i = 0; i < matchingNodes.getLength(); i++) {
+					Map<String, String> propertyMappings = classPropertyRuleMap.get(classname);
+					for (String propertyName : propertyMappings.keySet()) {
+						expr = xpath.compile("//" + classname + "/" + propertyName);
+						NodeList propertyNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+						for (int j = 0; j < propertyNodes.getLength(); j++) {
+							String mapTo = propertyMappings.get(propertyName);
+							/*
+							 * if map target is empty, remove the node.
+							 * Otherwise, rename to value.
+							 */
+							if (mapTo == null || mapTo.isEmpty()) {
+								LOGGER.trace("Removing property " + propertyName);
+								propertyNodes.item(j).getParentNode().removeChild(propertyNodes.item(j));
+							} else {
+								LOGGER.trace("Renaming property " + propertyName + " to " + mapTo);
+								document.renameNode(propertyNodes.item(j), null, mapTo);
+							}
+						}
+					}
+				}
+			} catch (XPathExpressionException e) {
+				LOGGER.error("XPathException encountered: ", e);
+			}
+		}
+	}
 
 	/**
 	 * There is an edge case in the main traversal such that a TypedArrayList
@@ -440,6 +575,8 @@ public class MaintainableXMLConversionServiceImpl {
 						+ oldXML.substring(pos2 + "</boNotes>".length()));
 			}
         }
+        //replace empty boNotes if present
+		oldXML = oldXML.replace("<boNotes/>", "");
         
         return oldXML;
     }
@@ -890,8 +1027,8 @@ public class MaintainableXMLConversionServiceImpl {
 
         // Pre-populate the class property rules with some defaults which apply to every BO
 		Map<String, String> defaultPropertyRules = new HashMap<String, String>();
-		defaultPropertyRules.put("boNotes", "");
-		defaultPropertyRules.put("autoIncrementSet", "");
+		defaultPropertyRules.put("boNotes", null);
+		defaultPropertyRules.put("autoIncrementSet", null);
         classPropertyRuleMap.put("*", defaultPropertyRules);
 	}
 }
