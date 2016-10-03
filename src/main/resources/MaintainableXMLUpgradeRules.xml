@@ -79,6 +79,10 @@
       <match>org.kuali.rice.kns.bo.CountyImpl</match>
       <replacement>org.kuali.rice.location.impl.county.CountyBo</replacement>
     </pattern>
+    <pattern>
+      <match>org.kuali.rice.kns.document.ParameterMaintainable</match>
+      <replacement>org.kuali.rice.coreservice.web.parameter.ParameterMaintainableImpl</replacement>
+    </pattern>
  <!-- revert to kuali version for the following to objects -->
     <pattern>
       <match>edu.arizona.kfs.module.cam.document.AssetMaintainableImpl</match>
@@ -398,6 +402,21 @@
         <replacement>creditCardLastFour</replacement>
       </pattern>
      </pattern>
+    <pattern>
+      <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>
+      <pattern>
+        <match>description</match>
+        <replacement>budgetShellDescription</replacement>
+      </pattern>
+      <pattern>
+        <match>code</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>name</match>
+        <replacement></replacement>
+      </pattern>
+    </pattern>
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The

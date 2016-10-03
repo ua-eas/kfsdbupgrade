@@ -952,9 +952,89 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
   'Y')
 ;
 
---  Add KFS Developers to Role to BackDoor Login
-insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) 
-  select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), prncpl_id, 'P' 
-  from kulowner.krim_entity_cache_t 
-  where prncpl_nm in ('kbasu', 'gurtonj', 'akhilashokk', 'elvirag', 'jpfennig', 'kosta', 'jwingate', 'mccunej', 'maryb', 'sandovar', 'kbrook', 'robbiem', 'fischerm', 'mmoen', 'ketchmark', 'lilas', 'jnschool', 'melissav73', 'sskinner', 'rdubisar', 'marcel', 'janifisk', 'sandberm', 'mhohl', 'ake27', 'hlo', 'kristinalopez1', 'leahasullivan', 'alee', 'perryg', 'maramian', 'rblank', 'tammyv', 'buchanaw', 'jreese','quikkian','tounou','amyrodriguez','wames','nataliac')
-;
+-- Add KFS Developers to Role to BackDoor Login
+-- Look up new UAIDs from NetIDs at https://toolshed.uits.arizona.edu/lookup/eds/
+-- kbasu
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '105281498340', 'P');
+-- gurtonj
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '115466589719', 'P');
+-- akhilashokk
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '116175174074', 'P');
+-- elvirag
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '101969935231', 'P');
+-- jpfennig
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '114187875519', 'P');
+-- kosta
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '117013605279', 'P');
+-- jwingate
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '120566406456', 'P');
+-- mccunej
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '103818749727', 'P');
+-- maryb
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '113307485249', 'P');
+-- sandover
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '103357749183', 'P');
+-- kbrook
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '116836748332', 'P');
+-- robbiem
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '109455635680', 'P');
+-- fischerm
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '114428387134', 'P');
+-- mmoen
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '105010108595', 'P');
+-- ketchmark
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '107510420325', 'P');
+-- lilas
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '109449915915', 'P');
+-- jnschool
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '117902017578', 'P');
+-- melissav73
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '100503195705', 'P');
+-- sskinner
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '104454139762', 'P');
+-- rdubisar
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '104456668368', 'P');
+-- marcel
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '115008061109', 'P');
+-- janifisk
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '117390795312', 'P');
+-- sandberm
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '117788723126', 'P');
+-- mhohl
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '101597768319', 'P');
+-- ake27
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '117498812436', 'P');
+-- hlo
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '104758384661', 'P');
+-- kristinalopez1
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '116036874760', 'P');
+-- leahasullivan
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '118071169706', 'P');
+-- alee
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '102452189233', 'P');
+-- perryg
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '101960720347', 'P');
+-- maramian
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '110323772179', 'P');
+-- rblank
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '101578396693', 'P');
+-- tammyv
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '109268636888', 'P');
+-- buchanaw
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '103030668774', 'P');
+-- jreese
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '114914607687', 'P');
+-- quikkian
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '104309117645', 'P');
+-- tounou
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '100108997730', 'P');
+-- amyrodriguez
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '112956025383', 'P');
+-- wames
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '103935099944', 'P');
+-- nataliac
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '113030184588', 'P');
+-- mwellman
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '105481261747', 'P');
+-- mcalopez
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd) values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), (select role_id from krim_role_t where role_nm='Back Door Login'), '110188740559', 'P');
