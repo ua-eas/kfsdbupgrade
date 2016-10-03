@@ -329,6 +329,7 @@
             <column name="CC_NBR" type="VARCHAR2(16)">
                 <constraints primaryKey="true" primaryKeyName="FP_PRCRMNT_CARD_DFLT_TP1"/>
             </column>
+            <column name="CC_LAST_FOUR" type="VARCHAR2(4)"/>
             <column defaultValueNumeric="1" name="VER_NBR" type="NUMBER(8,0)">
                 <constraints nullable="false"/>
             </column>

@@ -136,6 +136,10 @@
       <match>edu.arizona.kns.web.struts.action.KFSMaintenanceDocumentAction</match>
       <replacement>org.kuali.rice.kns.web.struts.action.KualiMaintenanceDocumentAction</replacement>
     </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.fp.businessobject.ProcurementCardHolderDetail</match>
+      <replacement>edu.arizona.kfs.fp.businessobject.ProcurementCardDefault</replacement>
+    </pattern>
   </rule>
 
   <!-- Rules specifying any change in class properties.
@@ -391,6 +395,13 @@
         <replacement></replacement>
       </pattern>
     </pattern>
+     <pattern>
+      <class>edu.arizona.kfs.fp.businessobject.ProcurementCardDefault</class>
+      <pattern>
+        <match>cardApprovalOfficial</match>
+        <replacement>creditCardLastFour</replacement>
+      </pattern>
+     </pattern>
     <pattern>
       <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>
       <pattern>
