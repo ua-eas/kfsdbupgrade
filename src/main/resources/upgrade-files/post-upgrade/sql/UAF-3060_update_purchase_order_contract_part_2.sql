@@ -5,8 +5,7 @@ UPDATE KULOWNER.PUR_PO_CONTR_LANG_T SET PO_CONTR_LANG_DESC =
 'UA Purchase Order Terms and Conditions:' || chr(10) || 
 'http://pacs.arizona.edu/po-terms' || chr(10) || chr(10) || 
 '2 Vendor Instructions:' || chr(10) || 
-'a. Acceptance of this order includes acceptance of all terms and conditions available at the above' || chr(10) || 
-'link.' || chr(10) || 
+'a. Acceptance of this order includes acceptance of all terms and conditions available at the above link.' || chr(10) || 
 'b. Price increases will not be recognized without written notice and acceptance by Purchasing.' || chr(10) || 
 'c. Please itemize all charges on your invoice and reference the PO number.' || chr(10) || 
 'd. University is exempt from federal excise tax. Certificate of registry is A-184524.' || chr(10) || 
