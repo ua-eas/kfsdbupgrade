@@ -52,6 +52,9 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
@@ -108,17 +111,22 @@ public class App {
 	 * path should be followed instead of the database upgrade code path.
 	 * 
 	 * @param args
+	 * @throws Exception
 	 */
-    public static void main(final String args[]) {
+	public static void main(final String args[]) throws Exception {
         if (args.length > 0) {
             String propertyFileName = args[0];
             boolean ingestWorkflow = false;
+			boolean doFlowdown = false;
             if (args.length > 1) {
                 ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
+				doFlowdown = "doFlowdown".equals(args[1]);
             }
 			App app = new App(propertyFileName);
 			if (ingestWorkflow) {
 				app.doWorkflow(propertyFileName);
+			} else if (doFlowdown) {
+				app.doFlowdown();
 			} else {
 				app.doUpgrade();
 			}
@@ -292,6 +300,14 @@ public class App {
 		new WorkflowImporter(upgradeRoot, upgradeFolders);
     }
     
+	private void doFlowdown() throws Exception {
+		Connection conn = getUpgradeConnection();
+		File f = new File("src/main/resources/flowdown-files/sql/kfs6-env-flowdown.sql");
+		FileSystemResource fsResource = new FileSystemResource(f);
+		EncodedResource encResource = new EncodedResource(fsResource);
+		ScriptUtils.executeSqlScript(conn, encResource);
+	}
+
 	/**
 	 * @param input
 	 *            {@link String} of a comma-separated list of values
