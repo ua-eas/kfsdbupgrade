@@ -301,6 +301,7 @@ public class App {
     }
     
 	private void doFlowdown() throws Exception {
+		LOGGER.info("Executing flowdown.");
 		Connection conn = getUpgradeConnection();
 		File f = new File("src/main/resources/flowdown-files/sql/kfs6-env-flowdown.sql");
 		FileSystemResource fsResource = new FileSystemResource(f);
