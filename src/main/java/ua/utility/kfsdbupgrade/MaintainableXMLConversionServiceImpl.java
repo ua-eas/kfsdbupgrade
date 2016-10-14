@@ -227,7 +227,6 @@ public class MaintainableXMLConversionServiceImpl {
 		migrateKualiCodeBaseObjects(document);
 		migrateAccountExtensionObjects(document);
 		migrateClassAsAttribute(document);
-		migrateCrossOrganizationCode(document);
 		removeAutoIncrementSetElements(document);
 		catchMissedTypedArrayListElements(document);
 
@@ -259,52 +258,6 @@ public class MaintainableXMLConversionServiceImpl {
 		checkForElementsWithClassAttribute(document);
 		return xml;
     }
-
-
-	private void migrateCrossOrganizationCode(Document document) {
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		XPathExpression personProperties = null;
-		try {
-			// FIXME magic strings
-			personProperties = xpath.compile("//edu.arizona.kfs.coa.businessobject.CrossOrganizationCode/code");
-			NodeList matchingNodes = (NodeList) personProperties.evaluate(document, XPathConstants.NODESET);
-			for (int i = 0; i < matchingNodes.getLength(); i++) {
-				Node tempNode = matchingNodes.item(i);
-				LOGGER.trace("Migrating CrossOrganizationCode/code node: " + tempNode.getNodeName() + "/"
-						+ tempNode.getNodeValue());
-				String newClassName = "crossOrganizationCode";
-				document.renameNode(tempNode, null, newClassName);
-			}
-			personProperties = xpath.compile("//edu.arizona.kfs.coa.businessobject.CrossOrganizationCode/name");
-			matchingNodes = (NodeList) personProperties.evaluate(document, XPathConstants.NODESET);
-			for (int i = 0; i < matchingNodes.getLength(); i++) {
-				Node tempNode = matchingNodes.item(i);
-				LOGGER.trace("Migrating CrossOrganizationCode/name node: " + tempNode.getNodeName() + "/"
-						+ tempNode.getNodeValue());
-				String newClassName = "crossOrganizationDescription";
-				document.renameNode(tempNode, null, newClassName);
-			}
-			removeBoNotesXpath(document);
-		} catch (XPathExpressionException e) {
-			LOGGER.error("XPathException encountered: ", e);
-		}
-	}
-
-	private void removeBoNotesXpath(Document document) {
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		XPathExpression personProperties = null;
-		try {
-			personProperties = xpath.compile("//boNotes");
-			NodeList matchingNodes = (NodeList) personProperties.evaluate(document, XPathConstants.NODESET);
-			for (int i = 0; i < matchingNodes.getLength(); i++) {
-				Node tempNode = matchingNodes.item(i);
-				LOGGER.trace("Remove boNotes node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
-				tempNode.getParentNode().removeChild(tempNode);
-			}
-		} catch (XPathExpressionException e) {
-			LOGGER.error("XPathException encountered: ", e);
-		}
-	}
 
 	/*
 	 * works more predictably and completely than existing traversal, however
