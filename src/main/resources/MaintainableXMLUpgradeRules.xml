@@ -395,13 +395,17 @@
         <replacement></replacement>
       </pattern>
     </pattern>
-     <pattern>
+    <pattern>
       <class>edu.arizona.kfs.fp.businessobject.ProcurementCardDefault</class>
       <pattern>
         <match>cardApprovalOfficial</match>
         <replacement>creditCardLastFour</replacement>
       </pattern>
-     </pattern>
+      <pattern>
+        <match>cardGroupId</match>
+        <replacement>reconcilerGroupId</replacement>
+      </pattern>
+    </pattern>
     <pattern>
       <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>
       <pattern>
