@@ -911,9 +911,9 @@ public class MaintainableXMLConversionServiceImpl {
         if (className.startsWith("edu.arizona") || className.startsWith("com.rsmart.")) {
             if (!uaMaintenanceDocClasses.contains(className)) {
                 uaMaintenanceDocClasses.add(className);
-				LOGGER.info("non-kuali maintenance document class ignored - " + className);
+				LOGGER.info("non-kuali maintenance document will be processed - " + className);
             }
-            return false;
+            return true;
         } else {
             return !ignoreClassSet.contains(className);
         }
