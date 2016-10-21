@@ -405,6 +405,10 @@
         <match>cardGroupId</match>
         <replacement>reconcilerGroupId</replacement>
       </pattern>
+       <pattern>
+        <match>cardCycleVolumeLimit</match>
+        <replacement>cardCycleVolLimit</replacement>
+      </pattern>
     </pattern>
     <pattern>
       <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>

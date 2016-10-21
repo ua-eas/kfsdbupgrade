@@ -718,6 +718,7 @@ public class MaintainableXMLConversionServiceImpl {
 		}
 
         if (isValidClass(className)) {
+        	LOGGER.trace("Looking for class : " + className);
             Class<?> dataObjectClass = Class.forName(className);
 
             if(classPropertyRuleMap.containsKey(className)) {
@@ -908,15 +909,7 @@ public class MaintainableXMLConversionServiceImpl {
 	 *         <code>className</code> is not in the {@link #ignoreClassSet}.
 	 */
     private boolean isValidClass(String className) {
-        if (className.startsWith("edu.arizona") || className.startsWith("com.rsmart.")) {
-            if (!uaMaintenanceDocClasses.contains(className)) {
-                uaMaintenanceDocClasses.add(className);
-				LOGGER.info("non-kuali maintenance document will be processed - " + className);
-            }
-            return true;
-        } else {
             return !ignoreClassSet.contains(className);
-        }
     }
     /**
      * Reads the rule xml and sets up the rule maps that will be used to transform the xml

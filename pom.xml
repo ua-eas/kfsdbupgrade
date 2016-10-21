@@ -44,8 +44,8 @@
         </dependency>        
         <dependency>
             <groupId>org.kuali.kfs</groupId>
-            <artifactId>kfs</artifactId>
-            <version>6.0.0-release-process-test-lib</version>
+            <artifactId>kfs-core</artifactId>
+            <version>ua-release19</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
@@ -288,15 +288,20 @@
             </snapshots>
         </repository>
         <repository>
-            <id>kuali.nexus</id>
-            <name>Nexus Repository Manager</name>
-            <url>http://nexus.kuali.org/content/groups/public</url>
+            <id>deployment</id>
+            <name>Internal Releases</name>
+            <url>https://ka-tools.mosaic.arizona.edu/nexus/content/repositories/snapshots</url>
             <releases>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>kuali.nexus</id>
+            <name>Nexus Repository Manager</name>
+            <url>http://nexus.kuali.org/content/groups/public</url>
         </repository>
     </repositories>
 </project>
