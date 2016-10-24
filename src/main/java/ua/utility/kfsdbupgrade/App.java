@@ -52,6 +52,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.Level;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
@@ -2415,7 +2416,7 @@ public class App {
 
                 if (f.exists()) {
 					MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
-							f);
+							f, Level.TRACE);
                     EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
                     pstmt = upgradeConn.prepareStatement("update krns_maint_doc_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
                     stmt = upgradeConn.createStatement();

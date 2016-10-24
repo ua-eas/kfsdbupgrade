@@ -10,6 +10,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <kuali.rice.version>2.1.9</kuali.rice.version>
+        <kfs.ua.version>ua-release20</kfs.ua.version>
     </properties>
     <dependencies>
         <dependency>
@@ -45,7 +46,32 @@
         <dependency>
             <groupId>org.kuali.kfs</groupId>
             <artifactId>kfs-core</artifactId>
-            <version>ua-release19</version>
+            <version>${kfs.ua.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs-purap</artifactId>
+            <version>${kfs.ua.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs-ld</artifactId>
+            <version>${kfs.ua.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs-cg</artifactId>
+            <version>${kfs.ua.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs-cam</artifactId>
+            <version>${kfs.ua.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs-ar</artifactId>
+            <version>${kfs.ua.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kuali.rice</groupId>
