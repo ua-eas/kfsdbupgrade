@@ -2416,7 +2416,7 @@ public class App {
 
                 if (f.exists()) {
 					MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
-							f, Level.TRACE);
+							f, Level.DEBUG);
                     EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
                     pstmt = upgradeConn.prepareStatement("update krns_maint_doc_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
                     stmt = upgradeConn.createStatement();

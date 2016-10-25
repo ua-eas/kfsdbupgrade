@@ -161,7 +161,7 @@ public class MaintainableXMLConversionServiceImpl {
 		// quick hack to catch top-level class replacements
 		for (String className : classNameRuleMap.keySet()) {
 			if (beginning.contains("maintainableImplClass=\"" + className + "\"")) {
-				LOGGER.trace("Replacing top-level maintainableImplClass attribute: " + className + " with: "
+				LOGGER.debug("Replacing top-level maintainableImplClass attribute: " + className + " with: "
 						+ classNameRuleMap.get(className));
 				beginning = beginning.replace("maintainableImplClass=\"" + className + "\"",
 					"maintainableImplClass=\"" + classNameRuleMap.get(className) + "\"");
@@ -718,7 +718,7 @@ public class MaintainableXMLConversionServiceImpl {
 		}
 
         if (isValidClass(className)) {
-        	LOGGER.trace("Looking for class : " + className);
+        	LOGGER.debug("#### Looking for class : " + className);
             Class<?> dataObjectClass = Class.forName(className);
 
             if(classPropertyRuleMap.containsKey(className)) {
