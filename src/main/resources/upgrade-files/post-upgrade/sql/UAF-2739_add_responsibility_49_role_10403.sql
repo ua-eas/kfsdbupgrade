@@ -7,4 +7,3 @@ UPDATE KULOWNER.KRIM_RSP_ATTR_DATA_T SET ATTR_VAL = 'KFS' WHERE ATTR_DATA_ID IN 
 --The responsibility is actually active in 6.0, but the responsibility role connection in the KRIM_ROLE_RSP_T table is inactive. The below SQL is to make that active:
 UPDATE KULOWNER.KRIM_ROLE_RSP_T SET ACTV_IND = 'Y' WHERE ROLE_ID='10403';
 UPDATE KULOWNER.KRIM_RSP_T SET ACTV_IND = 'Y' WHERE RSP_ID='49';
-UPDATE KULOWNER.KRIM_RSP_ATTR_DATA_T SET ATTR_VAL = 'true' WHERE ATTR_DATA_ID IN ('159');
