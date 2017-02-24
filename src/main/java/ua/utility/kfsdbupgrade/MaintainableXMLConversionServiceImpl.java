@@ -79,7 +79,15 @@ public class MaintainableXMLConversionServiceImpl {
 	 * pre-populates with some values that are applicable to all BOs. See the
 	 * {@link #rulesXmlFile} for more detail.
 	 */
-	private Map<String, Map<String, String>> classPropertyRuleMap;
+	private Map<String, Map<String, String>> xPathTransformationRulesMap;
+
+    /**
+     * Populated by the <code>pattern</code> elements in the <code>rule</code>
+     * named <code>xpath_specific_changes</code> in
+     * {@link #rulesXmlFile}. {@link #setupConfigurationMaps()} ]
+     */
+    private Map<String, Map<String, String>> classPropertyRuleMap;
+
 	/**
 	 * Populated by the <code>pattern</code> elements in the <code>rule</code>
 	 * named <code>maint_doc_date_changes</code> in {@link #rulesXmlFile}. See
@@ -725,6 +733,9 @@ public class MaintainableXMLConversionServiceImpl {
             }
 
             transformNode(document, node, dataObjectClass, classPropertyRuleMap.get("*"));
+        }  else if ( xPathTransformationRulesMap.containsKey(className) ){
+            //specific transformations for docs whose classes cannot be instantiated like in the above code.
+            xPathApplyTransformations(document, className, xPathTransformationRulesMap.get(className) );
         }
 	}
 
@@ -941,7 +952,6 @@ public class MaintainableXMLConversionServiceImpl {
         }
 
         // Get the property changed rules
-
         XPathExpression exprClassProperties = xpath.compile(
                 "//*[@name='maint_doc_changed_class_properties']/pattern");
         XPathExpression exprClassPropertiesPatterns = xpath.compile("pattern");
@@ -967,6 +977,22 @@ public class MaintainableXMLConversionServiceImpl {
             String replaceText = xpath.evaluate("replacement/text()", DateNamesList.item(s));
             dateRuleMap.put(matchText, replaceText);
         }
+
+        // Get the specific XPath rules
+        XPathExpression xpathClassProperties = xpath.compile("//*[@name='xpath_specific_changes']/pattern");
+        XPathExpression xPathClassPatterns = xpath.compile("pattern");
+        NodeList xpathClassList = (NodeList) xpathClassProperties.evaluate(doc, XPathConstants.NODESET);
+        for (int s = 0; s < xpathClassList.getLength(); s++) {
+            String classText = xpath.evaluate("class/text()", xpathClassList.item(s));
+            Map<String, String> xpathRuleMap = new HashMap<String, String>();
+            NodeList patterns = (NodeList) xPathClassPatterns.evaluate(xpathClassList.item(s), XPathConstants.NODESET);
+            for (int c = 0; c < patterns.getLength(); c++) {
+                String matchPattern = xpath.evaluate("match/text()", patterns.item(c));
+                String replace = xpath.evaluate("replacement/text()", patterns.item(c));
+                xpathRuleMap.put(matchPattern, replace);
+            }
+            xPathTransformationRulesMap.put(classText, xpathRuleMap);
+        }
 	}
 
 	/**
@@ -977,6 +1003,7 @@ public class MaintainableXMLConversionServiceImpl {
 		classNameRuleMap = new HashMap<String, String>();
 		classPropertyRuleMap = new HashMap<String, Map<String,String>>();
         dateRuleMap = new HashMap<String, String>();
+        xPathTransformationRulesMap = new HashMap<String, Map<String,String>>();
 
         // Pre-populate the class property rules with some defaults which apply to every BO
 		Map<String, String> defaultPropertyRules = new HashMap<String, String>();
@@ -984,4 +1011,29 @@ public class MaintainableXMLConversionServiceImpl {
 		defaultPropertyRules.put("autoIncrementSet", null);
         classPropertyRuleMap.put("*", defaultPropertyRules);
 	}
+
+
+    private void xPathApplyTransformations(Document document, String className, Map<String, String> replacementRules ) {
+        for ( String matchPattern: replacementRules.keySet() ){
+            replaceNode(document, "//"+className+"/"+matchPattern, replacementRules.get( matchPattern) );
+        }
+    }
+
+    private void replaceNode(Document document, String pathToNode, String newNodeName) {
+        LOGGER.trace("Replacing path " + pathToNode + " : with " + newNodeName);
+        try {
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression nodesFilter = xpath.compile(pathToNode);
+            NodeList matchingNodes = (NodeList) nodesFilter.evaluate(document, XPathConstants.NODESET);
+            for (int i = 0; i < matchingNodes.getLength(); i++) {
+                Node tempNode = matchingNodes.item(i);
+                LOGGER.trace("Migrating node: " + tempNode.getNodeName() + "/" + tempNode.getTextContent());
+                document.renameNode(tempNode, null, newNodeName);
+            }
+        } catch (XPathExpressionException e) {
+            LOGGER.error("XPathException encountered: ", e);
+        }
+    }
+
+
 }

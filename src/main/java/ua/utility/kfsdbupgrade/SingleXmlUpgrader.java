@@ -27,9 +27,8 @@ public class SingleXmlUpgrader {
 	private static final String UPDATE_DOC_BATCH = "DECLARE str varchar2(32767); BEGIN str := ?; update KRNS_MAINT_DOC_T set doc_cntnt = str where doc_hdr_id = ?; END;";
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 2 || args.length != 3) {
-			LOGGER.fatal("Usage: Decrypter.jar encryptionKey documentNumber fileDirectory(Optional)"
-					+ "\n     Note: if fileDirectory is not specified, converted files will not be written to disk and will be silently processed.");
+		if (args.length < 2 || args.length > 3) {
+			LOGGER.fatal("Usage: SingleXmlUpgrader encryptionKey documentNumber fileDirectory(Optional).\n  Note: if fileDirectory is not specified, converted files will not be written to disk and will be silently processed.");
 		}
 		LOGGER.setLevel(Level.TRACE);
 		File baseDir = null;

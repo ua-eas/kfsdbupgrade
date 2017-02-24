@@ -395,13 +395,6 @@
         <replacement></replacement>
       </pattern>
     </pattern>
-     <pattern>
-      <class>edu.arizona.kfs.fp.businessobject.ProcurementCardDefault</class>
-      <pattern>
-        <match>cardApprovalOfficial</match>
-        <replacement>creditCardLastFour</replacement>
-      </pattern>
-     </pattern>
     <pattern>
       <class>edu.arizona.kfs.coa.businessobject.BudgetShellCode</class>
       <pattern>
@@ -441,4 +434,33 @@
       <replacement>00:00:00 GMT-08:00</replacement>
     </pattern>
   </rule>
-</rules>
+  <!-- Rules for any documents that fall into the arizona.edu and com.rsmart categories
+       for which we can't instantiate the actual classes and for that, they will not be processed
+       properly with previous sections
+  -->
+    <rule name="xpath_specific_changes">
+      <pattern>
+        <class>edu.arizona.kfs.fp.businessobject.ProcurementCardDefault</class>
+        <pattern>
+          <match>cardApprovalOfficial</match>
+          <replacement>creditCardLastFour</replacement>
+        </pattern>
+        <pattern>
+           <match>cardGroupId</match>
+           <replacement>reconcilerGroupId</replacement>
+        </pattern>
+        <pattern>
+          <match>cardCycleVolumeLimit</match>
+          <replacement>cardCycleVolLimit</replacement>
+        </pattern>
+        <pattern>
+          <match>reconcilerGroup/groupId</match>
+          <replacement>id</replacement>
+        </pattern>
+        <pattern>
+          <match>reconcilerGroup/groupName</match>
+          <replacement>name</replacement>
+        </pattern>
+      </pattern>
+    </rule>
+  </rules>
