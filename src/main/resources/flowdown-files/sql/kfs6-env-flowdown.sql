@@ -283,7 +283,7 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
 values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
   (select role_id from krim_role_t where role_nm='UA KFS Developers'),
-  (select perm_id from krim_perm_t where nmspc_cd='KUALI-TAX' and nm='Modify Batch Job'),
+  (select perm_id from krim_perm_t where nmspc_cd='KFS-TAX' and nm='Modify Batch Job'),
   'Y')
 ;
 
