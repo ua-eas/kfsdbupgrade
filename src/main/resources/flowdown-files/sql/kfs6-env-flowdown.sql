@@ -283,7 +283,7 @@ values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(),
 insert into krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind)
 values (KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), 
   (select role_id from krim_role_t where role_nm='UA KFS Developers'),
-  (select perm_id from krim_perm_t where nmspc_cd='KUALI-TAX' and nm='Modify Batch Job'),
+  (select perm_id from krim_perm_t where nmspc_cd='KFS-TAX' and nm='Modify Batch Job'),
   'Y')
 ;
 
@@ -390,25 +390,19 @@ update kulowner.krcr_parm_t set val = 'kfsbsateam@list.arizona.edu' where val li
 -- ====================================================================================================================
 -- Activate Temp Batch Runner role - 
 update kulowner.krim_role_t set ACTV_IND = 'Y'
-   where role_nm='TEMP Batch Runner'
-;
+   where role_nm='TEMP Batch Runner';
+
 -- Add View Batch Jobs (#362) permission to TEMP Batch Runner (#10448) - 
 INSERT INTO krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind) 
-    VALUES ( KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), '10448',
-     (select perm_id from krim_perm_t where perm_id ='362'),'Y') 
-;
+    VALUES ( KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), '10448', '362','Y');
 
 -- Add Modify Batch Job (#11774) permission to TEMP Batch Runner (#10448) - 
 INSERT INTO krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind) 
-    VALUES ( KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), '10448',
-     (select perm_id from krim_perm_t where perm_id ='11774'),'Y') 
-;
+    VALUES ( KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), '10448','11774','Y');
 
 -- Add View Batch Job (#10491) permission to TEMP Batch Runner (#10448) - 
 INSERT INTO krim_role_perm_t (role_perm_id, ver_nbr, obj_id, role_id, perm_id, actv_ind) 
-    VALUES ( KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), '10448',
-     (select perm_id from krim_perm_t where perm_id ='10491'),'Y') 
-;
+    VALUES ( KRIM_ROLE_PERM_ID_S.NEXTVAL, 1, sys_guid(), '10448','10491','Y');
 
 
 -- ====================================================================================================================
