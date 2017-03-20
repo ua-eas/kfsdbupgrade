@@ -12,6 +12,6 @@ if [ -f nohup.out ]; then
 	rm nohup.out
 fi
 
-cd src/main/resources
+#cd src/main/resources
 
-nohup java -Xmx1g -jar "$WORKSPACE/target/kfsdbupgrade.jar" $pathToProperties ingestWorkflow
+nohup java -Xmx1g -jar target/kfsdbupgrade.jar $pathToProperties ingestWorkflow
