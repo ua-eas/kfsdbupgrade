@@ -70,6 +70,7 @@ public class App {
 	private static final String MISC_SQL_PATH = "sql/misc.sql";
 	private static final String KFS_INDEXES_SQL_PATH = "sql/kfs-indexes.sql";
 	private static final String KFS_PUBLIC_SYNONYMS_SQL_PATH = "sql/kfs-public-synonyms.sql";
+	private static final String DEFAULT_PROPERTIES_FILE = "src/main/resources/kfsdbupgrade.properties";
 	/**
 	 * Populated by the <code>upgrade-base-directory</code> {@link Properties}
 	 * entry
@@ -133,8 +134,13 @@ public class App {
 	 *            to use
 	 */
 	public App(String propertyFileName) {
-        properties = loadProperties(propertyFileName);
-        if (properties != null) {
+		properties = loadProperties(DEFAULT_PROPERTIES_FILE);
+        if (propertyFileName != null) {
+			Properties overridenProps = loadProperties(propertyFileName);
+			if ( overridenProps != null ){
+				properties.putAll(overridenProps);
+			}
+			LOGGER.debug("Finished loading properties from "+propertyFileName);
             upgradeRoot = properties.getProperty("upgrade-base-directory");
 			/*
 			 * If the post-upgrade-directory property is specified, use it as
@@ -384,29 +390,25 @@ public class App {
 	 *         file.
 	 */
     private Properties loadProperties(String fname) {
-        Properties retval = null;
+        Properties properties = new Properties();
         FileReader reader = null;
 
         try {
             reader = new FileReader(fname);
-
-            retval = new Properties();
-            retval.load(reader);
-            if (StringUtils.isBlank(retval.getProperty("database-url"))) {
-                retval = null;
-            }
+			properties.load(reader);
         } catch (Exception ex) {
-            retval = null;
+			LOGGER.error(ex);
+			properties = null;
         } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
             } catch (Exception ex) {
-            };
+            }
         }
 
-        return retval;
+        return properties;
     }
 
 	/**
