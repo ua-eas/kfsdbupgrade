@@ -1,5 +1,5 @@
 # print output files
-UPGRADE_LOG_PATH=$JENKINS_HOME/uaf/dbupgrade/logs
+UPGRADE_LOG_PATH=.
 echo $UPGRADE_LOG_PATH
 
 echo '----'
