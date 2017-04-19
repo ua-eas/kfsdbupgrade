@@ -83,7 +83,6 @@ BEGIN
     select MAX(ENTRY_ID) + 1 into new_start_id from GL_ENTRY_T;
     execute immediate 'CREATE SEQUENCE GL_ENTRY_ID_SEQ START WITH ' || new_start_id || ' INCREMENT BY 1 NOMAXVALUE CACHE 500 NOCYCLE';
 END;
-/
 
 
 --------------------------------------------------------------------------------------------------------------------------
@@ -118,7 +117,10 @@ select gle.ENTRY_ID, gecd.FDOC_NBR, lines.FDOC_REF_NBR, lines.FDOC_LN_TYP_CD, li
     inner join FP_ACCT_LINES_T lines
         on gecd.FDOC_NBR = lines.FDOC_NBR
     inner join GL_ENTRY_T gle
-        on gle.UNIV_FISCAL_YR in ('2017', '2016')
+        on gle.UNIV_FISCAL_YR in (  -- Get current year and one back, e.g.: ('2017', '2016')
+                                    (select to_char(sysdate, 'YYYY') from dual),
+                                    (select to_char(sysdate, 'YYYY')-1 from dual)
+                                 )
         and lines.FDOC_POST_YR     = gle.UNIV_FISCAL_YR
         and lines.FIN_COA_CD       = gle.FIN_COA_CD
         and lines.FDOC_REF_NBR     = gle.FDOC_NBR
