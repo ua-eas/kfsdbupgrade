@@ -77,12 +77,11 @@ CREATE UNIQUE INDEX GL_ENTRY_TI18 ON GL_ENTRY_T(OBJ_ID);
 --------------------------------------------------------------------------------------------------------------------------
 -- Note: thefollowing code block is oracle-specific PL/SQL, where we need to use the end limiter '/'.
 -- Actual function: select the highest ENTRY_ID value, and set the new sequence's starting point one up from that.
-DECLARE
-    new_start_id number;
-BEGIN
-    select MAX(ENTRY_ID) + 1 into new_start_id from GL_ENTRY_T;
-    execute immediate 'CREATE SEQUENCE GL_ENTRY_ID_SEQ START WITH ' || new_start_id || ' INCREMENT BY 1 NOMAXVALUE CACHE 500 NOCYCLE';
-END;
+--
+-- GOTCHA: OJDBC was parsing PL/SQL newlines wrong, and errantly detects EOF where there was none. So the stopgap,
+--         is to remove all newlines in the PL/SQL (I'll refrain from ranting about the licensing fees we pay for
+--         this level of quality).
+DECLARE new_start_id number; BEGIN select MAX(ENTRY_ID) + 1 into new_start_id from GL_ENTRY_T; execute immediate 'CREATE SEQUENCE GL_ENTRY_ID_SEQ START WITH ' || new_start_id || ' INCREMENT BY 1 NOMAXVALUE CACHE 500 NOCYCLE'; END;
 
 
 --------------------------------------------------------------------------------------------------------------------------
