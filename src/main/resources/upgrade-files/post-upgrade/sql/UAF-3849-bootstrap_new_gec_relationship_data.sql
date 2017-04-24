@@ -78,12 +78,15 @@ CREATE UNIQUE INDEX GL_ENTRY_TI18 ON GL_ENTRY_T(OBJ_ID);
 -- Note: thefollowing code block is oracle-specific PL/SQL, where we need to use the end limiter '/'.
 -- Actual function: select the highest ENTRY_ID value, and set the new sequence's starting point one up from that.
 --
--- GOTCHA: OJDBC was parsing PL/SQL newlines wrong, and errantly detects EOF where there was none. So the stopgap,
+-- 2 GOTCHAs: OJDBC was parsing PL/SQL newlines wrong, and errantly detects EOF where there was none. So the stopgap,
 --         is to remove all newlines in the PL/SQL (I'll refrain from ranting about the licensing fees we pay for
---         this level of quality). Moreover, we need a '/' on a line by itself since this is PL/SQL, or else we'll
---         get a warning.
-DECLARE new_start_id number; BEGIN select MAX(ENTRY_ID) + 1 into new_start_id from GL_ENTRY_T; execute immediate 'CREATE SEQUENCE GL_ENTRY_ID_SEQ START WITH ' || new_start_id || ' INCREMENT BY 1 NOMAXVALUE CACHE 500 NOCYCLE'; END;
-/
+--         this level of quality).
+--             The second bug is in App.java#getSqlStatements(...):503-507, where a trailing semicolon is stripped.
+--         This is the general case, where JDBC doesn't want line terminators, but PL/SQL has a coinciding rule that its
+--         blocks should be terminated by semicolon, which also happens to be at the end of a line. This is why there's
+--         two ';' at the end of this statement: one will be consumed by App.java, and the other will be left for OJDBC.
+--         This was tested in a modified kfsdbupgrade process, and observed to work correctly.
+DECLARE new_start_id number; BEGIN select MAX(ENTRY_ID) + 1 into new_start_id from GL_ENTRY_T; execute immediate 'CREATE SEQUENCE GL_ENTRY_ID_SEQ START WITH ' || new_start_id || ' INCREMENT BY 1 NOMAXVALUE CACHE 500 NOCYCLE'; END;;
 
 
 --------------------------------------------------------------------------------------------------------------------------
