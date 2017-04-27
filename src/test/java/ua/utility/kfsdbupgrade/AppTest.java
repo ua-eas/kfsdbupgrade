@@ -69,6 +69,7 @@ public class AppTest {
 		directories.add("5.4_5-4.1");
 		directories.add("5.4.1_6.0");
 		directories.add("post-upgrade");
+		directories.add("ua-workflow");
 		return directories;
 	}
 
@@ -96,6 +97,7 @@ public class AppTest {
 		directories.add("5.4_5-4.1");
 		directories.add("5.4.1_6.0");
 		directories.add("post-upgrade");
+		directories.add("ua-workflow");
 		return directories;
 	}
 
