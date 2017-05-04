@@ -165,7 +165,7 @@ ALTER TABLE FP_GEC_ENTRY_REL_T ADD CONSTRAINT GEC_ENTRY_RELATIONSHIP_TP1 PRIMARY
 -- This condition can be caused by external systems dropping us OriginEntry files that have less validation, and
 -- also the manual nature of GEC in v3 KFS.
 update GL_ENTRY_T gle
-    set GEC_FDOC_NBR = "LOCKED"
+    set GEC_FDOC_NBR = 'LOCKED'
     where ENTRY_ID in
         (select
             ENTRY_ID
