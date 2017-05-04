@@ -68,9 +68,9 @@ public class App {
     private static final String INDEX_NAME_TEMPLATE = "[table-name]I{index}";
 
 	private static final String MISC_SQL_PATH = "sql/misc.sql";
-	private static final String KFS_INDEXES_SQL_PATH = "sql/kfs-indexes.sql";
+	protected static final String KFS_INDEXES_SQL_PATH = "sql/kfs-indexes.sql";
 	private static final String KFS_PUBLIC_SYNONYMS_SQL_PATH = "sql/kfs-public-synonyms.sql";
-	private static final String DEFAULT_PROPERTIES_FILE = "src/main/resources/kfsdbupgrade.properties";
+	protected static final String DEFAULT_PROPERTIES_FILE = "src/main/resources/kfsdbupgrade.properties";
 	/**
 	 * Populated by the <code>upgrade-base-directory</code> {@link Properties}
 	 * entry
@@ -226,7 +226,8 @@ public class App {
 					LOGGER.error("updatePurchasingStatuses(conn1); -- FAILED in doUpgrade() ", e);
 				}
 				try {
-					createExistingIndexes(conn2, stmt);
+					File kfsIndexesSqlFile = new File(postUpgradeDirectory + File.separator + KFS_INDEXES_SQL_PATH);
+					createExistingIndexes(conn2, stmt, kfsIndexesSqlFile);
 				} catch (Exception e) {
 					LOGGER.error("createExistingIndexes(conn2, stmt); -- FAILED in doUpgrade() ", e);
 				}
@@ -831,7 +832,7 @@ public class App {
 	 * @throws Exception
 	 *             Any {@link Exception}s encountered will be rethrown.
 	 */
-    private Connection getUpgradeConnection() throws Exception {
+    protected Connection getUpgradeConnection() throws Exception {
         Connection retval = null;
         String url = properties.getProperty("database-url");
 
@@ -863,7 +864,7 @@ public class App {
 	 * @param res
 	 *            {@link ResultSet} to close, if any
 	 */
-    private void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
+    protected void closeDbObjects(Connection conn, Statement stmt, ResultSet res) {
         try {
             if (res != null) {
                 res.close();
@@ -1168,7 +1169,7 @@ public class App {
             StringTokenizer st = new StringTokenizer(line.substring(pos + 1, pos2), ",");
 
             while (st.hasMoreTokens()) {
-                retval.add(st.nextToken());
+                retval.add(st.nextToken().trim());
             }
         }
 
@@ -1185,17 +1186,23 @@ public class App {
 	 * @param conn
 	 * @param stmt
 	 */
-    private void createExistingIndexes(Connection conn, Statement stmt) {
+    protected boolean createExistingIndexes(Connection conn, Statement stmt, File kfsIndexesSqlFile) {
+        boolean success = true;
         LineNumberReader lnr = null;
 
         logHeader2("creating KFS indexes that existed prior to upgrade where required ");
-		File kfsIndexesSqlFile = new File(postUpgradeDirectory + File.separator + KFS_INDEXES_SQL_PATH);
         try {
 			lnr = new LineNumberReader(new FileReader(kfsIndexesSqlFile));
 
             String line = null;
 
             while ((line = lnr.readLine()) != null) {
+
+                if (StringUtils.isNotBlank(line) && line.startsWith("--")) {
+                    // Skip lines starting with a comment
+                    continue;
+                }
+
                 String tableName = getIndexTableName(line);
                 String indexName = getIndexName(line);
                 if (StringUtils.isNotBlank(tableName) && StringUtils.isNotBlank(indexName)) {
@@ -1235,6 +1242,7 @@ public class App {
                             try {
                                 stmt.execute(sql.toString());
                             } catch (SQLException ex) {
+                                success = false;
 								LOGGER.error("failed to create index: " + sql.toString(), ex);
                             }
                         }
@@ -1242,6 +1250,7 @@ public class App {
                 }
             }
         } catch (Exception ex) {
+			success = false;
 			LOGGER.error(ex);
         } finally {
             try {
@@ -1252,6 +1261,8 @@ public class App {
             };
         }
 		postUpgradeFilesProcessed.add(kfsIndexesSqlFile);
+
+        return success;
     }
 
 	/**
@@ -1332,21 +1343,18 @@ public class App {
                     map.put(indexName, columns = new ArrayList<String>());
                 }
 
-                columns.add(res.getString(2));
+                columns.add(res.getString(2).trim());
             }
 
 			/*
 			 * for each index name, if the list of columns in that index is the
 			 * same size of the input columnNames, AND the contents are the same
-			 * (NOTE: here, also matching on order; don't strictly need to,
-			 * potential bug; looking for equivalence, not strict equality),
-			 * then the index exists
 			 */
             for (List<String> columns : map.values()) {
                 if (columns.size() == columnNames.size()) {
                     boolean foundit = true;
-                    for (int i = 0; i < columns.size(); ++i) {
-                        if (!columns.get(i).equals(columnNames.get(i))) {
+                    for (String column : columns) {
+                        if (!columnNames.contains(column)) {
                             foundit = false;
                             break;
                         }
@@ -2518,4 +2526,8 @@ public class App {
     	}
 		return Collections.unmodifiableSet(unprocessed);
     }
+
+	protected File getPostUpgradeDirectory() {
+		return postUpgradeDirectory;
+	}
 }
