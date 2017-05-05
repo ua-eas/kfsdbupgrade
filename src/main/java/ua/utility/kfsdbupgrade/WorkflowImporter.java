@@ -95,7 +95,7 @@ public class WorkflowImporter {
         try {
             initializeKfs();
 
-            File workflowWorkDir = new File(WORKFLOW_PROCESSING_FOLDER);
+            File workflowWorkDir = new File(upgradeRoot + File.separator + WORKFLOW_PROCESSING_FOLDER);
             
             if (!workflowWorkDir.exists()) {
                 workflowWorkDir.mkdirs();
@@ -131,7 +131,7 @@ public class WorkflowImporter {
 			 * process
 			 */
             for (String folder : upgradeFolders) {
-                File fdir = new File("upgrade-files" + File.separator + folder);
+                File fdir = new File(upgradeRoot + File.separator + folder);
                 
                 if (fdir.exists() && fdir.isDirectory()) {
                     List <File> workflowFiles = new ArrayList<File>();

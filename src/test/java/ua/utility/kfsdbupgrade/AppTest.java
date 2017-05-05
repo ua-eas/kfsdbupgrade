@@ -9,13 +9,11 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class AppTest {
+public class AppTest extends AppTestBase {
 
 	@Test
 	public void buildRunRequestFromLastProcessedFile() {
-		String propertyFileName = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main"
-				+ File.separator + "resources" + File.separator + "kfsdbupgrade.properties";
-		App app = new App(propertyFileName);
+		App app = getApp();
 		/*
 		 * note that above created using system independent properties;
 		 * unfortunately the rest of the code base still specifically expects
@@ -69,6 +67,7 @@ public class AppTest {
 		directories.add("5.4_5-4.1");
 		directories.add("5.4.1_6.0");
 		directories.add("post-upgrade");
+		directories.add("ua-workflow");
 		return directories;
 	}
 
@@ -96,6 +95,7 @@ public class AppTest {
 		directories.add("5.4_5-4.1");
 		directories.add("5.4.1_6.0");
 		directories.add("post-upgrade");
+		directories.add("ua-workflow");
 		return directories;
 	}
 
