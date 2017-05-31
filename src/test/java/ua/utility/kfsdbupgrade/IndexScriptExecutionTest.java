@@ -48,6 +48,7 @@ public class IndexScriptExecutionTest extends AppTestBase {
      * detected as existing, then it will be skipped for execution, and moves on to the
      * next line in the file.
      */
+    @Ignore // Integration test, shouldn't hold up a build
     @Test
     public void testProblemIndexDml() {
         App app = getApp();
@@ -61,7 +62,7 @@ public class IndexScriptExecutionTest extends AppTestBase {
      * Sanity check after having modified some small things in App.java, plus
      * can be used as a general smoke test for new index DML.
      */
-    @Ignore // Can be removed once UAF-2483 is merged (it has the script fixes)
+    @Ignore // Integration test, shouldn't hold up a build
     @Test
     public void testFullIndexDml() {
         App app = getApp();
