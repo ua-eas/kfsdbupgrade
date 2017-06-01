@@ -161,6 +161,7 @@ public class MaintainableXMLConversionServiceImpl {
 		 */
 		xml = xml.replace("\u0001", "-");
 		xml = xml.replace("\u001e", " ");
+		xml = xml.replace("\u001d", " ");
 	    String beginning = StringUtils.substringBefore(xml, "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String oldMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
         String newMaintainableObjectXML = StringUtils.substringBetween(xml, "<" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">", "</" + NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">");
