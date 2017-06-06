@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -13,6 +14,7 @@ import org.junit.Test;
 public class GecBootstrapDataTest extends AppTestBase {
     private static final String PROBLEM_QUERY_FILE_1 = "gec_test_queries/uaf-3849_problem_query_1.sql";
     private static final String PROBLEM_QUERY_FILE_2 = "gec_test_queries/uaf-3849_problem_query_2.sql";
+    private static final String PROBLEM_QUERY_FILE_3 = "gec_test_queries/uaf-3849_problem_query_3.sql";
 
     /*
      * Test query that failed with a double-quoted string, now isolated for testing. If you see this
@@ -22,6 +24,7 @@ public class GecBootstrapDataTest extends AppTestBase {
      *            effect, since the inner query of the file counts against a now empty table. But,
      *            we will still get validation of it being sent off to the server
      */
+    @Ignore //integration test
     @Test
     public void testProblemQuery_1 () {
         boolean success = executeSqlFile(PROBLEM_QUERY_FILE_1);
@@ -37,9 +40,22 @@ public class GecBootstrapDataTest extends AppTestBase {
      *            effect, since the inner query of the file counts against a now empty table. But,
      *            we will still get validation of it being sent off to the server
      */
+    @Ignore //integration test
     @Test
     public void testProblemQuery_2 () {
         boolean success = executeSqlFile(PROBLEM_QUERY_FILE_2);
+        Assert.assertTrue("Query file did NOT process successfully!", success);
+    }
+
+
+    /*
+     * Changed to inlude AccountingLines' OBJ_ID for failproof association, need a sanity
+     * check that the previously working queries still work after the addition.
+     */
+    //@Ignore //integration test
+    @Test
+    public void testProblemQuery_3 () {
+        boolean success = executeSqlFile(PROBLEM_QUERY_FILE_3);
         Assert.assertTrue("Query file did NOT process successfully!", success);
     }
 

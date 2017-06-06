@@ -92,13 +92,14 @@ DECLARE new_start_id number; BEGIN select MAX(ENTRY_ID) + 1 into new_start_id fr
 --------------------------------------------------------------------------------------------------------------------------
 -- 06/12 - Create new GEC Entry Relationship table. Note, the gec_fdoc_ref_nbr field is for backend work,
 --------------------------------------------------------------------------------------------------------------------------
--- purposely excluded from ORM and POJO.
+-- The line UUID is populated in-app, so we _don't_ want to default it's value here.
 CREATE TABLE FP_GEC_ENTRY_REL_T  (
     ENTRY_ID            NUMBER(19,0),
     GEC_FDOC_NBR        VARCHAR2(14),
     GEC_FDOC_REF_NBR    VARCHAR2(14),
     GEC_FDOC_LN_TYP_CD  VARCHAR2(1),
     GEC_ACCT_LINE_NBR   NUMBER(7,0),
+    GEC_ACCT_LINE_UUID  VARCHAR2(36 BYTE) UNIQUE,
     GEC_DOC_HDR_STAT_CD VARCHAR2(1),
     VER_NBR             NUMBER(8,0) DEFAULT 1 NOT NULL ENABLE,
     OBJ_ID              VARCHAR2(36 BYTE) DEFAULT SYS_GUID() NOT NULL ENABLE
@@ -112,8 +113,8 @@ CREATE TABLE FP_GEC_ENTRY_REL_T  (
 -- line on its related original source GLE (i.e. the GLE the line was built from). Finally insert a new GEC
 -- Entry Relation record of each result. This should end up with the ENTRY_ID being a unique column, but
 -- about 100 dirty records need to be deleted in the next step.
-insert into FP_GEC_ENTRY_REL_T (ENTRY_ID, GEC_FDOC_NBR, GEC_FDOC_REF_NBR, GEC_FDOC_LN_TYP_CD, GEC_ACCT_LINE_NBR, GEC_DOC_HDR_STAT_CD, VER_NBR, OBJ_ID)
-select gle.ENTRY_ID, gecd.FDOC_NBR, lines.FDOC_REF_NBR, lines.FDOC_LN_TYP_CD, lines.FDOC_LINE_NBR, hdr.DOC_HDR_STAT_CD, 1, SYS_GUID()
+insert into FP_GEC_ENTRY_REL_T (ENTRY_ID, GEC_FDOC_NBR, GEC_FDOC_REF_NBR, GEC_FDOC_LN_TYP_CD, GEC_ACCT_LINE_NBR, GEC_ACCT_LINE_UUID, GEC_DOC_HDR_STAT_CD, VER_NBR, OBJ_ID)
+select gle.ENTRY_ID, gecd.FDOC_NBR, lines.FDOC_REF_NBR, lines.FDOC_LN_TYP_CD, lines.FDOC_LINE_NBR, lines.OBJ_ID, hdr.DOC_HDR_STAT_CD, 1, SYS_GUID()
     from FP_ERROR_COR_DOC_T gecd
     inner join KREW_DOC_HDR_T hdr
         on gecd.FDOC_NBR = hdr.DOC_HDR_ID
