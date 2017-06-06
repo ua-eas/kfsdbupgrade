@@ -99,7 +99,7 @@ CREATE TABLE FP_GEC_ENTRY_REL_T  (
     GEC_FDOC_REF_NBR    VARCHAR2(14),
     GEC_FDOC_LN_TYP_CD  VARCHAR2(1),
     GEC_ACCT_LINE_NBR   NUMBER(7,0),
-    GEC_ACCT_LINE_UUID  VARCHAR2(36 BYTE) UNIQUE,
+    GEC_ACCT_LINE_UUID  VARCHAR2(36 BYTE),
     GEC_DOC_HDR_STAT_CD VARCHAR2(1),
     VER_NBR             NUMBER(8,0) DEFAULT 1 NOT NULL ENABLE,
     OBJ_ID              VARCHAR2(36 BYTE) DEFAULT SYS_GUID() NOT NULL ENABLE
@@ -123,9 +123,9 @@ select gle.ENTRY_ID, gecd.FDOC_NBR, lines.FDOC_REF_NBR, lines.FDOC_LN_TYP_CD, li
         on gecd.FDOC_NBR = lines.FDOC_NBR
     inner join GL_ENTRY_T gle
         on gle.UNIV_FISCAL_YR in (
-                                    (select to_char(sysdate, 'YYYY') from dual),
-                                    (select to_char(sysdate, 'YYYY')-1 from dual)
-                                 )
+            (select to_char(sysdate, 'YYYY') from dual),
+            (select to_char(sysdate, 'YYYY')-1 from dual)
+        )
         and lines.FDOC_POST_YR     = gle.UNIV_FISCAL_YR
         and lines.FIN_COA_CD       = gle.FIN_COA_CD
         and lines.FDOC_REF_NBR     = gle.FDOC_NBR
@@ -161,35 +161,84 @@ ALTER TABLE FP_GEC_ENTRY_REL_T ADD CONSTRAINT GEC_ENTRY_RELATIONSHIP_TP1 PRIMARY
 
 
 --------------------------------------------------------------------------------------------------------------------------
--- 10/12 - Stamp a sentinal mark on the GLEs that don't have enough data to associate to the source GLE correctly.
+-- Cleanup inconsistent data where multiple GLEs appear to have been operated on by one GEC
 --------------------------------------------------------------------------------------------------------------------------
--- This condition can be caused by external systems dropping us OriginEntry files that have less validation, and
--- also the manual nature of GEC in v3 KFS.
+-- Clean-up for inconsistent data, as viewed from ENTRY_ID; 94 rows as of 05-Jun-2017
+-- Note: I'm using a temp table here as a memory and speed optimization
+create table TEMP_T_SLDHEYHDNGL as
+select ENTRY_ID
+  from FP_GEC_ENTRY_REL_T
+  where ENTRY_ID in (
+    select ENTRY_ID
+      from FP_GEC_ENTRY_REL_T
+      group by ENTRY_ID
+      having count(*) > 1
+  );
+
+-- Stamp the GLE, which will block the GLE from being used in GEC ever again
 update GL_ENTRY_T gle
     set GEC_FDOC_NBR = 'LOCKED'
-    where ENTRY_ID in
-        (select
-            ENTRY_ID
-            from FP_GEC_ENTRY_REL_T
-            group by ENTRY_ID
-            having count(*) > 1
-        );
+    where ENTRY_ID in (
+      select ENTRY_ID
+        from TEMP_T_SLDHEYHDNGL
+    );
 
-
---------------------------------------------------------------------------------------------------------------------------
--- 11/12 - Remove the duplicate relationships in the new GEC Relationship table
---------------------------------------------------------------------------------------------------------------------------
--- These relate to the GLEs we stamped as "LOCKED" in the last step. As a historical note, when this was created, the
--- FY16/17 produced 94 bad records. Lastly, this allows us to remain key-constrained across the lines/gle tables for the
--- next step (marking the good relationships).
+-- Clean up the relationships, since it's inconsistent to leave them
 delete
     from FP_GEC_ENTRY_REL_T
     where ENTRY_ID in (
-        select ENTRY_ID
-            from FP_GEC_ENTRY_REL_T
-            group by entry_id
-            having count(*) > 1
+      select ENTRY_ID
+        from TEMP_T_SLDHEYHDNGL
     );
+
+-- Temp tables go away at the end of a session, but don't want it hanging
+-- out for the rest of the upgrade
+drop table TEMP_T_SLDHEYHDNGL;
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+-- Cleanup inconsistent data where one line appears to have been involved in multiple GECs
+--------------------------------------------------------------------------------------------------------------------------
+-- Clean-up for inconsistent data from AccountingLine's OBJ_ID
+-- Roughly 92 rows, or 0.008% of the corpus, as of 05-Jun-2017
+
+-- First create a temp table that have the multi-line issue, this was necessary
+-- since a dynamic join breaks the prototype DB memory limits
+create table TEMP_T_IUKSLJFYWBD as
+select ENTRY_ID
+  from FP_GEC_ENTRY_REL_T
+  where GEC_ACCT_LINE_UUID in (
+    select GEC_ACCT_LINE_UUID
+      from FP_GEC_ENTRY_REL_T
+      group by GEC_ACCT_LINE_UUID
+      having count(*) > 1
+  );
+
+-- Now stamp the related GLE based on the temp table findings
+update GL_ENTRY_T gle
+  set GEC_FDOC_NBR = 'LOCKED'
+  where ENTRY_ID in (
+    select ENTRY_ID
+      from TEMP_T_IUKSLJFYWBD
+  );
+
+-- Now delete the relationships, as the only records there should
+-- be valid and active relationships; this will prevent a bad
+-- relationship from being further operated on
+delete
+  from FP_GEC_ENTRY_REL_T
+  where ENTRY_ID in (
+    select ENTRY_ID
+      from TEMP_T_IUKSLJFYWBD
+  );
+
+-- Cleanup, but this should go away at the close of the session, might as
+-- well be explicit so that it's not hanging around the entire upgrade
+drop table TEMP_T_IUKSLJFYWBD;
+
+-- Now enforce the new UUID
+create unique index ACCT_LN_UUID_IDX on FP_GEC_ENTRY_REL_T(GEC_ACCT_LINE_UUID);
 
 
 --------------------------------------------------------------------------------------------------------------------------

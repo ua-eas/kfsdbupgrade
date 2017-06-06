@@ -52,7 +52,7 @@ public class GecBootstrapDataTest extends AppTestBase {
      * Changed to inlude AccountingLines' OBJ_ID for failproof association, need a sanity
      * check that the previously working queries still work after the addition.
      */
-    //@Ignore //integration test
+    @Ignore //integration test
     @Test
     public void testProblemQuery_3 () {
         boolean success = executeSqlFile(PROBLEM_QUERY_FILE_3);
