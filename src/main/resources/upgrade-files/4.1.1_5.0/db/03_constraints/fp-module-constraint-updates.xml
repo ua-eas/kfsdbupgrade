@@ -34,10 +34,6 @@
     		baseTableName="FP_PRCRMNT_CARD_DFLT_T" baseColumnNames="FIN_COA_CD"
     		referencedTableName="CA_CHART_T" referencedColumnNames="FIN_COA_CD"
 		/>
-		<addForeignKeyConstraint constraintName="FP_PRCRMNT_CARD_DFLT_TR2"
-    		baseTableName="FP_PRCRMNT_CARD_DFLT_T" baseColumnNames="FIN_COA_CD, ACCOUNT_NBR"
-    		referencedTableName="CA_ACCOUNT_T" referencedColumnNames="FIN_COA_CD, ACCOUNT_NBR"
-		/>
 		<addForeignKeyConstraint constraintName="FP_PRCRMNT_CARD_DFLT_TR3"
     		baseTableName="FP_PRCRMNT_CARD_DFLT_T" baseColumnNames="FIN_COA_CD, ACCOUNT_NBR, SUB_ACCT_NBR"
     		referencedTableName="CA_SUB_ACCT_T" referencedColumnNames="FIN_COA_CD, ACCOUNT_NBR, SUB_ACCT_NBR"
