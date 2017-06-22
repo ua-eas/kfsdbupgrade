@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -47,6 +48,7 @@ public class IndexScriptExecutionTest extends AppTestBase {
      * detected as existing, then it will be skipped for execution, and moves on to the
      * next line in the file.
      */
+    @Ignore // Integration test, shouldn't hold up a build
     @Test
     public void testProblemIndexDml() {
         App app = getApp();
@@ -60,6 +62,7 @@ public class IndexScriptExecutionTest extends AppTestBase {
      * Sanity check after having modified some small things in App.java, plus
      * can be used as a general smoke test for new index DML.
      */
+    @Ignore // Integration test, shouldn't hold up a build
     @Test
     public void testFullIndexDml() {
         App app = getApp();
