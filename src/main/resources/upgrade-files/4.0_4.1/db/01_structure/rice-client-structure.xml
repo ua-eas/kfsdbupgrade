@@ -26,7 +26,7 @@
   			</and>
   		</not>
   	</preConditions>
-	<comment>Restore Sequences needed if running with a separate standalone Rice server.</comment>
+	<comment>Restore Sequences needed if running with a separate standalone Rice server. If PRECONDITION FAILED Below Then Sequence Already Exists So Skipped Creating it! If PRECONDITION SUCCEEDED Below Then Sequence Does Not Exist So Created it!</comment>
 	<createSequence sequenceName="KRSB_BAM_PARM_S" startValue="30000" />
 	<createSequence sequenceName="KRSB_BAM_S" startValue="30000" />
 	<createSequence sequenceName="KRSB_MSG_QUE_S" startValue="30000" />
