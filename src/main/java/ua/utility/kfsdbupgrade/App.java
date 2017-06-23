@@ -419,7 +419,7 @@ public class App {
 	 * @param conn
 	 *            {@link Connection} to rollback.
 	 */
-    private void doRollback(Connection conn) {
+    protected void doRollback(Connection conn) {
         try {
             conn.rollback();
         } catch (Exception ex) {
@@ -463,7 +463,7 @@ public class App {
 	 *         {@link File} were executed successfully, <code>false</code>
 	 *         otherwise
 	 */
-    private boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
+    protected boolean runSqlFile(Connection conn, Statement stmt, File f, String delimiter) {
         boolean retval = true;
         logHeader2("processing sql file " + f.getPath());
         List<String> sqlStatements = getSqlStatements(f);
