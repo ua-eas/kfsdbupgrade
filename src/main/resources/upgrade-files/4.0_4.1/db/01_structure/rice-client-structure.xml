@@ -17,7 +17,6 @@
 <databaseChangeLog xmlns='http://www.liquibase.org/xml/ns/dbchangelog/1.9' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd'>
 
   <changeSet author="kfs" id="KFS_401_RESTORE_MISSING_RICE_SEQUENCES_oracle" failOnError="false" dbms="oracle">
-    <!-- Preconditions don't seem to be working right - hangs the build 
   	<preConditions onFail="MARK_RAN">
   		<not>
   			<and>
@@ -27,15 +26,14 @@
   			</and>
   		</not>
   	</preConditions>
-  	-->
-	<comment>Restore Sequences needed if running with a separate standalone Rice server.</comment>
+	<comment>Restore Rice Sequences needed if running with a separate standalone Rice server. If   Not precondition failed   Below Then Sequence Already Exists So Skipped Creating it! If   Not precondition succeeded   Below Then Sequence Does Not Exist So Created it!</comment>
 	<createSequence sequenceName="KRSB_BAM_PARM_S" startValue="30000" />
 	<createSequence sequenceName="KRSB_BAM_S" startValue="30000" />
 	<createSequence sequenceName="KRSB_MSG_QUE_S" startValue="30000" />
   </changeSet>
 
   <changeSet author="kfs" id="KFS_401_RESTORE_MISSING_RICE_SEQUENCES_mysql" failOnError="false" dbms="mysql">
-    <!--
+    <!--  Preconditions don't seem to be working right - hangs the build
   	<preConditions onFail="MARK_RAN">
   		<not>
   			<and>
