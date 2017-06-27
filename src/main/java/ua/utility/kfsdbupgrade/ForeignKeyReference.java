@@ -110,7 +110,7 @@ public class ForeignKeyReference implements Comparable <ForeignKeyReference> {
 		// trailing "_T" (underscore T) removed and all "_"'s (underscores) removed as the index name stub.
 		// Thus the index name will be shorter but still correlate with the unmolested table name.
 		String shortIndexNameStub = tableName;
-		if (tableName.lastIndexOf("_T") == (tableName.length() - 2)) {
+		if (tableName.toLowerCase().endsWith("_t")) {
 			shortIndexNameStub = tableName.substring(0,tableName.length() - 2);
 		}
 		shortIndexNameStub = shortIndexNameStub.replace("_","");
