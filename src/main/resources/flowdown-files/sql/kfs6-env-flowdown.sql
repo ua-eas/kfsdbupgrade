@@ -14,8 +14,11 @@ truncate table kulowner.QRTZ_SCHEDULER_STATE;
 truncate table kulowner.KRSB_MSG_PYLD_T;
 truncate table kulowner.KRSB_MSG_QUE_T;
 
---attempting to truncate KRSB_SVC_DSCRPTR_T throws an error, so directly delete and commit
+-- This table will get re-populated during server startup, so clear out cruft,
+-- and reset sequence (a DB copy from PRD will bring records we need gone).
 delete from kulowner.KRSB_SVC_DSCRPTR_T;
+drop sequence KRSB_SVC_DSCRPTR_S;
+create sequence KRSB_SVC_DSCRPTR_S increment by 1 start with 10000 nomaxvalue nocycle nocache order;
 commit;
 
 delete from QRTZ_BLOB_TRIGGERS;
