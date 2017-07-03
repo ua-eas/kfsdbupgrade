@@ -21,6 +21,9 @@
 	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod6" dbms="oracle">
 
 	<sql splitStatements="false"><![CDATA[
+	ALTER SESSION ENABLE PARALLEL DML
+	]]></sql>
+	<sql splitStatements="false"><![CDATA[
 	    DECLARE
             	PROCEDURE drop_synonyms IS
 		    CURSOR synonyms_cursor IS
@@ -99,6 +102,9 @@
 		        , null
 		FROM OLD_KREW_RTE_NODE_T
 		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		
 		DROP TABLE OLD_KREW_RTE_NODE_T CASCADE CONSTRAINTS PURGE
@@ -168,6 +174,9 @@
 		        , INIT_IND
 		        , VER_NBR
 		FROM OLD_KREW_DOC_TYP_PROC_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		

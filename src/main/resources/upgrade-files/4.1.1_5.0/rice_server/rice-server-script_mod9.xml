@@ -21,6 +21,9 @@
 	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod9" dbms="oracle">
 
 	<sql splitStatements="false"><![CDATA[
+	ALTER SESSION ENABLE PARALLEL DML
+	]]></sql>
+	<sql splitStatements="false"><![CDATA[
 	    DECLARE
             	PROCEDURE drop_synonyms IS
 		    CURSOR synonyms_cursor IS
@@ -50,11 +53,14 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT /*+ PARALLEL(KREW_DOC_HDR_EXT_T,4) */ INTO KREW_DOC_HDR_EXT_T
+		INSERT /*+ APPEND PARALLEL(4) */ INTO KREW_DOC_HDR_EXT_T
 		(DOC_HDR_EXT_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT /*+ PARALLEL(TEMP_KREW_DOC_HDR_EXT_T,4) */
+		SELECT /*+ PARALLEL(4) */
 		CAST(DOC_HDR_EXT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
 		FROM TEMP_KREW_DOC_HDR_EXT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_T
@@ -119,10 +125,13 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT /*+ PARALLEL(KREW_RTE_NODE_LNK_T,4) */ INTO KREW_RTE_NODE_LNK_T
+		INSERT /*+ APPEND PARALLEL(4) */ INTO KREW_RTE_NODE_LNK_T
 		(FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
-		SELECT /*+ PARALLEL(TEMP_KREW_RTE_NODE_LNK_T,4) */ CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
+		SELECT /*+ PARALLEL(4) */ CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
 		FROM TEMP_KREW_RTE_NODE_LNK_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_LNK_T
@@ -264,10 +273,13 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
-		INSERT /*+ PARALLEL(KREW_INIT_RTE_NODE_INSTN_T,4) */ INTO KREW_INIT_RTE_NODE_INSTN_T
+		INSERT /*+ APPEND PARALLEL(4) */ INTO KREW_INIT_RTE_NODE_INSTN_T
 		(DOC_HDR_ID, RTE_NODE_INSTN_ID)
-		SELECT /*+ PARALLEL(TEMP_KREW_INIT_RTE_NODE_INSTN_T,4) */ DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
+		SELECT /*+ PARALLEL(4) */ DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
 		FROM TEMP_KREW_INIT_RTE_NODE
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T

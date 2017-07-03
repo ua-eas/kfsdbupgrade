@@ -21,6 +21,9 @@
 	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod4" dbms="oracle">
 
 	<sql splitStatements="false"><![CDATA[
+	ALTER SESSION ENABLE PARALLEL DML
+	]]></sql>
+	<sql splitStatements="false"><![CDATA[
 	    DECLARE
             	PROCEDURE drop_synonyms IS
 		    CURSOR synonyms_cursor IS
@@ -60,6 +63,9 @@
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		INSERT /*+ PARALLEL(KREW_RTE_NODE_INSTN_T,4) */ INTO KREW_RTE_NODE_INSTN_T SELECT  /*+ PARALLEL(OLD_KREW_RTE_NODE_INSTN_T,4) */ * FROM OLD_KREW_RTE_NODE_INSTN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_RTE_NODE_INSTN_T
@@ -114,6 +120,9 @@
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		INSERT /*+ PARALLEL(KREW_RULE_T,4) */ INTO KREW_RULE_T SELECT /*+ PARALLEL(OLD_KREW_RULE_T,4) */ * FROM OLD_KREW_RULE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DROP TABLE OLD_KREW_RULE_T
@@ -1392,6 +1401,9 @@
 		        , DOC_SEARCH_HELP_URL
 		        , DOC_HDR_ID
 		FROM OLD_KREW_DOC_TYP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		

@@ -21,6 +21,9 @@
 	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle" dbms="oracle">
 
 	<sql splitStatements="false"><![CDATA[
+	ALTER SESSION ENABLE PARALLEL DML
+	]]></sql>
+	<sql splitStatements="false"><![CDATA[
 		DECLARE
 			PROCEDURE drop_ref_cons( TableName IN VARCHAR2 ) IS
 				CURSOR tab_ref_cons IS
@@ -3098,18 +3101,21 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_NTE_T
+		(DOC_NTE_ID, DOC_HDR_ID, AUTH_PRNCPL_ID, CRT_DT, TXT, VER_NBR)
+		SELECT /*+ parallel (4) */ CAST(DOC_NTE_ID as VARCHAR2(40)), DOC_HDR_ID, AUTH_PRNCPL_ID, CRT_DT, TXT, VER_NBR
+		FROM TEMP_KREW_DOC_NTE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_NTE_T ADD CONSTRAINT KREW_DOC_NTE_TP1 PRIMARY KEY (DOC_NTE_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_DOC_NTE_TI1 ON KREW_DOC_NTE_T (DOC_HDR_ID)
 		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_NTE_T
-		(DOC_NTE_ID, DOC_HDR_ID, AUTH_PRNCPL_ID, CRT_DT, TXT, VER_NBR)
-		SELECT CAST(DOC_NTE_ID as VARCHAR2(40)), DOC_HDR_ID, AUTH_PRNCPL_ID, CRT_DT, TXT, VER_NBR
-		FROM TEMP_KREW_DOC_NTE_T
-		]]></sql>
-		<!-- 
+		<!--
 		<sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
 		BEGIN
@@ -3157,18 +3163,18 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_ATT_T
+		(ATTACHMENT_ID, NTE_ID, FILE_NM, FILE_LOC, MIME_TYP, VER_NBR)
+		SELECT /*+ parallel (4) */ CAST(ATTACHMENT_ID as VARCHAR2(40)), CAST(NTE_ID as VARCHAR2(40)), FILE_NM, FILE_LOC, MIME_TYP, VER_NBR
+		FROM TEMP_KREW_ATT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_ATT_T ADD CONSTRAINT KREW_ATT_TP1 PRIMARY KEY (ATTACHMENT_ID)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
 		CREATE INDEX KREW_ATT_TI1 ON KREW_ATT_T(NTE_ID)
 		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ATT_T
-		(ATTACHMENT_ID, NTE_ID, FILE_NM, FILE_LOC, MIME_TYP, VER_NBR)
-		SELECT CAST(ATTACHMENT_ID as VARCHAR2(40)), CAST(NTE_ID as VARCHAR2(40)), FILE_NM, FILE_LOC, MIME_TYP, VER_NBR
-		FROM TEMP_KREW_ATT_T
-		]]></sql>
-		<!-- 
+		<!--
 		<sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
 		BEGIN
@@ -3227,6 +3233,20 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_ACTN_ITM_T
+		(ACTN_ITM_ID, PRNCPL_ID, ASND_DT, RQST_CD, ACTN_RQST_ID, DOC_HDR_ID, ROLE_NM, DLGN_PRNCPL_ID,
+		 DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, RSP_ID, DLGN_TYP, VER_NBR, DTYPE,
+		 GRP_ID, DLGN_GRP_ID, RQST_LBL)
+		SELECT /*+ parallel (4) */ CAST(ACTN_ITM_ID as VARCHAR2(40)), PRNCPL_ID, ASND_DT, RQST_CD, CAST(ACTN_RQST_ID as VARCHAR2(40)), DOC_HDR_ID,
+		 ROLE_NM, DLGN_PRNCPL_ID,
+		 DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, CAST(RSP_ID as VARCHAR2(40)), DLGN_TYP, VER_NBR, DTYPE,
+		 GRP_ID, DLGN_GRP_ID, RQST_LBL
+		FROM TEMP_KREW_ACTN_ITM_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_ACTN_ITM_T
 		    ADD CONSTRAINT KREW_ACTN_ITM_TP1
 		PRIMARY KEY (ACTN_ITM_ID)
@@ -3251,18 +3271,7 @@
 		  ON KREW_ACTN_ITM_T
 		  (PRNCPL_ID, DLGN_TYP, DOC_HDR_ID)
 		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ACTN_ITM_T
-		(ACTN_ITM_ID, PRNCPL_ID, ASND_DT, RQST_CD, ACTN_RQST_ID, DOC_HDR_ID, ROLE_NM, DLGN_PRNCPL_ID, 
-		 DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, RSP_ID, DLGN_TYP, VER_NBR, DTYPE, 
-		 GRP_ID, DLGN_GRP_ID, RQST_LBL)
-		SELECT CAST(ACTN_ITM_ID as VARCHAR2(40)), PRNCPL_ID, ASND_DT, RQST_CD, CAST(ACTN_RQST_ID as VARCHAR2(40)), DOC_HDR_ID, 
-		 ROLE_NM, DLGN_PRNCPL_ID, 
-		 DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, CAST(RSP_ID as VARCHAR2(40)), DLGN_TYP, VER_NBR, DTYPE, 
-		 GRP_ID, DLGN_GRP_ID, RQST_LBL
-		FROM TEMP_KREW_ACTN_ITM_T
-		]]></sql>
-		<!-- 
+		<!--
 		<sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
 		BEGIN
@@ -3314,6 +3323,17 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_ACTN_TKN_T
+		(ACTN_TKN_ID, DOC_HDR_ID, PRNCPL_ID, DLGTR_PRNCPL_ID, ACTN_CD, ACTN_DT, DOC_VER_NBR, ANNOTN,
+		CUR_IND, VER_NBR, DLGTR_GRP_ID)
+		SELECT /*+ parallel (4) */ CAST(ACTN_TKN_ID as VARCHAR2(40)), DOC_HDR_ID, PRNCPL_ID, DLGTR_PRNCPL_ID, ACTN_CD, ACTN_DT, DOC_VER_NBR, ANNOTN,
+		CUR_IND, VER_NBR, DLGTR_GRP_ID
+		FROM TEMP_KREW_ACTN_TKN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_ACTN_TKN_T
 		    ADD CONSTRAINT KREW_ACTN_TKN_TP1
 		PRIMARY KEY (ACTN_TKN_ID)
@@ -3342,14 +3362,6 @@
 		CREATE INDEX KREW_ACTN_TKN_TI5 
 		  ON KREW_ACTN_TKN_T 
 		  (DOC_HDR_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ACTN_TKN_T
-		(ACTN_TKN_ID, DOC_HDR_ID, PRNCPL_ID, DLGTR_PRNCPL_ID, ACTN_CD, ACTN_DT, DOC_VER_NBR, ANNOTN, 
-		CUR_IND, VER_NBR, DLGTR_GRP_ID)
-		SELECT CAST(ACTN_TKN_ID as VARCHAR2(40)), DOC_HDR_ID, PRNCPL_ID, DLGTR_PRNCPL_ID, ACTN_CD, ACTN_DT, DOC_VER_NBR, ANNOTN, 
-		CUR_IND, VER_NBR, DLGTR_GRP_ID
-		FROM TEMP_KREW_ACTN_TKN_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3417,6 +3429,23 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_ACTN_RQST_T
+		(ACTN_RQST_ID, PARNT_ID, ACTN_RQST_CD, DOC_HDR_ID, RULE_ID, STAT_CD, RSP_ID, PRNCPL_ID,
+		ROLE_NM, QUAL_ROLE_NM, QUAL_ROLE_NM_LBL_TXT, RECIP_TYP_CD, PRIO_NBR, RTE_TYP_NM,
+		RTE_LVL_NBR, RTE_NODE_INSTN_ID, ACTN_TKN_ID, DOC_VER_NBR, CRTE_DT, RSP_DESC_TXT,
+		FRC_ACTN, ACTN_RQST_ANNOTN_TXT, DLGN_TYP, APPR_PLCY, CUR_IND, VER_NBR, GRP_ID, RQST_LBL)
+		SELECT /*+ parallel (4) */ CAST(ACTN_RQST_ID as VARCHAR2(40)), CAST(PARNT_ID as VARCHAR2(40)),
+		ACTN_RQST_CD, DOC_HDR_ID, CAST(RULE_ID as VARCHAR2(40)), STAT_CD, CAST(RSP_ID as VARCHAR2(40)), PRNCPL_ID,
+		ROLE_NM, QUAL_ROLE_NM, QUAL_ROLE_NM_LBL_TXT, RECIP_TYP_CD, PRIO_NBR, RTE_TYP_NM,
+		RTE_LVL_NBR, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40)), CAST(ACTN_TKN_ID as VARCHAR2(40)), DOC_VER_NBR,
+		CRTE_DT, RSP_DESC_TXT,
+		FRC_ACTN, ACTN_RQST_ANNOTN_TXT, DLGN_TYP, APPR_PLCY, CUR_IND, VER_NBR, GRP_ID, RQST_LBL
+		FROM TEMP_KREW_ACTN_RQST_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_ACTN_RQST_T
 		    ADD CONSTRAINT KREW_ACTN_RQST_TP1
 		PRIMARY KEY (ACTN_RQST_ID)
@@ -3460,20 +3489,6 @@
 		CREATE INDEX KREW_ACTN_RQST_T19 
 		  ON KREW_ACTN_RQST_T 
 		  (STAT_CD, DOC_HDR_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_ACTN_RQST_T
-		(ACTN_RQST_ID, PARNT_ID, ACTN_RQST_CD, DOC_HDR_ID, RULE_ID, STAT_CD, RSP_ID, PRNCPL_ID, 
-		ROLE_NM, QUAL_ROLE_NM, QUAL_ROLE_NM_LBL_TXT, RECIP_TYP_CD, PRIO_NBR, RTE_TYP_NM, 
-		RTE_LVL_NBR, RTE_NODE_INSTN_ID, ACTN_TKN_ID, DOC_VER_NBR, CRTE_DT, RSP_DESC_TXT, 
-		FRC_ACTN, ACTN_RQST_ANNOTN_TXT, DLGN_TYP, APPR_PLCY, CUR_IND, VER_NBR, GRP_ID, RQST_LBL)
-		SELECT CAST(ACTN_RQST_ID as VARCHAR2(40)), CAST(PARNT_ID as VARCHAR2(40)), 
-		ACTN_RQST_CD, DOC_HDR_ID, CAST(RULE_ID as VARCHAR2(40)), STAT_CD, CAST(RSP_ID as VARCHAR2(40)), PRNCPL_ID, 
-		ROLE_NM, QUAL_ROLE_NM, QUAL_ROLE_NM_LBL_TXT, RECIP_TYP_CD, PRIO_NBR, RTE_TYP_NM, 
-		RTE_LVL_NBR, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40)), CAST(ACTN_TKN_ID as VARCHAR2(40)), DOC_VER_NBR, 
-		CRTE_DT, RSP_DESC_TXT, 
-		FRC_ACTN, ACTN_RQST_ANNOTN_TXT, DLGN_TYP, APPR_PLCY, CUR_IND, VER_NBR, GRP_ID, RQST_LBL
-		FROM TEMP_KREW_ACTN_RQST_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3522,16 +3537,19 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_TMPL_T
+		(RULE_TMPL_ID, NM, RULE_TMPL_DESC, DLGN_RULE_TMPL_ID, VER_NBR, OBJ_ID)
+		SELECT /*+ parallel (4) */ CAST(RULE_TMPL_ID as VARCHAR2(40)), NM, RULE_TMPL_DESC, CAST(DLGN_RULE_TMPL_ID as VARCHAR2(40)),
+		VER_NBR, OBJ_ID
+		FROM TEMP_KREW_RULE_TMPL_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_TMPL_T
 		    ADD CONSTRAINT KREW_RULE_TMPL_TP1
 		PRIMARY KEY (RULE_TMPL_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_TMPL_T
-		(RULE_TMPL_ID, NM, RULE_TMPL_DESC, DLGN_RULE_TMPL_ID, VER_NBR, OBJ_ID)
-		SELECT CAST(RULE_TMPL_ID as VARCHAR2(40)), NM, RULE_TMPL_DESC, CAST(DLGN_RULE_TMPL_ID as VARCHAR2(40)), 
-		VER_NBR, OBJ_ID
-		FROM TEMP_KREW_RULE_TMPL_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3581,6 +3599,17 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_TMPL_ATTR_T
+		(RULE_TMPL_ATTR_ID, RULE_TMPL_ID, RULE_ATTR_ID, REQ_IND, ACTV_IND, DSPL_ORD, DFLT_VAL, VER_NBR, OBJ_ID)
+		SELECT /*+ parallel (4) */
+		CAST(RULE_TMPL_ATTR_ID as VARCHAR2(40)), CAST(RULE_TMPL_ID as VARCHAR2(40)),
+		CAST(RULE_ATTR_ID as VARCHAR2(40)), REQ_IND, ACTV_IND, DSPL_ORD, DFLT_VAL, VER_NBR, OBJ_ID
+		FROM TEMP_KREW_RULE_TMPL_ATTR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_TMPL_ATTR_T
 		    ADD CONSTRAINT KREW_RULE_TMPL_ATTR_TP1
 		PRIMARY KEY (RULE_TMPL_ATTR_ID)
@@ -3594,14 +3623,6 @@
 		CREATE INDEX KREW_RULE_TMPL_ATTR_TI2 
 		  ON KREW_RULE_TMPL_ATTR_T 
 		  (RULE_ATTR_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_TMPL_ATTR_T
-		(RULE_TMPL_ATTR_ID, RULE_TMPL_ID, RULE_ATTR_ID, REQ_IND, ACTV_IND, DSPL_ORD, DFLT_VAL, VER_NBR, OBJ_ID)
-		SELECT 
-		CAST(RULE_TMPL_ATTR_ID as VARCHAR2(40)), CAST(RULE_TMPL_ID as VARCHAR2(40)), 
-		CAST(RULE_ATTR_ID as VARCHAR2(40)), REQ_IND, ACTV_IND, DSPL_ORD, DFLT_VAL, VER_NBR, OBJ_ID
-		FROM TEMP_KREW_RULE_TMPL_ATTR_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3662,21 +3683,24 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_T
+		(RULE_ID, NM, RULE_TMPL_ID, RULE_EXPR_ID, ACTV_IND, RULE_BASE_VAL_DESC, FRC_ACTN,
+		DOC_TYP_NM, DOC_HDR_ID, TMPL_RULE_IND, FRM_DT, TO_DT, DACTVN_DT, CUR_IND, RULE_VER_NBR,
+		DLGN_IND, PREV_RULE_VER_NBR, ACTVN_DT, VER_NBR, OBJ_ID)
+		SELECT /*+ parallel (4) */
+		CAST(RULE_ID as VARCHAR2(40)), NM, CAST(RULE_TMPL_ID as VARCHAR2(40)), CAST(RULE_EXPR_ID as VARCHAR2(40)),
+		ACTV_IND, RULE_BASE_VAL_DESC, FRC_ACTN,
+		DOC_TYP_NM, DOC_HDR_ID, TMPL_RULE_IND, FRM_DT, TO_DT, DACTVN_DT, CUR_IND, RULE_VER_NBR,
+		DLGN_IND, CAST(PREV_RULE_VER_NBR as VARCHAR2(40)), ACTVN_DT, VER_NBR, OBJ_ID
+		FROM TEMP_KREW_RULE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_T
 		    ADD CONSTRAINT KREW_RULE_TP1
 		PRIMARY KEY (RULE_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_T
-		(RULE_ID, NM, RULE_TMPL_ID, RULE_EXPR_ID, ACTV_IND, RULE_BASE_VAL_DESC, FRC_ACTN, 
-		DOC_TYP_NM, DOC_HDR_ID, TMPL_RULE_IND, FRM_DT, TO_DT, DACTVN_DT, CUR_IND, RULE_VER_NBR, 
-		DLGN_IND, PREV_RULE_VER_NBR, ACTVN_DT, VER_NBR, OBJ_ID)
-		SELECT 
-		CAST(RULE_ID as VARCHAR2(40)), NM, CAST(RULE_TMPL_ID as VARCHAR2(40)), CAST(RULE_EXPR_ID as VARCHAR2(40)), 
-		ACTV_IND, RULE_BASE_VAL_DESC, FRC_ACTN, 
-		DOC_TYP_NM, DOC_HDR_ID, TMPL_RULE_IND, FRM_DT, TO_DT, DACTVN_DT, CUR_IND, RULE_VER_NBR, 
-		DLGN_IND, CAST(PREV_RULE_VER_NBR as VARCHAR2(40)), ACTVN_DT, VER_NBR, OBJ_ID
-		FROM TEMP_KREW_RULE_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3723,17 +3747,20 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DLGN_RSP_T
+		(DLGN_RULE_ID, RSP_ID, DLGN_RULE_BASE_VAL_ID, DLGN_TYP, VER_NBR, OBJ_ID)
+		SELECT /*+ parallel (4) */
+		CAST(DLGN_RULE_ID as VARCHAR2(40)), CAST(RSP_ID as VARCHAR2(40)), CAST(DLGN_RULE_BASE_VAL_ID as VARCHAR2(40)),
+		DLGN_TYP, VER_NBR, OBJ_ID
+		FROM TEMP_KREW_DLGN_RSP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DLGN_RSP_T
 		    ADD CONSTRAINT KREW_DLGN_RSP_TP1
 		PRIMARY KEY (DLGN_RULE_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DLGN_RSP_T
-		(DLGN_RULE_ID, RSP_ID, DLGN_RULE_BASE_VAL_ID, DLGN_TYP, VER_NBR, OBJ_ID)
-		SELECT 
-		CAST(DLGN_RULE_ID as VARCHAR2(40)), CAST(RSP_ID as VARCHAR2(40)), CAST(DLGN_RULE_BASE_VAL_ID as VARCHAR2(40)), 
-		DLGN_TYP, VER_NBR, OBJ_ID
-		FROM TEMP_KREW_DLGN_RSP_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3784,6 +3811,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_RSP_T
+		(RULE_RSP_ID, RSP_ID, RULE_ID, PRIO, ACTN_RQST_CD, NM, TYP, APPR_PLCY, VER_NBR, OBJ_ID)
+		SELECT /*+ parallel (4) */ CAST(RULE_RSP_ID as VARCHAR2(40)), CAST(RSP_ID as VARCHAR2(40)), CAST(RULE_ID as VARCHAR2(40)),
+		PRIO, ACTN_RQST_CD, NM, TYP, APPR_PLCY, VER_NBR, OBJ_ID
+		FROM TEMP_KREW_RULE_RSP_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_RSP_T
 		    ADD CONSTRAINT KREW_RULE_RSP_TP1
 		PRIMARY KEY (RULE_RSP_ID)
@@ -3792,13 +3829,6 @@
 		CREATE INDEX KREW_RULE_RSP_TI1 
 		  ON KREW_RULE_RSP_T 
 		  (RULE_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_RSP_T
-		(RULE_RSP_ID, RSP_ID, RULE_ID, PRIO, ACTN_RQST_CD, NM, TYP, APPR_PLCY, VER_NBR, OBJ_ID)
-		SELECT CAST(RULE_RSP_ID as VARCHAR2(40)), CAST(RSP_ID as VARCHAR2(40)), CAST(RULE_ID as VARCHAR2(40)), 
-		PRIO, ACTN_RQST_CD, NM, TYP, APPR_PLCY, VER_NBR, OBJ_ID
-		FROM TEMP_KREW_RULE_RSP_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3842,6 +3872,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_EXT_T
+		(RULE_EXT_ID, RULE_TMPL_ATTR_ID, RULE_ID, VER_NBR)
+		SELECT /*+ parallel (4) */ CAST(RULE_EXT_ID as VARCHAR2(40)), CAST(RULE_TMPL_ATTR_ID as VARCHAR2(40)),
+		CAST(RULE_ID as VARCHAR2(40)), VER_NBR
+		FROM TEMP_KREW_RULE_EXT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_EXT_T
 		    ADD CONSTRAINT KREW_RULE_EXT_TP1
 		PRIMARY KEY (RULE_EXT_ID)
@@ -3850,13 +3890,6 @@
 		CREATE INDEX KREW_RULE_EXT_T1 
 		  ON KREW_RULE_EXT_T 
 		  (RULE_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_EXT_T
-		(RULE_EXT_ID, RULE_TMPL_ATTR_ID, RULE_ID, VER_NBR)
-		SELECT CAST(RULE_EXT_ID as VARCHAR2(40)), CAST(RULE_TMPL_ATTR_ID as VARCHAR2(40)), 
-		CAST(RULE_ID as VARCHAR2(40)), VER_NBR 
-		FROM TEMP_KREW_RULE_EXT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3910,6 +3943,17 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_NODE_T
+		(RTE_NODE_ID, DOC_TYP_ID, NM, TYP, RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND,
+		MNDTRY_RTE_IND, ACTVN_TYP, BRCH_PROTO_ID, VER_NBR, CONTENT_FRAGMENT, GRP_ID, NEXT_DOC_STAT)
+		SELECT /*+ parallel (4) */ CAST(RTE_NODE_ID as VARCHAR2(40)), DOC_TYP_ID, NM, TYP, RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND,
+		MNDTRY_RTE_IND, ACTVN_TYP, CAST(BRCH_PROTO_ID as VARCHAR2(40)), VER_NBR, CONTENT_FRAGMENT, GRP_ID, NEXT_DOC_STAT
+		FROM TEMP_KREW_RTE_NODE_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_T
 		    ADD CONSTRAINT KREW_RTE_NODE_TP1
 		PRIMARY KEY (RTE_NODE_ID)
@@ -3933,14 +3977,6 @@
 		CREATE INDEX KREW_RTE_NODE_TI4 
 		  ON KREW_RTE_NODE_T 
 		  (DOC_TYP_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_T
-		(RTE_NODE_ID, DOC_TYP_ID, NM, TYP, RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND,
-		MNDTRY_RTE_IND, ACTVN_TYP, BRCH_PROTO_ID, VER_NBR, CONTENT_FRAGMENT, GRP_ID, NEXT_DOC_STAT)
-		SELECT CAST(RTE_NODE_ID as VARCHAR2(40)), DOC_TYP_ID, NM, TYP, RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND,
-		MNDTRY_RTE_IND, ACTVN_TYP, CAST(BRCH_PROTO_ID as VARCHAR2(40)), VER_NBR, CONTENT_FRAGMENT, GRP_ID, NEXT_DOC_STAT
-		FROM TEMP_KREW_RTE_NODE_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -3989,6 +4025,19 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_NODE_INSTN_T
+		(RTE_NODE_INSTN_ID, DOC_HDR_ID, RTE_NODE_ID, BRCH_ID, PROC_RTE_NODE_INSTN_ID,
+		ACTV_IND, CMPLT_IND, INIT_IND, VER_NBR)
+		SELECT /*+ parallel (4) */ CAST(RTE_NODE_INSTN_ID as VARCHAR2(40)), DOC_HDR_ID,
+		CAST(RTE_NODE_ID as VARCHAR2(40)), CAST(BRCH_ID as VARCHAR2(40)),
+		CAST(PROC_RTE_NODE_INSTN_ID as VARCHAR2(40)),
+		ACTV_IND, CMPLT_IND, INIT_IND, VER_NBR
+		FROM TEMP_KREW_RTE_NODE_INSTN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_INSTN_T
 		    ADD CONSTRAINT KREW_RTE_NODE_INSTN_TP1
 		PRIMARY KEY (RTE_NODE_INSTN_ID)
@@ -4012,16 +4061,6 @@
 		CREATE INDEX KREW_RTE_NODE_INSTN_TI4 
 		  ON KREW_RTE_NODE_INSTN_T 
 		  (PROC_RTE_NODE_INSTN_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_INSTN_T
-		(RTE_NODE_INSTN_ID, DOC_HDR_ID, RTE_NODE_ID, BRCH_ID, PROC_RTE_NODE_INSTN_ID, 
-		ACTV_IND, CMPLT_IND, INIT_IND, VER_NBR)
-		SELECT CAST(RTE_NODE_INSTN_ID as VARCHAR2(40)), DOC_HDR_ID, 
-		CAST(RTE_NODE_ID as VARCHAR2(40)), CAST(BRCH_ID as VARCHAR2(40)), 
-		CAST(PROC_RTE_NODE_INSTN_ID as VARCHAR2(40)), 
-		ACTV_IND, CMPLT_IND, INIT_IND, VER_NBR
-		FROM TEMP_KREW_RTE_NODE_INSTN_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4063,6 +4102,15 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_NODE_INSTN_LNK_T
+		(FROM_RTE_NODE_INSTN_ID,TO_RTE_NODE_INSTN_ID)
+		SELECT /*+ parallel (4) */ CAST(FROM_RTE_NODE_INSTN_ID as VARCHAR2(40)),CAST(TO_RTE_NODE_INSTN_ID as VARCHAR2(40))
+		FROM TEMP_KREW_RTE_NODE_INSTN_LNK_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_INSTN_LNK_T
 		    ADD CONSTRAINT KREW_RTE_NODE_INSTN_LNK_TP1
 		PRIMARY KEY (FROM_RTE_NODE_INSTN_ID,TO_RTE_NODE_INSTN_ID)
@@ -4076,12 +4124,6 @@
 		CREATE INDEX KREW_RTE_NODE_INSTN_LNK_TI2 
 		  ON KREW_RTE_NODE_INSTN_LNK_T 
 		  (TO_RTE_NODE_INSTN_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_INSTN_LNK_T
-		(FROM_RTE_NODE_INSTN_ID,TO_RTE_NODE_INSTN_ID)
-		SELECT CAST(FROM_RTE_NODE_INSTN_ID as VARCHAR2(40)),CAST(TO_RTE_NODE_INSTN_ID as VARCHAR2(40))
-		FROM TEMP_KREW_RTE_NODE_INSTN_LNK_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4128,6 +4170,18 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_BRCH_T
+		(RTE_BRCH_ID, NM, PARNT_ID, INIT_RTE_NODE_INSTN_ID, SPLT_RTE_NODE_INSTN_ID, JOIN_RTE_NODE_INSTN_ID, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RTE_BRCH_ID as VARCHAR2(40)), NM, CAST(PARNT_ID as VARCHAR2(40)),
+		CAST(INIT_RTE_NODE_INSTN_ID as VARCHAR2(40)), CAST(SPLT_RTE_NODE_INSTN_ID as VARCHAR2(40)),
+		CAST(JOIN_RTE_NODE_INSTN_ID as VARCHAR2(40)), VER_NBR
+		FROM TEMP_KREW_RTE_BRCH_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_BRCH_T
 		    ADD CONSTRAINT KREW_RTE_BRCH_TP1
 		PRIMARY KEY (RTE_BRCH_ID)
@@ -4156,15 +4210,6 @@
 		CREATE INDEX KREW_RTE_BRCH_TI5 
 		  ON KREW_RTE_BRCH_T 
 		  (JOIN_RTE_NODE_INSTN_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_BRCH_T
-		(RTE_BRCH_ID, NM, PARNT_ID, INIT_RTE_NODE_INSTN_ID, SPLT_RTE_NODE_INSTN_ID, JOIN_RTE_NODE_INSTN_ID, VER_NBR)
-		SELECT 
-		CAST(RTE_BRCH_ID as VARCHAR2(40)), NM, CAST(PARNT_ID as VARCHAR2(40)), 
-		CAST(INIT_RTE_NODE_INSTN_ID as VARCHAR2(40)), CAST(SPLT_RTE_NODE_INSTN_ID as VARCHAR2(40)), 
-		CAST(JOIN_RTE_NODE_INSTN_ID as VARCHAR2(40)), VER_NBR
-		FROM TEMP_KREW_RTE_BRCH_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4209,6 +4254,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_BRCH_ST_T
+		(RTE_BRCH_ST_ID, RTE_BRCH_ID, KEY_CD, VAL, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RTE_BRCH_ST_ID as VARCHAR2(40)), CAST(RTE_BRCH_ID as VARCHAR2(40)), KEY_CD, VAL, VER_NBR
+		FROM TEMP_KREW_RTE_BRCH_ST_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_BRCH_ST_T
 		    ADD CONSTRAINT KREW_RTE_BRCH_ST_TP1
 		PRIMARY KEY (RTE_BRCH_ST_ID)
@@ -4227,13 +4282,6 @@
 		CREATE INDEX KREW_RTE_BRCH_ST_TI3 
 		  ON KREW_RTE_BRCH_ST_T 
 		  (KEY_CD, VAL)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_BRCH_ST_T
-		(RTE_BRCH_ST_ID, RTE_BRCH_ID, KEY_CD, VAL, VER_NBR)
-		SELECT 
-		CAST(RTE_BRCH_ST_ID as VARCHAR2(40)), CAST(RTE_BRCH_ID as VARCHAR2(40)), KEY_CD, VAL, VER_NBR
-		FROM TEMP_KREW_RTE_BRCH_ST_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4278,6 +4326,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_NODE_INSTN_ST_T
+		(RTE_NODE_INSTN_ST_ID, RTE_NODE_INSTN_ID, KEY_CD, VAL, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RTE_NODE_INSTN_ST_ID as VARCHAR2(40)), CAST(RTE_NODE_INSTN_ID as VARCHAR2(40)), KEY_CD, VAL, VER_NBR
+		FROM TEMP_KREW_RTE_NODE_INSTN_ST_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_INSTN_ST_T
 		    ADD CONSTRAINT KREW_RTE_NODE_INSTN_ST_TP1
 		PRIMARY KEY (RTE_NODE_INSTN_ST_ID)
@@ -4296,13 +4354,6 @@
 		CREATE INDEX KREW_RTE_NODE_INSTN_ST_TI3 
 		  ON KREW_RTE_NODE_INSTN_ST_T 
 		  (KEY_CD, VAL)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_INSTN_ST_T
-		(RTE_NODE_INSTN_ST_ID, RTE_NODE_INSTN_ID, KEY_CD, VAL, VER_NBR)
-		SELECT 
-		CAST(RTE_NODE_INSTN_ST_ID as VARCHAR2(40)), CAST(RTE_NODE_INSTN_ID as VARCHAR2(40)), KEY_CD, VAL, VER_NBR
-		FROM TEMP_KREW_RTE_NODE_INSTN_ST_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4346,6 +4397,17 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_TYP_ATTR_T
+		(DOC_TYP_ATTRIB_ID, DOC_TYP_ID, RULE_ATTR_ID, ORD_INDX)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_TYP_ATTRIB_ID as VARCHAR2(40)), CAST(DOC_TYP_ID as VARCHAR2(40)),
+		CAST(RULE_ATTR_ID as VARCHAR2(40)), ORD_INDX
+		FROM TEMP_KREW_DOC_TYP_ATTR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_TYP_ATTR_T
 		    ADD CONSTRAINT KREW_DOC_TYP_ATTR_TP1
 		PRIMARY KEY (DOC_TYP_ATTRIB_ID)
@@ -4354,14 +4416,6 @@
 		CREATE INDEX KREW_DOC_TYP_ATTR_TI1 
 		  ON KREW_DOC_TYP_ATTR_T 
 		  (DOC_TYP_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_TYP_ATTR_T
-		(DOC_TYP_ATTRIB_ID, DOC_TYP_ID, RULE_ATTR_ID, ORD_INDX)
-		SELECT 
-		CAST(DOC_TYP_ATTRIB_ID as VARCHAR2(40)), CAST(DOC_TYP_ID as VARCHAR2(40)), 
-		CAST(RULE_ATTR_ID as VARCHAR2(40)), ORD_INDX
-		FROM TEMP_KREW_DOC_TYP_ATTR_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4412,16 +4466,19 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_ATTR_T
+		(RULE_ATTR_ID, NM, LBL, RULE_ATTR_TYP_CD, DESC_TXT, CLS_NM, XML, VER_NBR, APPL_ID, OBJ_ID)
+		SELECT /*+ parallel (4) */
+		CAST(RULE_ATTR_ID as VARCHAR2(40)), NM, LBL, RULE_ATTR_TYP_CD, DESC_TXT, CLS_NM, XML, VER_NBR, APPL_ID, OBJ_ID
+		FROM TEMP_KREW_RULE_ATTR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_ATTR_T
 		    ADD CONSTRAINT KREW_RULE_ATTR_TP1
 		PRIMARY KEY (RULE_ATTR_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_ATTR_T
-		(RULE_ATTR_ID, NM, LBL, RULE_ATTR_TYP_CD, DESC_TXT, CLS_NM, XML, VER_NBR, APPL_ID, OBJ_ID)
-		SELECT 
-		CAST(RULE_ATTR_ID as VARCHAR2(40)), NM, LBL, RULE_ATTR_TYP_CD, DESC_TXT, CLS_NM, XML, VER_NBR, APPL_ID, OBJ_ID
-		FROM TEMP_KREW_RULE_ATTR_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4466,16 +4523,19 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_TMPL_OPTN_T
+		(RULE_TMPL_OPTN_ID, RULE_TMPL_ID, KEY_CD, VAL, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RULE_TMPL_OPTN_ID as VARCHAR2(40)), CAST(RULE_TMPL_ID as VARCHAR2(40)), KEY_CD, VAL, VER_NBR
+		FROM TEMP_KREW_RULE_TMPL_OPTN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_TMPL_OPTN_T
 		    ADD CONSTRAINT KREW_RULE_TMPL_OPTN_TP1
 		PRIMARY KEY (RULE_TMPL_OPTN_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_TMPL_OPTN_T
-		(RULE_TMPL_OPTN_ID, RULE_TMPL_ID, KEY_CD, VAL, VER_NBR)
-		SELECT 
-		CAST(RULE_TMPL_OPTN_ID as VARCHAR2(40)), CAST(RULE_TMPL_ID as VARCHAR2(40)), KEY_CD, VAL, VER_NBR
-		FROM TEMP_KREW_RULE_TMPL_OPTN_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4533,6 +4593,22 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_OUT_BOX_ITM_T
+		(ACTN_ITM_ID, PRNCPL_ID, ASND_DT, RQST_CD, ACTN_RQST_ID, DOC_HDR_ID, ROLE_NM,
+		DLGN_PRNCPL_ID, DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, RSP_ID,
+		DLGN_TYP, VER_NBR, GRP_ID, DLGN_GRP_ID, RQST_LBL)
+		SELECT /*+ parallel (4) */
+		CAST(ACTN_ITM_ID as VARCHAR2(40)), PRNCPL_ID, ASND_DT, RQST_CD, CAST(ACTN_RQST_ID as VARCHAR2(40)),
+		DOC_HDR_ID, ROLE_NM,
+		DLGN_PRNCPL_ID, DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM,
+		CAST(RSP_ID as VARCHAR2(40)),
+		DLGN_TYP, VER_NBR, GRP_ID, DLGN_GRP_ID, RQST_LBL
+		FROM TEMP_KREW_OUT_BOX_ITM_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_OUT_BOX_ITM_T
 		    ADD CONSTRAINT KREW_OUT_BOX_ITM_TP1
 		PRIMARY KEY (ACTN_ITM_ID)
@@ -4551,19 +4627,6 @@
 		CREATE INDEX KREW_OUT_BOX_ITM_TI3 
 		  ON KREW_OUT_BOX_ITM_T 
 		  (ACTN_RQST_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_OUT_BOX_ITM_T
-		(ACTN_ITM_ID, PRNCPL_ID, ASND_DT, RQST_CD, ACTN_RQST_ID, DOC_HDR_ID, ROLE_NM, 
-		DLGN_PRNCPL_ID, DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, RSP_ID, 
-		DLGN_TYP, VER_NBR, GRP_ID, DLGN_GRP_ID, RQST_LBL)
-		SELECT 
-		CAST(ACTN_ITM_ID as VARCHAR2(40)), PRNCPL_ID, ASND_DT, RQST_CD, CAST(ACTN_RQST_ID as VARCHAR2(40)), 
-		DOC_HDR_ID, ROLE_NM, 
-		DLGN_PRNCPL_ID, DOC_HDR_TTL, DOC_TYP_LBL, DOC_HDLR_URL, DOC_TYP_NM, 
-		CAST(RSP_ID as VARCHAR2(40)), 
-		DLGN_TYP, VER_NBR, GRP_ID, DLGN_GRP_ID, RQST_LBL
-		FROM TEMP_KREW_OUT_BOX_ITM_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4607,6 +4670,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_NODE_CFG_PARM_T
+		(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL)
+		SELECT /*+ parallel (4) */
+		CAST(RTE_NODE_CFG_PARM_ID as VARCHAR2(40)), CAST(RTE_NODE_ID as VARCHAR2(40)), KEY_CD, VAL
+		FROM TEMP_KREW_RTE_NODE_CFG_PARM_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_CFG_PARM_T
 		    ADD CONSTRAINT KREW_RTE_NODE_CFG_PARM_TP1
 		PRIMARY KEY (RTE_NODE_CFG_PARM_ID)
@@ -4615,13 +4688,6 @@
 		CREATE INDEX KREW_RTE_NODE_CFG_PARM_TI1 
 		  ON KREW_RTE_NODE_CFG_PARM_T 
 		  (RTE_NODE_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_CFG_PARM_T
-		(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(RTE_NODE_CFG_PARM_ID as VARCHAR2(40)), CAST(RTE_NODE_ID as VARCHAR2(40)), KEY_CD, VAL
-		FROM TEMP_KREW_RTE_NODE_CFG_PARM_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4667,6 +4733,17 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_TYP_PROC_T
+		(DOC_TYP_PROC_ID, DOC_TYP_ID, INIT_RTE_NODE_ID, NM, INIT_IND, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_TYP_PROC_ID as VARCHAR2(40)), CAST(DOC_TYP_ID as VARCHAR2(40)), INIT_RTE_NODE_ID,
+		NM, INIT_IND, VER_NBR
+		FROM TEMP_KREW_DOC_TYP_PROC_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_TYP_PROC_T
 		    ADD CONSTRAINT KREW_DOC_TYP_PROC_TP1
 		PRIMARY KEY (DOC_TYP_PROC_ID)
@@ -4685,14 +4762,6 @@
 		CREATE INDEX KREW_DOC_TYP_PROC_TI3 
 		  ON KREW_DOC_TYP_PROC_T 
 		  (NM)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_TYP_PROC_T
-		(DOC_TYP_PROC_ID, DOC_TYP_ID, INIT_RTE_NODE_ID, NM, INIT_IND, VER_NBR)
-		SELECT 
-		CAST(DOC_TYP_PROC_ID as VARCHAR2(40)), CAST(DOC_TYP_ID as VARCHAR2(40)), INIT_RTE_NODE_ID, 
-		NM, INIT_IND, VER_NBR
-		FROM TEMP_KREW_DOC_TYP_PROC_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4735,6 +4804,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_LNK_T
+		(DOC_LNK_ID, ORGN_DOC_ID, DEST_DOC_ID)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_LNK_ID as VARCHAR2(40)), ORGN_DOC_ID, DEST_DOC_ID
+		FROM TEMP_KREW_DOC_LNK_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_LNK_T
 		    ADD CONSTRAINT KREW_DOC_LNK_TP1
 		PRIMARY KEY (DOC_LNK_ID)
@@ -4743,13 +4822,6 @@
 		CREATE INDEX KREW_DOC_LNK_TI1 
 		  ON KREW_DOC_LNK_T 
 		  (ORGN_DOC_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_LNK_T
-		(DOC_LNK_ID, ORGN_DOC_ID, DEST_DOC_ID)
-		SELECT 
-		CAST(DOC_LNK_ID as VARCHAR2(40)), ORGN_DOC_ID, DEST_DOC_ID
-		FROM TEMP_KREW_DOC_LNK_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4792,6 +4864,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_BRCH_PROTO_T
+		(RTE_BRCH_PROTO_ID, BRCH_NM, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RTE_BRCH_PROTO_ID as VARCHAR2(40)), BRCH_NM, VER_NBR
+		FROM TEMP_KREW_RTE_BRCH_PROTO_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_BRCH_PROTO_T
 		    ADD CONSTRAINT KREW_RTE_BRCH_PROTO_TP1
 		PRIMARY KEY (RTE_BRCH_PROTO_ID)
@@ -4800,13 +4882,6 @@
 		CREATE INDEX KREW_RTE_BRCH_PROTO_TI1 
 		  ON KREW_RTE_BRCH_PROTO_T 
 		  (BRCH_NM)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_BRCH_PROTO_T
-		(RTE_BRCH_PROTO_ID, BRCH_NM, VER_NBR)
-		SELECT 
-		CAST(RTE_BRCH_PROTO_ID as VARCHAR2(40)), BRCH_NM, VER_NBR
-		FROM TEMP_KREW_RTE_BRCH_PROTO_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4851,6 +4926,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_EXT_VAL_T
+		(RULE_EXT_VAL_ID, RULE_EXT_ID, VAL, KEY_CD, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RULE_EXT_VAL_ID as VARCHAR2(40)), CAST(RULE_EXT_ID as VARCHAR2(40)), VAL, KEY_CD, VER_NBR
+		FROM TEMP_KREW_RULE_EXT_VAL_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_EXT_VAL_T
 		    ADD CONSTRAINT KREW_RULE_EXT_VAL_TP1
 		PRIMARY KEY (RULE_EXT_VAL_ID)
@@ -4864,13 +4949,6 @@
 		CREATE INDEX KREW_RULE_EXT_VAL_T2 
 		  ON KREW_RULE_EXT_VAL_T 
 		  (RULE_EXT_VAL_ID, KEY_CD)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_EXT_VAL_T
-		(RULE_EXT_VAL_ID, RULE_EXT_ID, VAL, KEY_CD, VER_NBR)
-		SELECT 
-		CAST(RULE_EXT_VAL_ID as VARCHAR2(40)), CAST(RULE_EXT_ID as VARCHAR2(40)), VAL, KEY_CD, VER_NBR
-		FROM TEMP_KREW_RULE_EXT_VAL_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -4916,16 +4994,19 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RULE_EXPR_T
+		(RULE_EXPR_ID, TYP, RULE_EXPR, OBJ_ID, VER_NBR)
+		SELECT /*+ parallel (4) */
+		CAST(RULE_EXPR_ID as VARCHAR2(40)), TYP, RULE_EXPR, OBJ_ID, VER_NBR
+		FROM TEMP_KREW_RULE_EXPR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RULE_EXPR_T
 		    ADD CONSTRAINT KREW_RULE_EXPR_TP1
 		PRIMARY KEY (RULE_EXPR_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RULE_EXPR_T
-		(RULE_EXPR_ID, TYP, RULE_EXPR, OBJ_ID, VER_NBR)
-		SELECT 
-		CAST(RULE_EXPR_ID as VARCHAR2(40)), TYP, RULE_EXPR, OBJ_ID, VER_NBR
-		FROM TEMP_KREW_RULE_EXPR_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5014,6 +5095,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_APP_DOC_STAT_TRAN_T
+		(APP_DOC_STAT_TRAN_ID, DOC_HDR_ID, APP_DOC_STAT_FROM, APP_DOC_STAT_TO, STAT_TRANS_DATE, VER_NBR, OBJ_ID)
+		SELECT /*+ parallel (4) */
+		CAST(APP_DOC_STAT_TRAN_ID as VARCHAR2(40)), DOC_HDR_ID, APP_DOC_STAT_FROM, APP_DOC_STAT_TO, STAT_TRANS_DATE, VER_NBR, OBJ_ID
+		FROM TEMP_KREW_APP_DOC_STAT_TRAN_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_APP_DOC_STAT_TRAN_T
 		    ADD CONSTRAINT KREW_APP_DOC_STAT_TRAN_TP1
 		PRIMARY KEY (APP_DOC_STAT_TRAN_ID)
@@ -5032,13 +5123,6 @@
 		CREATE INDEX KREW_APP_DOC_STAT_TI3 
 		  ON KREW_APP_DOC_STAT_TRAN_T 
 		  (DOC_HDR_ID, APP_DOC_STAT_TO)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_APP_DOC_STAT_TRAN_T
-		(APP_DOC_STAT_TRAN_ID, DOC_HDR_ID, APP_DOC_STAT_FROM, APP_DOC_STAT_TO, STAT_TRANS_DATE, VER_NBR, OBJ_ID)
-		SELECT 
-		CAST(APP_DOC_STAT_TRAN_ID as VARCHAR2(40)), DOC_HDR_ID, APP_DOC_STAT_FROM, APP_DOC_STAT_TO, STAT_TRANS_DATE, VER_NBR, OBJ_ID
-		FROM TEMP_KREW_APP_DOC_STAT_TRAN_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5111,6 +5195,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_HDR_EXT_DT_T
+		(DOC_HDR_EXT_DT_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_HDR_EXT_DT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_DT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_DT_T
 		    ADD CONSTRAINT KREW_DOC_HDR_EXT_DT_TP1
 		PRIMARY KEY (DOC_HDR_EXT_DT_ID)
@@ -5129,13 +5223,6 @@
 		CREATE INDEX KREW_DOC_HDR_EXT_DT_TI3 
 		  ON KREW_DOC_HDR_EXT_DT_T 
 		  (VAL)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_DT_T
-		(DOC_HDR_EXT_DT_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(DOC_HDR_EXT_DT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
-		FROM TEMP_KREW_DOC_HDR_EXT_DT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5208,6 +5295,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_HDR_EXT_LONG_T
+		(DOC_HDR_EXT_LONG_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_HDR_EXT_LONG_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_LONG_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_LONG_T
 		    ADD CONSTRAINT KREW_DOC_HDR_EXT_LONG_TP1
 		PRIMARY KEY (DOC_HDR_EXT_LONG_ID)
@@ -5226,13 +5323,6 @@
 		CREATE INDEX KREW_DOC_HDR_EXT_LONG_TI3 
 		  ON KREW_DOC_HDR_EXT_LONG_T 
 		  (VAL)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_LONG_T
-		(DOC_HDR_EXT_LONG_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(DOC_HDR_EXT_LONG_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
-		FROM TEMP_KREW_DOC_HDR_EXT_LONG_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5305,6 +5395,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_HDR_EXT_FLT_T
+		(DOC_HDR_EXT_FLT_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_HDR_EXT_FLT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_FLT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_FLT_T
 		    ADD CONSTRAINT KREW_DOC_HDR_EXT_FLT_TP1
 		PRIMARY KEY (DOC_HDR_EXT_FLT_ID)
@@ -5323,13 +5423,6 @@
 		CREATE INDEX KREW_DOC_HDR_EXT_FLT_TI3 
 		  ON KREW_DOC_HDR_EXT_FLT_T 
 		  (VAL)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_FLT_T
-		(DOC_HDR_EXT_FLT_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(DOC_HDR_EXT_FLT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
-		FROM TEMP_KREW_DOC_HDR_EXT_FLT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5402,6 +5495,16 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_DOC_HDR_EXT_T
+		(DOC_HDR_EXT_ID, DOC_HDR_ID, KEY_CD, VAL)
+		SELECT /*+ parallel (4) */
+		CAST(DOC_HDR_EXT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
+		FROM TEMP_KREW_DOC_HDR_EXT_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_DOC_HDR_EXT_T
 		    ADD CONSTRAINT KREW_DOC_HDR_EXT_TP1
 		PRIMARY KEY (DOC_HDR_EXT_ID)
@@ -5420,13 +5523,6 @@
 		CREATE INDEX KREW_DOC_HDR_EXT_TI3 
 		  ON KREW_DOC_HDR_EXT_T 
 		  (VAL)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_DOC_HDR_EXT_T
-		(DOC_HDR_EXT_ID, DOC_HDR_ID, KEY_CD, VAL)
-		SELECT 
-		CAST(DOC_HDR_EXT_ID as VARCHAR2(40)), DOC_HDR_ID, KEY_CD, VAL
-		FROM TEMP_KREW_DOC_HDR_EXT_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5470,6 +5566,15 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_RTE_NODE_LNK_T
+		(FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
+		SELECT /*+ parallel (4) */ CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
+		FROM TEMP_KREW_RTE_NODE_LNK_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_RTE_NODE_LNK_T
 		    ADD CONSTRAINT KREW_RTE_NODE_LNK_TP1
 		PRIMARY KEY (FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
@@ -5483,12 +5588,6 @@
 		CREATE INDEX KREW_RTE_NODE_LNK_TI2 
 		  ON KREW_RTE_NODE_LNK_T 
 		  (TO_RTE_NODE_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_RTE_NODE_LNK_T
-		(FROM_RTE_NODE_ID, TO_RTE_NODE_ID)
-		SELECT CAST(FROM_RTE_NODE_ID as VARCHAR2(40)), CAST(TO_RTE_NODE_ID as VARCHAR2(40))
-		FROM TEMP_KREW_RTE_NODE_LNK_T
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;
@@ -5633,6 +5732,15 @@
 		)
 		]]></sql>
 		<sql splitStatements="false"><![CDATA[
+		INSERT /*+ append parallel (4) */ INTO KREW_INIT_RTE_NODE_INSTN_T
+		(DOC_HDR_ID, RTE_NODE_INSTN_ID)
+		SELECT /*+ parallel (4) */ DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
+		FROM TEMP_KREW_INIT_RTE_NODE
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
 		ALTER TABLE KREW_INIT_RTE_NODE_INSTN_T
 		    ADD CONSTRAINT KREW_INIT_RTE_NODE_INSTN_TP1
 		PRIMARY KEY (DOC_HDR_ID, RTE_NODE_INSTN_ID)
@@ -5646,12 +5754,6 @@
 		CREATE INDEX KREW_INIT_RTE_NODE_INSTN_TI2
 		  ON KREW_INIT_RTE_NODE_INSTN_T
 		  (RTE_NODE_INSTN_ID)
-		]]></sql>
-		<sql splitStatements="false"><![CDATA[
-		INSERT INTO KREW_INIT_RTE_NODE_INSTN_T
-		(DOC_HDR_ID, RTE_NODE_INSTN_ID)
-		SELECT DOC_HDR_ID, CAST(RTE_NODE_INSTN_ID as VARCHAR2(40))
-		FROM TEMP_KREW_INIT_RTE_NODE
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		DECLARE temp NUMBER;

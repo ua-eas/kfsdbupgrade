@@ -21,6 +21,9 @@
 	<changeSet author="RICE20" id="RICE_SERVER_UPDATES_oracle-mod5" dbms="oracle">
 
 	<sql splitStatements="false"><![CDATA[
+	ALTER SESSION ENABLE PARALLEL DML
+	]]></sql>
+	<sql splitStatements="false"><![CDATA[
 	    DECLARE
             	PROCEDURE drop_synonyms IS
 		    CURSOR synonyms_cursor IS
@@ -72,6 +75,9 @@
 		INSERT /*+ PARALLEL(KREW_DOC_HDR_T,4) */ INTO KREW_DOC_HDR_T(DOC_HDR_ID, DOC_TYP_ID, DOC_HDR_STAT_CD, RTE_LVL, STAT_MDFN_DT, CRTE_DT, APRV_DT, FNL_DT, RTE_STAT_MDFN_DT, RTE_LVL_MDFN_DT, TTL, APP_DOC_ID, DOC_VER_NBR, INITR_PRNCPL_ID, VER_NBR, RTE_PRNCPL_ID, DTYPE, OBJ_ID, APP_DOC_STAT, APP_DOC_STAT_MDFN_DT)
 		SELECT /*+ PARALLEL(OLD_KREW_DOC_HDR_T,4) */  DOC_HDR_ID, DOC_TYP_ID, DOC_HDR_STAT_CD, RTE_LVL, STAT_MDFN_DT, CRTE_DT, APRV_DT, FNL_DT, RTE_STAT_MDFN_DT, RTE_LVL_MDFN_DT, TTL, APP_DOC_ID, DOC_VER_NBR, INITR_PRNCPL_ID, VER_NBR, RTE_PRNCPL_ID, DTYPE, OBJ_ID, null, null
 		FROM OLD_KREW_DOC_HDR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<!-- 
 		<sql splitStatements="false"><![CDATA[
@@ -188,6 +194,9 @@
 		        , null
 		FROM OLD_KREW_DOC_TYP_PLCY_RELN_T
 		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
+		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		
 		DROP TABLE OLD_KREW_DOC_TYP_PLCY_RELN_T CASCADE CONSTRAINTS PURGE
@@ -255,6 +264,9 @@
 		        , RULE_ATTR_ID
 		        , ORD_INDX
 		FROM OLD_KREW_DOC_TYP_ATTR_T
+		]]></sql>
+		<sql splitStatements="false"><![CDATA[
+		COMMIT
 		]]></sql>
 		<!-- <sql splitStatements="false"><![CDATA[
 		
