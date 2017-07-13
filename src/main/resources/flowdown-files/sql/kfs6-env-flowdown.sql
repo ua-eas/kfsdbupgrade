@@ -525,24 +525,24 @@ where fin_coa_cd = 'UA' and account_nbr in
 ('1732100','2100660','2104180','2104640','2114000','2128000','2141300','2150000','3001400','3188800','3456789','3514200','4074000','4106300','4532800','4996680','4996760')
 ;
 
---OLD make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts 
+--OLD make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts (Except accounts where already a Fiscal Officer)
 insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
 select fin_coa_cd, account_nbr, 'KFS', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
 from kulowner.ca_account_t 
-where fin_coa_cd = 'UA'
+where fin_coa_cd = 'UA' and not(ACCT_FSC_OFC_UID = 'T000000000000003189')
 ;
 
 
 
 -- ====================================================================================================================
--- 23b)Add kfs-test-sys10 (Fred Fiscal Officer) as secondary delegate to all accounts for document type KFST (KATTS-1994) 
+-- 23b)Add kfs-test-sys10 (Fred Fiscal Officer) as secondary delegate to all accounts(Except accounts where already a Fiscal Officer) for document type KFST (KATTS-1994)
 -- ====================================================================================================================
 
--- make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts for doc type KFST #612218
+-- make kfs-test-sys10 #T000000000000003189 secondary delegate on ALL accounts (Except accounts where already a Fiscal Officer) for doc type KFST #612218
 insert into ca_acct_delegate_t ( fin_coa_cd, account_nbr, fdoc_typ_cd, acct_dlgt_unvl_id, obj_id, ver_nbr, fdoc_aprv_from_amt, acct_dlgt_prmrt_cd, acct_dlgt_actv_cd, acct_dlgt_start_dt, fdoc_aprv_to_amt ) 
 select fin_coa_cd, account_nbr, 'KFST', 'T000000000000003189', sys_guid(), 1, null, 'N', 'Y', to_date('2012-03-15', 'YYYY-MM-DD'), null 
 from kulowner.ca_account_t 
-where fin_coa_cd = 'UA'
+where fin_coa_cd = 'UA' and not(ACCT_FSC_OFC_UID = 'T000000000000003189')
 ;
 
 
