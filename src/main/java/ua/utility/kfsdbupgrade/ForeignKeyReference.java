@@ -105,7 +105,16 @@ public class ForeignKeyReference implements Comparable <ForeignKeyReference> {
 		StringBuilder retval = new StringBuilder(128);
 		retval.append(schemaName.toUpperCase());
 		retval.append(".");
-		retval.append(indexNameTemplate.replace("[table-name]", tableName).replace("{index}", "" + indx));
+		// Oracle before v 12.2 only allows identifiers upto 30 characters in length, so shorten index names.
+		// Instead of using the table name as the index name stub use the table name with
+		// trailing "_T" (underscore T) removed and all "_"'s (underscores) removed as the index name stub.
+		// Thus the index name will be shorter but still correlate with the unmolested table name.
+		String shortIndexNameStub = tableName;
+		if (tableName.toLowerCase().endsWith("_t")) {
+			shortIndexNameStub = tableName.substring(0,tableName.length() - 2);
+		}
+		shortIndexNameStub = shortIndexNameStub.replace("_","");
+		retval.append(indexNameTemplate.replace("[table-name]", shortIndexNameStub).replace("{index}", "" + indx));
 		return retval.toString();
 	}
 
