@@ -261,7 +261,7 @@ public class MaintainableXMLConversionServiceImpl {
 		// replace classnames not updated so far that were captured by smoke test below
 		for (String className : classNameRuleMap.keySet()) {
 			if (xml.contains("active defined-in=\"" + className + "\"")) {
-				LOGGER.trace("Replacing active defined-in= attribute: " + className + " with: "
+				LOGGER.info("Replacing active defined-in= attribute: " + className + " with: "
 						+ classNameRuleMap.get(className));
 				xml = xml.replace("active defined-in=\"" + className + "\"",
 						"active defined-in=\"" + classNameRuleMap.get(className) + "\"");
