@@ -123,8 +123,8 @@ select gle.ENTRY_ID, gecd.FDOC_NBR, lines.FDOC_REF_NBR, lines.FDOC_LN_TYP_CD, li
         on gecd.FDOC_NBR = lines.FDOC_NBR
     inner join GL_ENTRY_T gle
         on gle.UNIV_FISCAL_YR in (
-            (select to_char(sysdate, 'YYYY') from dual),
-            (select to_char(sysdate, 'YYYY')-1 from dual)
+            (select UNIV_FISCAL_YR from SH_UNIV_DATE_T where UNIV_DT = trunc(sysdate)),
+            (select (UNIV_FISCAL_YR - 1) from sh_univ_date_t where UNIV_DT = trunc(sysdate))
         )
         and lines.FDOC_POST_YR     = gle.UNIV_FISCAL_YR
         and lines.FIN_COA_CD       = gle.FIN_COA_CD
