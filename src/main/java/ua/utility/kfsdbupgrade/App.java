@@ -1950,6 +1950,316 @@ public class App {
     }
 
 	/**
+	 * Execute the following prepared statement:
+	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)</code>
+	 * with the parameters specified by values returned by
+	 * <code>SELECT P.FDOC_NBR, S.PO_STAT_DESC FROM PUR_PO_T P, DEPR_PUR_PO_STAT_T S WHERE P.DEPR_PO_STAT_CD = S.PO_STAT_CD</code>
+	 * . All updates are done in a single transaction; any {@link Exception}s
+	 * encountered will cause the transaction to rollback.
+	 *
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} that is immediately blown away and should be
+	 *            removed as a parameter
+	 */
+	private void addPODocStatus(Connection conn, Statement stmt) {
+		logHeader2("Adding PO document status entries.");
+		PreparedStatement insertStmt = null;
+		ResultSet legacyRes = null;
+		try {
+			conn.setAutoCommit(false);
+			stmt = conn.createStatement();
+			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
+			int i = 1;
+			//first, get the list of PO document numbers with the matching textual application document status
+			legacyRes = stmt.executeQuery("SELECT P.FDOC_NBR, S.PO_STAT_DESC FROM PUR_PO_T P, DEPR_PUR_PO_STAT_T S WHERE P.DEPR_PO_STAT_CD = S.PO_STAT_CD");
+
+			//then loop through the list of PO document numbers, populating and executing the insert statements
+			while (legacyRes.next()) {
+				String docNbr = legacyRes.getString(1);
+				String desc = legacyRes.getString(2);
+				insertStmt.setString(1, docNbr);
+				insertStmt.setString(2, desc.replace("&", "and"));
+				insertStmt.addBatch();
+				if ((i % 10000) == 0) {
+					insertStmt.executeBatch();
+					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
+				}
+				i++;
+			}
+			// catch any straggler statements
+			insertStmt.executeBatch();
+			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
+			conn.commit();
+		} catch (Exception ex) {
+			LOGGER.error(ex);
+
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (Exception ex2) {
+					LOGGER.error(ex);
+				};
+			}
+		} finally {
+			try {
+				closeDbObjects(null, insertStmt, legacyRes);
+			} catch (Exception ex) {
+				LOGGER.error(ex);
+			};
+		}
+	}
+
+	/**
+	 * Execute the following prepared statement:
+	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)</code>
+	 * with the parameters specified by values returned by
+	 * <code>SELECT P.FDOC_NBR, S.CRDT_MEMO_STAT_DESC FROM AP_CRDT_MEMO_T P, DEPR_AP_CRDT_MEMO_STAT_T S WHERE P.DEPR_CRDT_MEMO_STAT_CD = S.CRDT_MEMO_STAT_CD</code>
+	 * . All updates are done in a single transaction; any {@link Exception}s
+	 * encountered will cause the transaction to rollback.
+	 *
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} that is immediately blown away and should be
+	 *            removed as a parameter
+	 */
+	private void addVendorCreditMemoDocStatus(Connection conn, Statement stmt) {
+		logHeader2("Adding Vendor Credit Memo document status entries.");
+		PreparedStatement insertStmt = null;
+		ResultSet legacyRes = null;
+		try {
+			conn.setAutoCommit(false);
+			stmt = conn.createStatement();
+			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
+			int i = 1;
+			//first, get the list of PO document numbers with the matching textual application document status
+			legacyRes = stmt.executeQuery("SELECT P.FDOC_NBR, S.CRDT_MEMO_STAT_DESC FROM AP_CRDT_MEMO_T P, DEPR_AP_CRDT_MEMO_STAT_T S WHERE P.DEPR_CRDT_MEMO_STAT_CD = S.CRDT_MEMO_STAT_CD");
+
+			//then loop through the list of PO document numbers, populating and executing the insert statements
+			while (legacyRes.next()) {
+				String docNbr = legacyRes.getString(1);
+				String desc = legacyRes.getString(2);
+				insertStmt.setString(1, docNbr);
+				insertStmt.setString(2, desc.replace("&", "and"));
+				insertStmt.addBatch();
+				if ((i % 10000) == 0) {
+					insertStmt.executeBatch();
+					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
+				}
+				i++;
+			}
+			// catch any straggler statements
+			insertStmt.executeBatch();
+			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
+			conn.commit();
+		} catch (Exception ex) {
+			LOGGER.error(ex);
+
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (Exception ex2) {
+					LOGGER.error(ex);
+				};
+			}
+		} finally {
+			try {
+				closeDbObjects(null, insertStmt, legacyRes);
+			} catch (Exception ex) {
+				LOGGER.error(ex);
+			};
+		}
+	}
+
+	/**
+	 * Execute the following prepared statement:
+	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)</code>
+	 * with the parameters specified by values returned by
+	 * <code>SELECT P.FDOC_NBR, S.PMT_RQST_STAT_DESC FROM AP_PMT_RQST_T P, DEPR_AP_PMT_RQST_STAT_T S WHERE P.DEPR_PMT_RQST_STAT_CD = S.PMT_RQST_STAT_CD</code>
+	 * . All updates are done in a single transaction; any {@link Exception}s
+	 * encountered will cause the transaction to rollback.
+	 *
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} that is immediately blown away and should be
+	 *            removed as a parameter
+	 */
+	private void addPREQDocStatus(Connection conn, Statement stmt) {
+		logHeader2("Adding Payment Request document status entries.");
+		PreparedStatement insertStmt = null;
+		ResultSet legacyRes = null;
+		try {
+			conn.setAutoCommit(false);
+			stmt = conn.createStatement();
+			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
+			int i = 1;
+			//first, get the list of PO document numbers with the matching textual application document status
+			legacyRes = stmt.executeQuery("SELECT P.FDOC_NBR, S.PMT_RQST_STAT_DESC FROM AP_PMT_RQST_T P, DEPR_AP_PMT_RQST_STAT_T S WHERE P.DEPR_PMT_RQST_STAT_CD = S.PMT_RQST_STAT_CD");
+
+			//then loop through the list of PO document numbers, populating and executing the insert statements
+			while (legacyRes.next()) {
+				String docNbr = legacyRes.getString(1);
+				String desc = legacyRes.getString(2);
+				insertStmt.setString(1, docNbr);
+				insertStmt.setString(2, desc.replace("&", "and"));
+				insertStmt.addBatch();
+				if ((i % 10000) == 0) {
+					insertStmt.executeBatch();
+					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
+				}
+				i++;
+			}
+			// catch any straggler statements
+			insertStmt.executeBatch();
+			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
+			conn.commit();
+		} catch (Exception ex) {
+			LOGGER.error(ex);
+
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (Exception ex2) {
+					LOGGER.error(ex);
+				};
+			}
+		} finally {
+			try {
+				closeDbObjects(null, insertStmt, legacyRes);
+			} catch (Exception ex) {
+				LOGGER.error(ex);
+			};
+		}
+	}
+
+	/**
+	 * Execute the following prepared statement:
+	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)</code>
+	 * with the parameters specified by values returned by
+	 * <code>SELECT P.FDOC_NBR, S.RCVNG_LN_STAT_DESC FROM PUR_RCVNG_LN_T P, DEPR_PUR_RCVNG_LN_STAT_T S WHERE P.DEPR_RCVNG_LN_STAT_CD = S.RCVNG_LN_STAT_CD</code>
+	 * . All updates are done in a single transaction; any {@link Exception}s
+	 * encountered will cause the transaction to rollback.
+	 *
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} that is immediately blown away and should be
+	 *            removed as a parameter
+	 */
+	private void addLineItemReceivingDocStatus(Connection conn, Statement stmt) {
+		logHeader2("Adding Purchasing Line Item Receiving document status entries.");
+		PreparedStatement insertStmt = null;
+		ResultSet legacyRes = null;
+		try {
+			conn.setAutoCommit(false);
+			stmt = conn.createStatement();
+			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
+			int i = 1;
+			//first, get the list of PO document numbers with the matching textual application document status
+			legacyRes = stmt.executeQuery("SELECT P.FDOC_NBR, S.RCVNG_LN_STAT_DESC FROM PUR_RCVNG_LN_T P, DEPR_PUR_RCVNG_LN_STAT_T S WHERE P.DEPR_RCVNG_LN_STAT_CD = S.RCVNG_LN_STAT_CD");
+
+			//then loop through the list of PO document numbers, populating and executing the insert statements
+			while (legacyRes.next()) {
+				String docNbr = legacyRes.getString(1);
+				String desc = legacyRes.getString(2);
+				insertStmt.setString(1, docNbr);
+				insertStmt.setString(2, desc.replace("&", "and"));
+				insertStmt.addBatch();
+				if ((i % 10000) == 0) {
+					insertStmt.executeBatch();
+					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
+				}
+				i++;
+			}
+			// catch any straggler statements
+			insertStmt.executeBatch();
+			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
+			conn.commit();
+		} catch (Exception ex) {
+			LOGGER.error(ex);
+
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (Exception ex2) {
+					LOGGER.error(ex);
+				};
+			}
+		} finally {
+			try {
+				closeDbObjects(null, insertStmt, legacyRes);
+			} catch (Exception ex) {
+				LOGGER.error(ex);
+			};
+		}
+	}
+
+	/**
+	 * Execute the following prepared statement:
+	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)</code>
+	 * with the parameters specified by values returned by
+	 * <code>SELECT P.FDOC_NBR, S.REQS_STAT_DESC FROM PUR_REQS_T P, DEPR_PUR_REQS_STAT_T S WHERE P.DEPR_REQS_STAT_CD = S.REQS_STAT_CD</code>
+	 * . All updates are done in a single transaction; any {@link Exception}s
+	 * encountered will cause the transaction to rollback.
+	 *
+	 * @param conn
+	 *            {@link Connection} to a database
+	 * @param stmt
+	 *            {@link Statement} that is immediately blown away and should be
+	 *            removed as a parameter
+	 */
+	private void addPurchaseRequisitionDocStatus(Connection conn, Statement stmt) {
+		logHeader2("Adding Purchase Requistion document status entries.");
+		PreparedStatement insertStmt = null;
+		ResultSet legacyRes = null;
+		try {
+			conn.setAutoCommit(false);
+			stmt = conn.createStatement();
+			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
+			int i = 1;
+			//first, get the list of PO document numbers with the matching textual application document status
+			legacyRes = stmt.executeQuery("SELECT P.FDOC_NBR, S.REQS_STAT_DESC FROM PUR_REQS_T P, DEPR_PUR_REQS_STAT_T S WHERE P.DEPR_REQS_STAT_CD = S.REQS_STAT_CD");
+
+			//then loop through the list of PO document numbers, populating and executing the insert statements
+			while (legacyRes.next()) {
+				String docNbr = legacyRes.getString(1);
+				String desc = legacyRes.getString(2);
+				insertStmt.setString(1, docNbr);
+				insertStmt.setString(2, desc.replace("&", "and"));
+				insertStmt.addBatch();
+				if ((i % 10000) == 0) {
+					insertStmt.executeBatch();
+					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
+				}
+				i++;
+			}
+			// catch any straggler statements
+			insertStmt.executeBatch();
+			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
+			conn.commit();
+		} catch (Exception ex) {
+			LOGGER.error(ex);
+
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (Exception ex2) {
+					LOGGER.error(ex);
+				};
+			}
+		} finally {
+			try {
+				closeDbObjects(null, insertStmt, legacyRes);
+			} catch (Exception ex) {
+				LOGGER.error(ex);
+			};
+		}
+	}
+
+	/**
 	 * Execute the sql file {@link #upgradeRoot}
 	 * <code>/post-upgrade/sql/misc.sql</code> against the database
 	 * 
@@ -2048,6 +2358,9 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
+			// Add Vendor Credit Memo Document status entries
+			addVendorCreditMemoDocStatus(upgradeConn, legacyStmt);
+
 			legacyRes = legacyStmt
 					.executeQuery("select PMT_RQST_STAT_CD, PMT_RQST_STAT_DESC from DEPR_AP_PMT_RQST_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
@@ -2070,6 +2383,9 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
+			// Add Payment Request document status entries
+			addPREQDocStatus(upgradeConn, legacyStmt);
+
 			legacyRes = legacyStmt.executeQuery("select PO_STAT_CD, PO_STAT_DESC from DEPR_PUR_PO_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
@@ -2090,6 +2406,9 @@ public class App {
 
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
+
+			// Add Purchase Order document status entries
+			addPODocStatus(upgradeConn, legacyStmt);
 
 			legacyRes = legacyStmt
 					.executeQuery("select RCVNG_LN_STAT_CD, RCVNG_LN_STAT_DESC from DEPR_PUR_RCVNG_LN_STAT_T");
@@ -2113,6 +2432,9 @@ public class App {
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
 
+			// Add Purchasing Line Item Receiving document status entries
+			addLineItemReceivingDocStatus(upgradeConn, legacyStmt);
+
 			legacyRes = legacyStmt.executeQuery("select REQS_STAT_CD, REQS_STAT_DESC from DEPR_PUR_REQS_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
@@ -2130,6 +2452,9 @@ public class App {
                 upgradeStmt2.setString(2, cd);
                 upgradeStmt2.executeUpdate();
             }
+
+            //  Add Purchase Requistion document status entries
+			addPurchaseRequisitionDocStatus(upgradeConn, legacyStmt);
 
             upgradeConn.commit();
         } catch (Exception ex) {
