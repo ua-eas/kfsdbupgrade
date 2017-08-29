@@ -1065,6 +1065,11 @@
 			</routeNodes>
 		</documentType>
 		<documentType>
+			<name>KCSM</name>
+			<label>Kuali Coeus Integration Simple Maintenance Documents</label>
+			<parent>FSSM</parent>
+		</documentType>
+		<documentType>
 			<name>
 				BFM
 			</name>
