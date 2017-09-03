@@ -58,7 +58,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.DomWriter;
     
-public class MaintainableXMLConversionServiceImpl {
+public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConversionService {
 	private static final Logger LOGGER = Logger.getLogger(MaintainableXMLConversionServiceImpl.class);
 	private static final String SERIALIZATION_ATTRIBUTE = "serialization";
 	private static final String CLASS_ATTRIBUTE = "class";
