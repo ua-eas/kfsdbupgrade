@@ -16,6 +16,7 @@
 package ua.utility.kfsdbupgrade;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
@@ -205,6 +206,12 @@ public class App {
             stmt.close();
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
+			
+			      if (parseBoolean(System.getProperty("mdoc.only"))) {
+			        LOGGER.info("Converting maintenance documents only");
+			        convertMaintenanceDocuments(conn1);
+			        return;
+			      }
 
             if (doInitialProcessing(conn1, stmt)) {
                 doCommit(conn1);
