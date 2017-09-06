@@ -4,30 +4,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.concurrent.Callable;
 
-import ua.utility.kfsdbupgrade.EncryptionService;
-import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
-
 public final class MaintDocCallable implements Callable<ConversionResult> {
 
-  public MaintDocCallable(EncryptionService encryptor, MaintainableXmlConversionService converter, MaintDoc document) {
-    this.encryptor = checkNotNull(encryptor);
-    this.converter = checkNotNull(converter);
-    this.document = checkNotNull(document);
+  public MaintDocCallable(MaintDocFunction function, MaintDoc doc) {
+    this.function = checkNotNull(function);
+    this.doc = checkNotNull(doc);
   }
 
-  private final EncryptionService encryptor;
-  private final MaintainableXmlConversionService converter;
-  private final MaintDoc document;
+  private final MaintDocFunction function;
+  private final MaintDoc doc;
 
   public ConversionResult call() {
-    try {
-      String decrypted = encryptor.isEnabled() ? encryptor.decrypt(document.getContent()) : document.getContent();
-      String converted = converter.transformMaintainableXML(decrypted);
-      String encrypted = encryptor.isEnabled() ? encryptor.encrypt(converted) : converted;
-      return new ConversionResult(document, new MaintDoc(document.getDocHeaderId(), encrypted));
-    } catch (Throwable e) {
-      return new ConversionResult(document, e);
-    }
+    return function.apply(doc);
   }
 
 }

@@ -149,9 +149,10 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
   }
 
   private ImmutableList<Callable<ConversionResult>> getCallables(Iterable<MaintDoc> documents) {
+    MaintDocFunction function = new MaintDocFunction(encryptor, converter);
     List<Callable<ConversionResult>> list = newArrayList();
     for (MaintDoc document : documents) {
-      list.add(new MaintDocCallable(encryptor, converter, document));
+      list.add(new MaintDocCallable(function, document));
     }
     return copyOf(list);
   }
