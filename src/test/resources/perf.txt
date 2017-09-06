@@ -4,7 +4,12 @@ threads batch docs/second avg  expected time
 4       1000  67,68,70    68   2.45 hours
 8       1000  65,66,68    66   2.53 hours
 
-spool /tmp/322861-before.txt
-select doc_cntnt from krns_maint_doc_t where doc_hdr_id = 323861;
-spool off
+
+threads batch docs/second avg  expected time
+1       100   38,39,37    38   4.39 hours
+2       100   
+4       100   87,82,86    85   1.96 hours
+5       100   
+8       100   
+
 
