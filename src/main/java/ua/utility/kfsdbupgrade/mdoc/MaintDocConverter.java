@@ -4,8 +4,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.Integer.parseInt;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
+import static java.lang.System.getProperty;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
@@ -36,7 +38,7 @@ public final class MaintDocConverter implements Provider<Long> {
   private final Properties properties;
   private final EncryptionService encryptor;
   private final MaintainableXmlConversionService converter;
-  private final int batchSize = 100;
+  private final int batchSize = parseInt(getProperty("mdoc.batch", "100"));
 
   @Override
   public Long get() {
