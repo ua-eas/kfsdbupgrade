@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
@@ -10,6 +11,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
@@ -81,7 +83,7 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
   private BatchResult batch(Connection conn, PreparedStatement pstmt, Iterable<ConversionResult> results) throws SQLException {
     int count = 0;
     long bytes = 0;
-    Stopwatch sw = Stopwatch.createStarted();
+    Stopwatch sw = createStarted();
     for (ConversionResult result : results) {
       if (result.getNewDocument().isPresent()) {
         MaintDoc newDoc = result.getNewDocument().get();
@@ -118,7 +120,7 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
   }
 
   private void progress(BatchResult br, int total) {
-    String rate = Formats.getRate(br.getElapsed(), br.getBytes());
+    String rate = getRate(br.getElapsed(), br.getBytes());
     String throughput = getThroughputInSeconds(br.getElapsed(), br.getCount(), "docs/second");
     Object[] args = { getCount(br.getCount()), getCount(total), getTime(br.getElapsed()), throughput, rate };
     info("converted -> %s of %s in %s [%s, %s]", args);
