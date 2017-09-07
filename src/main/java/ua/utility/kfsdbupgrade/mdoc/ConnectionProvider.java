@@ -23,7 +23,9 @@ public final class ConnectionProvider implements Provider<Connection> {
       String driver = properties.getProperty("database-driver");
       String url = properties.getProperty("database-url");
       Class.forName(driver);
-      return DriverManager.getConnection(url, username, password);
+      Connection conn = DriverManager.getConnection(url, username, password);
+      conn.setAutoCommit(false);
+      return conn;
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     }
