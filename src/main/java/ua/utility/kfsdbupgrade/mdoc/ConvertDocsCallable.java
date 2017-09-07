@@ -42,12 +42,10 @@ public final class ConvertDocsCallable implements Callable<Long> {
     this.batchSize = batchSize;
     this.docHeaderIds = copyOf(docHeaderIds);
     this.function = new MaintDocFunction(encryptor, converter);
-    this.display = 1000 / batchSize;
   }
 
   private final Provider<Connection> provider;
   private final int batchSize;
-  private final int display;
   private final ImmutableList<String> docHeaderIds;
   private final MaintDocFunction function;
 
@@ -84,18 +82,13 @@ public final class ConvertDocsCallable implements Callable<Long> {
     for (ConversionResult result : results) {
       if (result.getNewDocument().isPresent()) {
         MaintDoc newDoc = result.getNewDocument().get();
-        MaintDoc oldDoc = result.getOldDocument();
-        if (!newDoc.getContent().equals(oldDoc.getContent())) {
-          pstmt.setString(1, newDoc.getContent());
-          pstmt.setString(2, newDoc.getDocHeaderId());
-          pstmt.addBatch();
-          batched++;
-        }
+        pstmt.setString(1, newDoc.getContent());
+        pstmt.setString(2, newDoc.getDocHeaderId());
+        pstmt.addBatch();
+        batched++;
       }
     }
-    if (batched > 0) {
-      pstmt.executeBatch();
-    }
+    pstmt.executeBatch();
     return batched;
   }
 
