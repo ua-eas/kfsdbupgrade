@@ -17,10 +17,6 @@ package ua.utility.kfsdbupgrade;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Boolean.parseBoolean;
-import static java.lang.String.format;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -52,7 +48,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -63,10 +58,7 @@ import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
-import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
-import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
-import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class App {
 	private static final Logger LOGGER = Logger.getLogger(App.class);
@@ -2757,12 +2749,7 @@ public class App {
       logHeader2("Converting legacy maintenance documents to rice 2.0...");
       MaintDocConverter converter = getMaintDocConverter(upgradeConn);
       try {
-        MaintDocResult result = converter.get();
-        String throughput = getThroughputInSeconds(result.getElapsed(), result.getConverted(), "docs/second");
-        LOGGER.info(format("maintenance docs converted -> %s", getCount(result.getConverted())));
-        LOGGER.info(format("maintenance docs errors ----> %s", getCount(result.getErrors())));
-        LOGGER.info(format("maintenance docs elapsed ---> %s", getTime(result.getElapsed())));
-        LOGGER.info(format("maintenance doc throughput -> %s", throughput));
+        converter.get();
       } catch(Exception e) {
         LOGGER.error(e);
       }
@@ -2774,15 +2761,10 @@ public class App {
         checkArgument(rules.isFile(),"rules file does not exist -> %s", rules);
         MaintainableXMLConversionServiceImpl converter = new MaintainableXMLConversionServiceImpl(rules);
         EncryptionService encryptor = new EncryptionService(properties.getProperty("encryption-key"));
-        int threads = new ThreadsProvider(properties).get();
-        LOGGER.info(format("maintenance doc threads -> %s", threads));
-        ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
         MaintDocConverter.Builder builder = MaintDocConverter.builder();
-        builder.withBatchSize(MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE);
-        builder.withConnection(upgradeConn);
+        builder.withProperties(properties);
         builder.withConverter(converter);
         builder.withEncryptor(encryptor);
-        builder.withExecutor(executor);
         return builder.build();
       }catch(Exception e) {
         throw new IllegalStateException(e);

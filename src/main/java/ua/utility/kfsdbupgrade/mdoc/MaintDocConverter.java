@@ -1,23 +1,19 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -33,128 +29,45 @@ import com.google.common.collect.ImmutableList;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 
-public final class MaintDocConverter implements Provider<MaintDocResult> {
+public final class MaintDocConverter implements Provider<Long> {
 
   private static final Logger LOGGER = Logger.getLogger(MaintDocConverter.class);
 
-  private final Connection connection;
-  private final int batchSize;
+  private final Properties properties;
   private final EncryptionService encryptor;
   private final MaintainableXmlConversionService converter;
-  private final ExecutorService executor;
+  private final int batchSize = 100;
 
   @Override
-  public MaintDocResult get() {
+  public Long get() {
     Stopwatch overall = createStarted();
-    int converted = 0;
-    int errors = 0;
-    PreparedStatement pstmt = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      pstmt = connection.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
-      stmt = connection.createStatement();
-      rs = stmt.executeQuery("SELECT DOC_HDR_ID, DOC_CNTNT FROM KRNS_MAINT_DOC_T");
-      List<MaintDoc> docs = newArrayList();
-      Stopwatch sw = createStarted();
-      while (rs.next()) {
-        String docHeaderId = rs.getString(1);
-        String content = rs.getString(2);
-        docs.add(new MaintDoc(docHeaderId, content));
-        if (docs.size() % batchSize == 0) {
-          MaintDocResult mdr = handleDocs(pstmt, docs);
-          errors += mdr.getErrors();
-          converted += mdr.getConverted();
-          progress(sw, docs.size(), overall, converted);
-          sw = createStarted();
-          docs = newArrayList();
-        }
-      }
-      if (docs.size() > 0) {
-        MaintDocResult mdr = handleDocs(pstmt, docs);
-        errors += mdr.getErrors();
-        converted += mdr.getConverted();
-        progress(sw, docs.size(), overall, converted);
-      }
-      connection.commit();
-    } catch (Throwable e) {
-      rollback(connection);
-      throw new IllegalStateException(e);
-    } finally {
-      closeQuietly(rs);
-      closeQuietly(stmt);
-      closeQuietly(pstmt);
-    }
-    return new MaintDocResult(converted, errors, overall.elapsed(MILLISECONDS));
-  }
-
-  private void progress(Stopwatch sw, int count, Stopwatch overall, int converted) {
-    long elapsed = sw.elapsed(MILLISECONDS);
-    long overallElapsed = overall.elapsed(MILLISECONDS);
-    String tp1 = getThroughputInSeconds(elapsed, count, "docs/second");
-    String tp2 = getThroughputInSeconds(overallElapsed, converted, "docs/second");
-    Object[] args = { getCount(count), getTime(elapsed), tp1, getCount(converted), getTime(overallElapsed), tp2 };
-    LOGGER.info(format("%s docs in %s, %s [%s in %s, %s overall]", args));
-
-  }
-
-  private void rollback(Connection conn) {
-    try {
-      conn.rollback();
-    } catch (Exception e) {
-      LOGGER.error("unexpected error rolling back", e);
-    }
-  }
-
-  private MaintDocResult handleDocs(PreparedStatement pstmt, Iterable<MaintDoc> docs) throws SQLException {
+    ConnectionProvider provider = new ConnectionProvider(properties);
+    List<String> docHeaderIds = new HeaderIdsProvider(provider).get();
+    int threads = new ThreadsProvider(properties).get();
+    info("using %s threads (%s cores)", threads, getRuntime().availableProcessors());
+    List<ConvertDocsCallable> callables = getCallables(docHeaderIds, threads, converter, encryptor);
+    ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
     Stopwatch sw = createStarted();
-    List<ConversionResult> results = convert(docs);
-    int batched = doBatch(pstmt, results);
-    int errors = doErrors(results);
-    return new MaintDocResult(batched, errors, sw.elapsed(MILLISECONDS));
+    getFutures(submit(executor, callables));
+    info("converted -> %s in %s [%s]", getCount(docHeaderIds.size()), getTime(sw), getThroughputInSeconds(sw, docHeaderIds.size(), "docs/second"));
+    return overall.elapsed(MILLISECONDS);
   }
 
-  private int doBatch(PreparedStatement pstmt, Iterable<ConversionResult> results) throws SQLException {
-    int batched = 0;
-    for (ConversionResult result : results) {
-      if (result.getNewDocument().isPresent()) {
-        MaintDoc doc = result.getNewDocument().get();
-        pstmt.setString(1, doc.getContent());
-        pstmt.setString(2, doc.getDocHeaderId());
-        pstmt.addBatch();
-        batched++;
-      }
+  private ImmutableList<ConvertDocsCallable> getCallables(List<String> docHeaderIds, int threads, MaintainableXmlConversionService converter, EncryptionService encryptor) {
+    List<ConvertDocsCallable> callables = newArrayList();
+    for (List<String> distribution : distribute(docHeaderIds, threads)) {
+      ConnectionProvider provider = new ConnectionProvider(properties);
+      callables.add(new ConvertDocsCallable(provider, batchSize, distribution, converter, encryptor));
     }
-    pstmt.executeBatch();
-    return batched;
+    return ImmutableList.copyOf(callables);
   }
 
-  private int doErrors(Iterable<ConversionResult> results) {
-    int errors = 0;
-    for (ConversionResult result : results) {
-      if (result.getException().isPresent()) {
-        MaintDoc doc = result.getOldDocument();
-        Throwable e = result.getException().get();
-        LOGGER.error("error converting document " + doc.getDocHeaderId(), e);
-        errors++;
-      }
+  private void info(String msg, Object... args) {
+    if (args == null || args.length == 0) {
+      LOGGER.info(msg);
+    } else {
+      LOGGER.info(format(msg, args));
     }
-    return errors;
-  }
-
-  private ImmutableList<ConversionResult> convert(Iterable<MaintDoc> docs) {
-    List<Callable<ConversionResult>> callables = getCallables(docs);
-    List<Future<ConversionResult>> futures = submit(executor, callables);
-    return getFutures(futures);
-  }
-
-  private ImmutableList<Callable<ConversionResult>> getCallables(Iterable<MaintDoc> documents) {
-    MaintDocFunction function = new MaintDocFunction(encryptor, converter);
-    List<Callable<ConversionResult>> list = newArrayList();
-    for (MaintDoc document : documents) {
-      list.add(new MaintDocCallable(function, document));
-    }
-    return copyOf(list);
   }
 
   private static <T> ImmutableList<Future<T>> submit(ExecutorService executor, Iterable<? extends Callable<T>> callables) {
@@ -185,11 +98,9 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
   }
 
   private MaintDocConverter(Builder builder) {
-    this.connection = builder.connection;
-    this.batchSize = builder.batchSize;
+    this.properties = builder.properties;
     this.encryptor = builder.encryptor;
     this.converter = builder.converter;
-    this.executor = builder.executor;
   }
 
   public static Builder builder() {
@@ -198,24 +109,12 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
 
   public static class Builder {
 
-    private Connection connection;
-    private int batchSize;
+    private Properties properties;
     private EncryptionService encryptor;
     private MaintainableXmlConversionService converter;
-    private ExecutorService executor;
 
-    public Builder withExecutor(ExecutorService executor) {
-      this.executor = executor;
-      return this;
-    }
-
-    public Builder withConnection(Connection connection) {
-      this.connection = connection;
-      return this;
-    }
-
-    public Builder withBatchSize(int batchSize) {
-      this.batchSize = batchSize;
+    public Builder withProperties(Properties properties) {
+      this.properties = properties;
       return this;
     }
 
@@ -234,8 +133,6 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
     }
 
     private static MaintDocConverter validate(MaintDocConverter instance) {
-      checkNotNull(instance.connection, "connection may not be null");
-      checkArgument(instance.batchSize > 0, "batchSize must be greater than zero");
       checkNotNull(instance.encryptor, "encryptor may not be null");
       checkNotNull(instance.converter, "converter may not be null");
       return instance;
