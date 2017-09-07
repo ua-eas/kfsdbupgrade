@@ -59,17 +59,17 @@ public final class ConvertDocsCallable implements Callable<Long> {
     try {
       conn = provider.get();
       pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
-      int batches = 0;
+      int count = 0;
       for (List<String> partition : partition(docHeaderIds, batchSize)) {
         List<MaintDoc> selected = select(conn, partition);
         Iterable<ConversionResult> converted = transform(selected, function);
-        batch(conn, pstmt, sw, docHeaderIds.size(), converted);
-        if (++batches % display == 0) {
-          progress(sw, batches * batchSize, docHeaderIds.size());
+        count += batch(conn, pstmt, sw, docHeaderIds.size(), converted);
+        if (count % 1000 == 0) {
+          progress(sw, count, docHeaderIds.size());
         }
       }
       conn.commit();
-      progress(sw, docHeaderIds.size(), docHeaderIds.size());
+      progress(sw, count, docHeaderIds.size());
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
@@ -79,7 +79,7 @@ public final class ConvertDocsCallable implements Callable<Long> {
     return sw.elapsed(MILLISECONDS);
   }
 
-  private void batch(Connection conn, PreparedStatement pstmt, Stopwatch sw, int total, Iterable<ConversionResult> results) throws SQLException {
+  private int batch(Connection conn, PreparedStatement pstmt, Stopwatch sw, int total, Iterable<ConversionResult> results) throws SQLException {
     int batched = 0;
     for (ConversionResult result : results) {
       if (result.getNewDocument().isPresent()) {
@@ -96,6 +96,7 @@ public final class ConvertDocsCallable implements Callable<Long> {
     if (batched > 0) {
       pstmt.executeBatch();
     }
+    return batched;
   }
 
   private ImmutableList<MaintDoc> select(Connection conn, Iterable<String> docHeaderIds) {
