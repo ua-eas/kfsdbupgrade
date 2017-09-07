@@ -30,7 +30,6 @@ public final class ConnectionProvider implements Provider<Connection> {
       String password = properties.getProperty("database-password");
       String driver = properties.getProperty("database-driver");
       String url = properties.getProperty("database-url");
-      LOGGER.info("connecting to " + url + " as '" + username + "'");
       Stopwatch sw = createStarted();
       Class.forName(driver);
       Connection conn = DriverManager.getConnection(url, username, password);

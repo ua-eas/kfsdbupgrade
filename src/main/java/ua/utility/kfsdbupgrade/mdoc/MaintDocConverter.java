@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
@@ -50,8 +51,14 @@ public final class MaintDocConverter implements Provider<Long> {
     List<ConvertDocsCallable> callables = getCallables(docHeaderIds, threads, converter, encryptor);
     ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
     Stopwatch sw = createStarted();
-    getFutures(submit(executor, callables));
-    info("converted -> %s in %s [%s]", getCount(docHeaderIds.size()), getTime(sw), getThroughputInSeconds(sw, docHeaderIds.size(), "docs/second"));
+    List<BatchResult> batches = getFutures(submit(executor, callables));
+    BatchResult br = new BatchResult(0, 0, 0);
+    for (BatchResult batch : batches) {
+      br = BatchResult.add(br, batch);
+    }
+    long elapsed = sw.elapsed(MILLISECONDS);
+    String rate = getRate(elapsed, br.getBytes());
+    info("converted -> %s in %s [%s, %s]", getCount(docHeaderIds.size()), getTime(elapsed), getThroughputInSeconds(elapsed, docHeaderIds.size(), "docs/second"), rate);
     return overall.elapsed(MILLISECONDS);
   }
 

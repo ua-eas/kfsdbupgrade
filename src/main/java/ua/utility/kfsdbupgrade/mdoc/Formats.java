@@ -9,13 +9,40 @@ import com.google.common.base.Stopwatch;
 
 public final class Formats {
 
-  private Formats() {}
+  private Formats() {
+  }
 
   private static final double SECOND = 1000;
   private static final double MINUTE = 60 * SECOND;
   private static final double HOUR = 60 * MINUTE;
   private static final double DAY = 24 * HOUR;
   private static final double YEAR = 365 * DAY;
+
+  public static String getRate(long millis, long bytes) {
+    double seconds = millis / SECOND;
+    double bytesPerSecond = bytes / seconds;
+    Size bandwidthLevel = getSizeEnum(bytesPerSecond);
+    double transferRate = bytesPerSecond / bandwidthLevel.getValue();
+    return getDigitsFormatter().format(transferRate) + " " + bandwidthLevel.getRateLabel();
+  }
+
+  public static Size getSizeEnum(double bytes) {
+    if (bytes < Size.KB.getValue()) {
+      return Size.BYTE;
+    } else if (bytes < Size.MB.getValue()) {
+      return Size.KB;
+    } else if (bytes < Size.GB.getValue()) {
+      return Size.MB;
+    } else if (bytes < Size.TB.getValue()) {
+      return Size.GB;
+    } else if (bytes < Size.PB.getValue()) {
+      return Size.TB;
+    } else if (bytes < Size.EB.getValue()) {
+      return Size.PB;
+    } else {
+      return Size.EB;
+    }
+  }
 
   public static String getThroughputInSeconds(Stopwatch sw, long count, String label) {
     return getThroughputInSeconds(sw.elapsed(MILLISECONDS), count, label);
@@ -37,7 +64,7 @@ public final class Formats {
 
   public static String getTime(long elapsed) {
     checkArgument(elapsed >= 0, "elapsed can't be negative");
-    NumberFormat nf = getTimeFormatter();
+    NumberFormat nf = getDigitsFormatter();
     if (elapsed < SECOND) {
       return elapsed + "ms";
     } else if (elapsed < MINUTE) {
@@ -61,7 +88,7 @@ public final class Formats {
     return nf;
   }
 
-  private static NumberFormat getTimeFormatter() {
+  private static NumberFormat getDigitsFormatter() {
     NumberFormat nf = NumberFormat.getInstance();
     nf.setGroupingUsed(false);
     nf.setMaximumFractionDigits(3);

@@ -1,7 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
@@ -33,7 +32,7 @@ import com.google.common.collect.ImmutableList;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 
-public final class ConvertDocsCallable implements Callable<Long> {
+public final class ConvertDocsCallable implements Callable<BatchResult> {
 
   private static final Logger LOGGER = getLogger(ConvertDocsCallable.class);
 
@@ -50,20 +49,22 @@ public final class ConvertDocsCallable implements Callable<Long> {
   private final MaintDocFunction function;
 
   @Override
-  public Long call() {
-    Stopwatch sw = createStarted();
+  public BatchResult call() {
     Connection conn = null;
     PreparedStatement pstmt = null;
+    BatchResult br = new BatchResult(0, 0, 0);
     try {
       conn = provider.get();
       pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
-      BatchResult br = new BatchResult(0, 0, 0);
       for (List<String> partition : partition(docHeaderIds, batchSize)) {
         List<MaintDoc> selected = select(conn, partition);
         Iterable<ConversionResult> converted = transform(selected, function);
         br = BatchResult.add(br, batch(conn, pstmt, converted));
         if (br.getCount() % 1000 == 0) {
           progress(br, docHeaderIds.size());
+        }
+        if (br.getCount() > 1500) {
+          break;
         }
       }
       conn.commit();
@@ -74,7 +75,7 @@ public final class ConvertDocsCallable implements Callable<Long> {
       closeQuietly(pstmt);
       closeQuietly(conn);
     }
-    return sw.elapsed(MILLISECONDS);
+    return br;
   }
 
   private BatchResult batch(Connection conn, PreparedStatement pstmt, Iterable<ConversionResult> results) throws SQLException {
@@ -117,9 +118,10 @@ public final class ConvertDocsCallable implements Callable<Long> {
   }
 
   private void progress(BatchResult br, int total) {
+    String rate = Formats.getRate(br.getElapsed(), br.getBytes());
     String throughput = getThroughputInSeconds(br.getElapsed(), br.getCount(), "docs/second");
-    Object[] args = { getCount(br.getCount()), getCount(total), getTime(br.getElapsed()), throughput };
-    info("converted -> %s of %s in %s [%s]", args);
+    Object[] args = { getCount(br.getCount()), getCount(total), getTime(br.getElapsed()), throughput, rate };
+    info("converted -> %s of %s in %s [%s, %s]", args);
   }
 
   private void info(String msg, Object... args) {
