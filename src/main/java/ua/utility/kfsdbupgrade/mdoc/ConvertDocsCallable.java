@@ -68,7 +68,7 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
         }
       }
       conn.commit();
-      progress(br, docHeaderIds.size());
+      progress(br, br.getCount());
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {

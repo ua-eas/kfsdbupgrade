@@ -58,7 +58,7 @@ public final class MaintDocConverter implements Provider<Long> {
     }
     long elapsed = sw.elapsed(MILLISECONDS);
     String rate = getRate(elapsed, br.getBytes());
-    info("converted -> %s in %s [%s, %s]", getCount(docHeaderIds.size()), getTime(elapsed), getThroughputInSeconds(elapsed, docHeaderIds.size(), "docs/second"), rate);
+    info("converted -> %s in %s [%s, %s]", getCount(br.getCount()), getTime(elapsed), getThroughputInSeconds(elapsed, br.getCount(), "docs/second"), rate);
     return overall.elapsed(MILLISECONDS);
   }
 
