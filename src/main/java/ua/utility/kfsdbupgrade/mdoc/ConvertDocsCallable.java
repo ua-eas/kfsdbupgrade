@@ -57,17 +57,17 @@ public final class ConvertDocsCallable implements Callable<Long> {
     try {
       conn = provider.get();
       pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
-      int count = 0;
+      BatchResult br = new BatchResult(0, 0, 0);
       for (List<String> partition : partition(docHeaderIds, batchSize)) {
         List<MaintDoc> selected = select(conn, partition);
         Iterable<ConversionResult> converted = transform(selected, function);
-        count += batch(conn, pstmt, sw, docHeaderIds.size(), converted);
-        if (count % 1000 == 0) {
-          progress(sw, count, docHeaderIds.size());
+        br = BatchResult.add(br, batch(conn, pstmt, converted));
+        if (br.getCount() % 1000 == 0) {
+          progress(br, docHeaderIds.size());
         }
       }
       conn.commit();
-      progress(sw, count, docHeaderIds.size());
+      progress(br, docHeaderIds.size());
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
@@ -77,19 +77,22 @@ public final class ConvertDocsCallable implements Callable<Long> {
     return sw.elapsed(MILLISECONDS);
   }
 
-  private int batch(Connection conn, PreparedStatement pstmt, Stopwatch sw, int total, Iterable<ConversionResult> results) throws SQLException {
-    int batched = 0;
+  private BatchResult batch(Connection conn, PreparedStatement pstmt, Iterable<ConversionResult> results) throws SQLException {
+    int count = 0;
+    long bytes = 0;
+    Stopwatch sw = Stopwatch.createStarted();
     for (ConversionResult result : results) {
       if (result.getNewDocument().isPresent()) {
         MaintDoc newDoc = result.getNewDocument().get();
         pstmt.setString(1, newDoc.getContent());
         pstmt.setString(2, newDoc.getDocHeaderId());
         pstmt.addBatch();
-        batched++;
+        count++;
+        bytes += newDoc.getContent().length() + newDoc.getDocHeaderId().length();
       }
     }
     pstmt.executeBatch();
-    return batched;
+    return new BatchResult(count, bytes, sw.elapsed(MILLISECONDS));
   }
 
   private ImmutableList<MaintDoc> select(Connection conn, Iterable<String> docHeaderIds) {
@@ -113,10 +116,9 @@ public final class ConvertDocsCallable implements Callable<Long> {
     return ImmutableList.copyOf(docs);
   }
 
-  private void progress(Stopwatch sw, int count, int total) {
-    long elapsed = sw.elapsed(MILLISECONDS);
-    String throughput = getThroughputInSeconds(elapsed, count, "docs/second");
-    Object[] args = { getCount(count), getCount(total), getTime(elapsed), throughput };
+  private void progress(BatchResult br, int total) {
+    String throughput = getThroughputInSeconds(br.getElapsed(), br.getCount(), "docs/second");
+    Object[] args = { getCount(br.getCount()), getCount(total), getTime(br.getElapsed()), throughput };
     info("converted -> %s of %s in %s [%s]", args);
   }
 
