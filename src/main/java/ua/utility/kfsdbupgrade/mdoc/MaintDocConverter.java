@@ -46,7 +46,7 @@ public final class MaintDocConverter implements Provider<Long> {
     ConnectionProvider provider = new ConnectionProvider(properties);
     List<String> docHeaderIds = new HeaderIdsProvider(provider).get();
     int threads = new ThreadsProvider(properties).get();
-    info("using %s threads (%s cores)", threads, getRuntime().availableProcessors());
+    info("using %s threads, batch size: %s (%s cores)", threads, batchSize, getRuntime().availableProcessors());
     List<ConvertDocsCallable> callables = getCallables(docHeaderIds, threads, converter, encryptor);
     ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
     Stopwatch sw = createStarted();
