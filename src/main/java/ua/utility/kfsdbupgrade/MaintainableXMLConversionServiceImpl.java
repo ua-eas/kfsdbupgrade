@@ -153,7 +153,7 @@ public class MaintainableXMLConversionServiceImpl {
 	 * @throws Exception
 	 *             Any {@link Exception}s encountered will be rethrown
 	 */
-	public String transformMaintainableXML(String xml) throws Exception {
+	public String transformMaintainableXML(String xml, String docid) throws Exception {
 		/*
 		 * a handful of documents have unfriendly Unicode characters which the
 		 * XML processor (and the rest of KFS) can't handle. Pre-process to
@@ -176,8 +176,8 @@ public class MaintainableXMLConversionServiceImpl {
 					"maintainableImplClass=\"" + classNameRuleMap.get(className) + "\"");
 			}
 		}
-        String convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML);
-        String convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML);
+        String convertedOldMaintainableObjectXML = transformSection(oldMaintainableObjectXML, docid);
+        String convertedNewMaintainableObjectXML = transformSection(newMaintainableObjectXML, docid);
 
         String convertedXML =  beginning +
             "<" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">" + convertedOldMaintainableObjectXML +  "</" + OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME + ">" +
@@ -196,7 +196,7 @@ public class MaintainableXMLConversionServiceImpl {
 	 * @throws Exception
 	 *             Any {@link Exception}s encountered will be rethrown.
 	 */
-    private String transformSection(String xml) throws Exception {
+    private String transformSection(String xml, String docid) throws Exception {
     	String rawXml = xml;
         String maintenanceAction = StringUtils.substringBetween(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">", "</" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
         xml = StringUtils.substringBefore(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
@@ -259,12 +259,33 @@ public class MaintainableXMLConversionServiceImpl {
 				+ MAINTENANCE_ACTION_ELEMENT_NAME + ">";
 
 		// replace classnames not updated so far that were captured by smoke test below
+		// Using context specific replacements in case match replacement pairs entered are too generic
 		for (String className : classNameRuleMap.keySet()) {
 			if (xml.contains("active defined-in=\"" + className + "\"")) {
 				LOGGER.info("Replacing active defined-in= attribute: " + className + " with: "
-						+ classNameRuleMap.get(className));
+						+ classNameRuleMap.get(className) + " at docid= " + docid);
 				xml = xml.replace("active defined-in=\"" + className + "\"",
 						"active defined-in=\"" + classNameRuleMap.get(className) + "\"");
+			}
+		}
+
+		// Using context specific replacements in case match replacement pairs entered are too generic
+		for (String className : classNameRuleMap.keySet()) {
+			if (xml.contains("<" + className + ">")) {
+				LOGGER.info("Replacing open tag: <" + className + "> with: <"
+						+ classNameRuleMap.get(className) + ">" + " at docid= " + docid);
+				xml = xml.replace("<" + className + ">",
+						"<" + classNameRuleMap.get(className) + ">");
+			}
+		}
+
+		// Using context specific replacements in case match replacement pairs entered are too generic
+		for (String className : classNameRuleMap.keySet()) {
+			if (xml.contains("</" + className + ">")) {
+				LOGGER.info("Replacing close tag: </" + className + "> with: </"
+						+ classNameRuleMap.get(className) + ">");
+				xml = xml.replace("</" + className + ">" + " at docid= " + docid ,
+						"</" + classNameRuleMap.get(className) + ">");
 			}
 		}
 
@@ -272,6 +293,7 @@ public class MaintainableXMLConversionServiceImpl {
 		for (String oldClassName : classNameRuleMap.keySet()) {
 			if (xml.contains(oldClassName)) {
 				LOGGER.warn("Document has classname in contents that should have been mapped: " + oldClassName);
+				LOGGER.warn("at docid= " + docid + " for xml= " + xml);
 			}
 		}
 		checkForElementsWithClassAttribute(document);
