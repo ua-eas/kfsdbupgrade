@@ -41,7 +41,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -54,6 +53,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
+import com.google.common.base.Optional;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.DomWriter;
@@ -66,6 +68,8 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
     private static final String OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME = "oldMaintainableObject";
     private static final String NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME = "newMaintainableObject";
 
+  private LoadingCache<PropertyClassKey, Optional<Class<?>>> propertyClassCache = CacheBuilder.newBuilder().build(new PropertyClassLoader());
+    
 	/**
 	 * Populated by the <code>pattern</code> elements in the <code>rule</code>
 	 * named <code>maint_doc_classname_changes</code> in {@link #rulesXmlFile}.
@@ -897,13 +901,14 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
             if ((currentClass != null) && isValidClass(currentClass)) {
                 if (childNode.hasChildNodes() && !(Collection.class.isAssignableFrom(currentClass) || Map.class
                         .isAssignableFrom(currentClass))) {
-                    Class<?> propertyClass = PropertyUtils.getPropertyType(currentClass.newInstance(), propertyName);
-                    if (propertyClass != null && classPropertyRuleMap.containsKey(propertyClass.getName())) {
-                        transformNode(document, childNode, propertyClass, this.classPropertyRuleMap.get(
-                                propertyClass.getName()));
-                    }
-                    
-                    transformNode(document, childNode, propertyClass, classPropertyRuleMap.get("*"));
+
+                  PropertyClassKey key = new PropertyClassKey(currentClass, propertyName);
+                  Optional<Class<?>> propertyClass = propertyClassCache.getUnchecked(key);
+                  if (propertyClass.isPresent() && classPropertyRuleMap.containsKey(propertyClass.get().getName())) {
+                    transformNode(document, childNode, propertyClass.get(), this.classPropertyRuleMap.get(propertyClass.get().getName()));
+                  }
+                  transformNode(document, childNode, propertyClass.orNull(), classPropertyRuleMap.get("*"));
+
                 }
             }
 			childNode = nextChild;
