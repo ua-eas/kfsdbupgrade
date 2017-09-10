@@ -146,6 +146,11 @@ public class MaintainableXMLConversionServiceimpl2 implements MaintainableXmlCon
    *           Any {@link Exception}s encountered will be rethrown
    */
   public String transformMaintainableXML(String xml) throws Exception {
+
+    if (Boolean.parseBoolean(System.getProperty("mdoc.convert.skip"))) {
+      return xml;
+    }
+    
     /*
      * a handful of documents have unfriendly Unicode characters which the XML processor (and the rest of KFS) can't handle. Pre-process to replace with a friendly base ASCII
      * characters.
