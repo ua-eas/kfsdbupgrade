@@ -223,10 +223,6 @@ public class MaintainableXMLConversionServiceimpl2 implements MaintainableXmlCon
      */
     migratePersonObjects(document);
 
-    if (true) {
-      return xml;
-    }
-
     migrateKualiCodeBaseObjects(document);
     migrateAccountExtensionObjects(document);
     migrateClassAsAttribute(document);
@@ -540,10 +536,6 @@ public class MaintainableXMLConversionServiceimpl2 implements MaintainableXmlCon
       personProperties = xpath.compile("//*[@class='" + personImplClassName + "']");
       NodeList matchingNodes = (NodeList) personProperties.evaluate(doc, XPathConstants.NODESET);
       for (int i = 0; i < matchingNodes.getLength(); i++) {
-        if (true) {
-          System.out.println("woohoo");
-          continue;
-        }
         Node tempNode = matchingNodes.item(i);
         LOGGER.trace("Migrating PersonImpl node: " + tempNode.getNodeName() + "/" + tempNode.getNodeValue());
         // first, migrate address pieces to an EntityAddress node
