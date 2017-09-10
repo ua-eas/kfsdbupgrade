@@ -60,7 +60,7 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
       while (rs.next()) {
         String docHeaderId = rs.getString(1);
         String content = rs.getString(2);
-        docs.add(new MaintDoc(docHeaderId, content));
+        docs.add(MaintDoc.build(docHeaderId, content));
         if (docs.size() % batchSize == 0) {
           MaintDocResult mdr = handleDocs(pstmt, docs);
           errors += mdr.getErrors();

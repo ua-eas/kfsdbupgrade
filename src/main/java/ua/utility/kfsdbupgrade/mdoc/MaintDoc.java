@@ -1,13 +1,12 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonDeserialize(builder = MaintDoc.Builder.class)
 public final class MaintDoc {
-
-  public MaintDoc(String docHeaderId, String content) {
-    this.docHeaderId = checkNotNull(docHeaderId);
-    this.content = checkNotNull(content);
-  }
 
   private final String docHeaderId;
   private final String content;
@@ -18,6 +17,41 @@ public final class MaintDoc {
 
   public String getContent() {
     return content;
+  }
+
+  private MaintDoc(Builder builder) {
+    this.docHeaderId = builder.docHeaderId;
+    this.content = builder.content;
+  }
+
+  public static MaintDoc build(String docHeaderId, String content) {
+    return new Builder().withDocHeaderId(docHeaderId).withContent(content).build();
+  }
+
+  public static class Builder {
+
+    private String docHeaderId;
+    private String content;
+
+    public Builder withDocHeaderId(String docHeaderId) {
+      this.docHeaderId = docHeaderId;
+      return this;
+    }
+
+    public Builder withContent(String content) {
+      this.content = content;
+      return this;
+    }
+
+    public MaintDoc build() {
+      return validate(new MaintDoc(this));
+    }
+
+    private static MaintDoc validate(MaintDoc instance) {
+      checkArgument(isNotBlank(instance.docHeaderId), "docHeaderId may not be blank");
+      checkArgument(isNotBlank(instance.content), "content may not be blank");
+      return instance;
+    }
   }
 
 }
