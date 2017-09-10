@@ -108,7 +108,7 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
       while (rs.next()) {
         String docHeaderId = rs.getString(1);
         String content = rs.getString(2);
-        docs.add(new MaintDoc(docHeaderId, content));
+        docs.add(MaintDoc.build(docHeaderId, content));
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);

@@ -52,14 +52,19 @@ public final class MaintDocConverter implements Provider<Long> {
     ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
     Stopwatch sw = createStarted();
     List<BatchResult> batches = getFutures(submit(executor, callables));
-    BatchResult br = new BatchResult(0, 0, 0);
-    for (BatchResult batch : batches) {
-      br = BatchResult.add(br, batch);
-    }
+    BatchResult br = sum(batches);
     long elapsed = sw.elapsed(MILLISECONDS);
     String rate = getRate(elapsed, br.getBytes());
     info("converted -> %s in %s [%s, %s]", getCount(br.getCount()), getTime(elapsed), getThroughputInSeconds(elapsed, br.getCount(), "docs/second"), rate);
     return overall.elapsed(MILLISECONDS);
+  }
+
+  private BatchResult sum(Iterable<BatchResult> results) {
+    BatchResult br = new BatchResult(0, 0, 0);
+    for (BatchResult result : results) {
+      br = BatchResult.add(br, result);
+    }
+    return br;
   }
 
   private ImmutableList<ConvertDocsCallable> getCallables(List<String> docHeaderIds, int threads, MaintainableXmlConversionService converter, EncryptionService encryptor) {
