@@ -96,4 +96,32 @@ public final class Formats {
     return nf;
   }
 
+  private static NumberFormat getSizeFormatter() {
+    NumberFormat nf = NumberFormat.getInstance();
+    nf.setGroupingUsed(false);
+    nf.setMaximumFractionDigits(3);
+    nf.setMinimumFractionDigits(3);
+    return nf;
+  }
+
+  public static String getSize(long bytes) {
+    Size uom = getSizeEnum(bytes);
+    StringBuilder sb = new StringBuilder();
+    sb.append(getFormattedSize(bytes, uom));
+    sb.append(uom.getSizeLabel());
+    return sb.toString();
+  }
+
+  private static String getFormattedSize(long bytes, Size size) {
+    switch (size) {
+    case BYTE:
+      return bytes + "";
+    case KB:
+    case MB:
+    case GB:
+    default:
+      return getSizeFormatter().format(bytes / (double) size.getValue());
+    }
+  }
+
 }

@@ -6,12 +6,15 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static com.google.common.collect.Lists.transform;
+import static com.google.common.primitives.Ints.checkedCast;
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
@@ -38,17 +41,27 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
 
   private static final Logger LOGGER = getLogger(ConvertDocsCallable.class);
 
-  public ConvertDocsCallable(Provider<Connection> provider, int batchSize, Iterable<String> docHeaderIds, MaintainableXmlConversionService converter, EncryptionService encryptor) {
+  public ConvertDocsCallable(Provider<Connection> provider, int batchSize, Iterable<String> docHeaderIds, MaintainableXmlConversionService converter, EncryptionService encryptor,
+      Counter overallCount, Counter overallBytes, Stopwatch sw, int totalDocuments) {
     this.provider = checkNotNull(provider);
     this.batchSize = batchSize;
     this.docHeaderIds = copyOf(docHeaderIds);
     this.function = new MaintDocFunction(encryptor, converter);
+    this.overallCount = overallCount;
+    this.overallBytes = overallBytes;
+    this.sw = checkNotNull(sw);
+    this.totalDocuments = totalDocuments;
   }
 
   private final Provider<Connection> provider;
   private final int batchSize;
   private final ImmutableList<String> docHeaderIds;
   private final MaintDocFunction function;
+  private final Counter overallCount;
+  private final Counter overallBytes;
+  private final Stopwatch sw;
+  private final int totalDocuments;
+  private final int maxDocs = parseInt(System.getProperty("mdoc.max", Integer.MAX_VALUE + ""));
 
   @Override
   public BatchResult call() {
@@ -56,21 +69,19 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
     PreparedStatement pstmt = null;
     BatchResult br = new BatchResult(0, 0, 0);
     try {
+      start(sw);
       conn = provider.get();
       pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
       for (List<String> partition : partition(docHeaderIds, batchSize)) {
         List<MaintDoc> selected = select(conn, partition);
         Iterable<ConversionResult> converted = transform(selected, function);
         br = BatchResult.add(br, batch(conn, pstmt, converted));
-        if (br.getCount() % 1000 == 0) {
-          progress(br, docHeaderIds.size());
-        }
-        if (br.getCount() > 1500) {
+        if (overallCount.getValue() > maxDocs) {
           break;
         }
       }
       conn.commit();
-      progress(br, br.getCount());
+      progress();
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
@@ -91,7 +102,15 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
         pstmt.setString(2, newDoc.getDocHeaderId());
         pstmt.addBatch();
         count++;
-        bytes += newDoc.getContent().length() + newDoc.getDocHeaderId().length();
+        long byteCount = newDoc.getContent().length() + newDoc.getDocHeaderId().length();
+        bytes += byteCount;
+        overallBytes.increment(byteCount);
+        synchronized (overallCount) {
+          int totalCount = checkedCast(overallCount.increment());
+          if (totalCount % 1000 == 0) {
+            progress();
+          }
+        }
       }
     }
     pstmt.executeBatch();
@@ -119,11 +138,18 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
     return ImmutableList.copyOf(docs);
   }
 
-  private void progress(BatchResult br, int total) {
-    String rate = getRate(br.getElapsed(), br.getBytes());
-    String throughput = getThroughputInSeconds(br.getElapsed(), br.getCount(), "docs/second");
-    Object[] args = { getCount(br.getCount()), getCount(total), getTime(br.getElapsed()), throughput, rate };
-    info("converted -> %s of %s in %s [%s, %s]", args);
+  private void progress() {
+    synchronized (overallCount) {
+      long elapsed = sw.elapsed(MILLISECONDS);
+      long totalBytes = overallBytes.getValue();
+      String overallTime = getTime(elapsed);
+      String overallRate = getRate(elapsed, totalBytes);
+      String overallThroughput = getThroughputInSeconds(elapsed, overallCount.getValue(), "docs/second");
+      String overallCount = getCount(checkedCast(this.overallCount.getValue()));
+      String overallBytes = getSize(totalBytes);
+      Object[] args = { overallCount, getCount(totalDocuments), overallTime, overallThroughput, overallBytes, overallRate };
+      info("converted -> %s of %s in %s [%s %s %s]", args);
+    }
   }
 
   private void info(String msg, Object... args) {
@@ -136,6 +162,14 @@ public final class ConvertDocsCallable implements Callable<BatchResult> {
 
   public int getBatchSize() {
     return batchSize;
+  }
+
+  private void start(Stopwatch sw) {
+    synchronized (sw) {
+      if (!sw.isRunning()) {
+        sw.start();
+      }
+    }
   }
 
 }

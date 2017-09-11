@@ -13,3 +13,8 @@ threads batch docs/second avg  expected time
 8       100   
 
 
+4 connections + skipping conversion (just testing database throughput at this point)
+2017-09-10 16:55:00.548 MST INFO 4401 [1:main] u.u.k.m.MaintDocConverter : converted -> 50,000 in 5.941m [140 docs/second, 2.803 MB/s]
+
+8 connections + converting a freshly loaded set of documents
+2017-09-10 18:13:02.943 MST INFO 5129 [1:main] u.u.k.m.MaintDocConverter : converted -> 50,000 in 8.670m [96 docs/second, 1.712 MB/s] 

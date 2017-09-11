@@ -2,6 +2,7 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Integer.parseInt;
@@ -11,6 +12,7 @@ import static java.lang.System.getProperty;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
@@ -55,7 +57,8 @@ public final class MaintDocConverter implements Provider<Long> {
     BatchResult br = sum(batches);
     long elapsed = sw.elapsed(MILLISECONDS);
     String rate = getRate(elapsed, br.getBytes());
-    info("converted -> %s in %s [%s, %s]", getCount(br.getCount()), getTime(elapsed), getThroughputInSeconds(elapsed, br.getCount(), "docs/second"), rate);
+    String size = getSize(br.getBytes());
+    info("converted -> %s in %s [%s %s %s]", getCount(br.getCount()), getTime(elapsed), getThroughputInSeconds(elapsed, br.getCount(), "docs/second"), size, rate);
     return overall.elapsed(MILLISECONDS);
   }
 
@@ -68,10 +71,13 @@ public final class MaintDocConverter implements Provider<Long> {
   }
 
   private ImmutableList<ConvertDocsCallable> getCallables(List<String> docHeaderIds, int threads, MaintainableXmlConversionService converter, EncryptionService encryptor) {
+    Stopwatch sw = createUnstarted();
+    Counter overallCount = new Counter();
+    Counter overallBytes = new Counter();
     List<ConvertDocsCallable> callables = newArrayList();
     for (List<String> distribution : distribute(docHeaderIds, threads)) {
       ConnectionProvider provider = new ConnectionProvider(properties);
-      callables.add(new ConvertDocsCallable(provider, batchSize, distribution, converter, encryptor));
+      callables.add(new ConvertDocsCallable(provider, batchSize, distribution, converter, encryptor, overallCount, overallBytes, sw, docHeaderIds.size()));
     }
     return ImmutableList.copyOf(callables);
   }
