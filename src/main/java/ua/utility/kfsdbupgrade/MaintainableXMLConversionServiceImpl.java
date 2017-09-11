@@ -543,7 +543,7 @@ public class MaintainableXMLConversionServiceImpl {
 			int pos2 = oldXML.indexOf("</boNotes>", pos1);
 
 			if ((pos1 > -1) && (pos2 > pos1)) {
-				oldXML = (oldXML.substring(0, pos1) + ">\n<boNotes>\n" + notesXml + "\n</boNotes>"
+				oldXML = (oldXML.substring(0, pos1) + "\n<boNotes>\n" + notesXml + "\n</boNotes>"
 						+ oldXML.substring(pos2 + "</boNotes>".length()));
 			}
         }
