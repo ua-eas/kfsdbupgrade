@@ -24,9 +24,13 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-public class HeaderIdsProvider implements Provider<ImmutableList<String>> {
+public final class HeaderIdsProvider implements Provider<ImmutableList<String>> {
 
   private static final Logger LOGGER = getLogger(HeaderIdsProvider.class);
+
+  public HeaderIdsProvider(Provider<Connection> provider) {
+    this(provider, Optional.<Integer>absent());
+  }
 
   public HeaderIdsProvider(Provider<Connection> provider, Optional<Integer> max) {
     checkArgument(max.isPresent() ? max.get() > 0 : true, "max must be greater than zero");
@@ -48,11 +52,9 @@ public class HeaderIdsProvider implements Provider<ImmutableList<String>> {
       conn = provider.get();
       stmt = conn.createStatement();
       rs = stmt.executeQuery("SELECT DOC_HDR_ID FROM KRNS_MAINT_DOC_T");
-      int count = 0;
       while (rs.next()) {
         headerIds.add(rs.getString(1));
-        count++;
-        if (max.isPresent() && count >= max.get()) {
+        if (max.isPresent() && headerIds.size() >= max.get()) {
           break;
         }
       }
