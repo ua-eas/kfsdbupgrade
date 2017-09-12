@@ -1,6 +1,8 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Functions.identity;
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Integer.parseInt;
@@ -25,6 +27,7 @@ import javax.inject.Provider;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
 public final class DataPumper implements Provider<Long> {
@@ -44,7 +47,8 @@ public final class DataPumper implements Provider<Long> {
       int batchSize = parseInt(props.getProperty("mdoc.batch"));
       MDocMetrics metrics = new MDocMetrics();
       ConnectionProvider provider = new ConnectionProvider(props, false);
-      List<String> headerIds = new HeaderIdsProvider(provider).get();
+      Optional<Integer> max = getInteger(props, "mdoc.metrics.max");
+      List<String> headerIds = new HeaderIdsProvider(provider, max).get();
       List<Callable<Long>> callables = newArrayList();
       Function<MaintDoc, MaintDoc> function = identity();
       for (List<String> distribution : distribute(headerIds, threads)) {
@@ -73,6 +77,14 @@ public final class DataPumper implements Provider<Long> {
       throw new IllegalStateException(e);
     }
     return 0L;
+  }
+
+  private Optional<Integer> getInteger(Properties props, String key) {
+    String value = props.getProperty(key);
+    if (value == null || "ABSENT".equals(value)) {
+      return absent();
+    }
+    return of(parseInt(value));
   }
 
   private void info(String msg, Object... args) {

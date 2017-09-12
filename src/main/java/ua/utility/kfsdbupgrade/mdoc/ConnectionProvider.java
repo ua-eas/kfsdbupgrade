@@ -41,7 +41,7 @@ public final class ConnectionProvider implements Provider<Connection> {
       Stopwatch sw = createStarted();
       connection = getConnection(url, username, password);
       connection.setAutoCommit(autoCommit);
-      info("connected to --> %s [%s]", url, username, getTime(sw));
+      info("connected to --> %s [%s]", url, getTime(sw));
       return connection;
     } catch (Throwable e) {
       closeQuietly(connection);

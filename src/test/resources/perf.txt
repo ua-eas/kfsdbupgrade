@@ -1,16 +1,5 @@
-threads batch docs/second avg  expected time
-1       1000  33,34,35    34   4.90 hours
-2       1000  48,49,52    50   3.33 hours
-4       1000  67,68,70    68   2.45 hours
-8       1000  65,66,68    66   2.53 hours
-
-
-threads batch docs/second avg  expected time
-1       100   38,39,37    38   4.39 hours
-2       100   
-4       100   87,82,86    85   1.96 hours
-5       100   
-8       100   
-
 # local 8 threads, 8 cores, batch size=75
-2017-09-12 10:39:21.211 MST INFO 26751 [1:main] u.u.k.m.ProgressProvider : 50,000 7.212m 116 docs/second, 4.618 MB/s [s:20.691m u:35.570m c:0ms] finished 
+50,000 docs 7.212m 116 docs/second, 4.618 MB/s [s:20.691m u:35.570m c:0ms] finished 
+
+# aws   4 threads, 4 cores, batch size=75 db.m4.xlarge t2.xlarge
+50,000 docs 7.881m 106 docs/second, 4.226 MB/s [s:9.674m u:19.981m c:0ms] finished 
