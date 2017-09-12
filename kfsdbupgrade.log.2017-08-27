@@ -1,0 +1,11 @@
+2017-08-27 18:22:34,183 DB [INFO] ua.utility.kfsdbupgrade.concurrent.PropertiesProvider: loading properties -> /Users/jcaddel/git/kfsdbupgrade/src/main/resources/kfsdbupgrade.properties
+2017-08-27 18:22:34,206 DB [INFO] ua.utility.kfsdbupgrade.concurrent.PropertiesProvider: loading properties -> /Users/jcaddel/git/ua-core/src/test/resources/kfs30db.properties
+2017-08-27 18:42:57,373 DB [INFO] ua.utility.kfsdbupgrade.concurrent.PropertiesProvider: loading properties -> /Users/jcaddel/git/kfsdbupgrade/src/main/resources/kfsdbupgrade.properties
+2017-08-27 18:42:57,393 DB [INFO] ua.utility.kfsdbupgrade.concurrent.PropertiesProvider: loading properties -> /Users/jcaddel/git/ua-core/src/test/resources/kfs30db.properties
+2017-08-27 18:42:57,399 DB [INFO] ua.utility.kfsdbupgrade.concurrent.ConnectionProvider: Connecting to db KFS5 UPGRADE DATABASE...
+2017-08-27 18:42:57,400 DB [INFO] ua.utility.kfsdbupgrade.concurrent.ConnectionProvider: url=jdbc:oracle:thin:@kfs30jbc.cryfdp9i1uh4.us-west-2.rds.amazonaws.com:1521:KFS30JBC
+2017-08-27 18:43:03,517 DB [INFO] ua.utility.kfsdbupgrade.concurrent.ConnectionProvider: connected to database KFS5 UPGRADE DATABASE
+2017-08-27 18:43:03,517 DB [INFO] ua.utility.kfsdbupgrade.concurrent.ConnectionProvider: 
+2017-08-27 18:43:03,682 DB [INFO] ua.utility.kfsdbupgrade.concurrent.DefaultMaintanenceDocConverter: total maintenance documents -> 616112
+2017-08-27 18:43:11,732 DB [INFO] ua.utility.kfsdbupgrade.concurrent.DefaultMaintanenceDocConverter: document ids acquired -> 1000
+2017-08-27 18:43:19,777 DB [INFO] ua.utility.kfsdbupgrade.concurrent.DefaultMaintanenceDocConverter: document ids acquired -> 2000

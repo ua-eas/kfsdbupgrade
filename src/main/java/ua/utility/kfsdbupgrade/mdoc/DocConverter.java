@@ -6,9 +6,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
 import static com.google.common.collect.Lists.transform;
-import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 
 import java.sql.Connection;
@@ -17,15 +15,11 @@ import java.util.List;
 
 import javax.inject.Provider;
 
-import org.apache.log4j.Logger;
-
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 public final class DocConverter implements Provider<Long> {
-
-  private static final Logger LOGGER = getLogger(DocConverter.class);
 
   private final Provider<Connection> provider;
   private final ImmutableList<String> headerIds;
@@ -51,7 +45,7 @@ public final class DocConverter implements Provider<Long> {
           pstmt.setString(2, doc.getDocHeaderId());
           pstmt.addBatch();
           synchronized (metrics) {
-            sw = metrics.getUpdate().increment(doc.getDocHeaderId().length() + doc.getContent().length(), sw);
+            sw = metrics.getUpdate().increment(doc.getContent().length(), sw);
             if (metrics.getUpdate().getCount().getValue() % 1000 == 0) {
               new ProgressProvider(metrics).get();
             }
@@ -77,7 +71,7 @@ public final class DocConverter implements Provider<Long> {
   private long sum(Iterable<MaintDoc> docs) {
     long sum = 0;
     for (MaintDoc doc : docs) {
-      sum += doc.getDocHeaderId().length() + doc.getContent().length();
+      sum += doc.getContent().length();
     }
     return sum;
   }
@@ -159,14 +153,6 @@ public final class DocConverter implements Provider<Long> {
 
   public MDocMetrics getMetrics() {
     return metrics;
-  }
-
-  private static void info(String msg, Object... args) {
-    if (args == null || args.length == 0) {
-      LOGGER.info(msg);
-    } else {
-      LOGGER.info(format(msg, args));
-    }
   }
 
 }
