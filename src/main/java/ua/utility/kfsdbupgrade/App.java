@@ -63,9 +63,11 @@ import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import ua.utility.kfsdbupgrade.mdoc.DataPumper;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
+import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class App {
@@ -123,6 +125,16 @@ public class App {
 	 * @param args
 	 */
     public static void main(final String args[]) {
+      if (parseBoolean(System.getProperty("mdoc.metrics"))) {
+        try {
+          doMetrics();
+          System.exit(0);
+        }catch(Throwable e) {
+          e.printStackTrace();
+          System.exit(1);
+        }
+      }
+      
         if (args.length > 0) {
             String propertyFileName = args[0];
             boolean ingestWorkflow = false;
@@ -136,6 +148,14 @@ public class App {
 				app.doUpgrade();
 			}
 		}
+    }
+    
+    private static void doMetrics() throws IOException {
+      File defaultFile = new File("./kfsdbupgrade.properties").getCanonicalFile();
+      File actualFile = new File(System.getProperty("upgrade.props", defaultFile.getPath())).getCanonicalFile();
+      Properties props = new PropertiesProvider(actualFile).get();
+      DataPumper pumper = new DataPumper(props);
+      pumper.get();
     }
 
     /**
