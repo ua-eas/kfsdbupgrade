@@ -19,15 +19,15 @@ import com.google.common.collect.ImmutableList;
 
 public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
 
-  public MaintDocSelector(Connection conn, Iterable<String> headerIds, DataMetrics select) {
+  public MaintDocSelector(Connection conn, Iterable<String> headerIds, MDocMetrics metrics) {
     this.conn = checkNotNull(conn);
     this.headerIds = copyOf(headerIds);
-    this.select = checkNotNull(select);
+    this.metrics = checkNotNull(metrics);
   }
 
   private final Connection conn;
   private final ImmutableList<String> headerIds;
-  private final DataMetrics select;
+  private final MDocMetrics metrics;
 
   public ImmutableList<MaintDoc> get() {
     List<MaintDoc> docs = newArrayList();
@@ -41,7 +41,7 @@ public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
         String headerId = rs.getString(1);
         String content = rs.getString(2);
         docs.add(MaintDoc.build(headerId, content));
-        sw = select.increment(headerId.length() + content.length(), sw);
+        sw = metrics.getSelect().increment(headerId.length() + content.length(), sw);
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);
