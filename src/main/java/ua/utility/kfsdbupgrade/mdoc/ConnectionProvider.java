@@ -37,11 +37,12 @@ public final class ConnectionProvider implements Provider<Connection> {
       String username = checkedValue(props, "database-user");
       String password = checkedValue(props, "database-password");
       String url = checkedValue(props, "database-url");
+      info("connecting to --> %s as %s", url, username);
       Class.forName(checkedValue(props, "database-driver"));
       Stopwatch sw = createStarted();
       connection = getConnection(url, username, password);
       connection.setAutoCommit(autoCommit);
-      info("connected to --> %s [%s]", url, getTime(sw));
+      info("connected to --> %s as %s [%s]", url, username, getTime(sw));
       return connection;
     } catch (Throwable e) {
       closeQuietly(connection);

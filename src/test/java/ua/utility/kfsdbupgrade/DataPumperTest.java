@@ -15,6 +15,9 @@ public class DataPumperTest {
   @Test
   public void test() {
     try {
+      System.setProperty("log4j.configuration", "log4j.simple.properties");
+      System.setProperty("upgrade.props", "/Users/jcaddel/git/ua-core/src/test/resources/kfs30db.properties");
+      System.setProperty("mdoc.metrics.max", "100");
       File defaultFile = new File("./kfsdbupgrade.properties").getCanonicalFile();
       File actualFile = new File(System.getProperty("upgrade.props", defaultFile.getPath())).getCanonicalFile();
       Properties props = new PropertiesProvider(actualFile).get();
