@@ -2773,7 +2773,7 @@ public class App {
 
                         try {
 							LOGGER.trace("Converting maintainable xml with document number: " + docid);
-                            newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml);
+                            newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml, docid);
                         }
 
                         catch (Exception ex) {

@@ -74,7 +74,7 @@ public class SingleXmlUpgrader {
 		File f = new File("src/main/resources/MaintainableXMLUpgradeRules.xml");
 		MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
 				f, Level.TRACE);
-		String kfs6Xml = maintainableXMLConversionServiceImpl.transformMaintainableXML(kfs3Xml);
+		String kfs6Xml = maintainableXMLConversionServiceImpl.transformMaintainableXML(kfs3Xml, docNumber);
 
 		if (writing) {
 			FileUtils.writeStringToFile(new File(baseDir, docNumber + "-KFS6.xml"), kfs6Xml);
