@@ -20,8 +20,9 @@ public final class Counter {
   }
 
   public synchronized long increment(long amount) {
-    checkArgument(amount >= 0, "amount can't be negative");
-    return value = value + amount;
+    checkArgument(amount > 0, "amount must be greater than zero");
+    this.value = value + amount;
+    return value;
   }
 
   public synchronized long getValue() {

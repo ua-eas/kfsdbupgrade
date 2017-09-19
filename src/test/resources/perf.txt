@@ -1,5 +1,9 @@
-# local 8 threads, 8 cores, batch size=75
-50,000 docs 7.212m 116 docs/second, 4.618 MB/s [s:20.691m u:35.570m c:0ms] finished 
+# local 4 threads, 8 cores, batch size=75
+10,000 1.480m 113 docs/second, 4.527 MB/s [s:1.580m u:3.308m c:1ms] finished 
 
 # aws   4 threads, 4 cores, batch size=75 db.m4.xlarge t2.xlarge
-50,000 docs 7.881m 106 docs/second, 4.226 MB/s [s:9.674m u:19.981m c:0ms] finished 
+10,000 56.991s 175 docs/second, 6.967 MB/s [s:1.648m u:2.044m c:0ms] finished 
+
+
+# aws   2 threads, 2 cores, batch size=75 db.m4.xlarge t2.medium
+10,000 1.339m 124 docs/second, 4.942 MB/s [s:1.082m u:1.488m c:1ms] finished 
