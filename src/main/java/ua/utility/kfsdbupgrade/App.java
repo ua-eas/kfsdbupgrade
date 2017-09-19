@@ -2772,9 +2772,8 @@ public class App {
 
 
 							/// BEGIN UAF-34 Diagnostics
-							String[] classesToLog = new String[]{"PRJEAccountLine",
-									"PRJEBaseObject","PRJESet",
-									"PRJEBaseAccount","PRJEType"};
+							String[] classesToLog = new String[]{"KualiMaintainableImpl",
+									"FinancialSystemMaintainable"};
 							for(String className : classesToLog) {
 								if (oldXml.contains(className)) {
 									String oldclassPath2log = StringUtils.substringBetween(oldXml, "edu", className);
@@ -2809,9 +2808,8 @@ public class App {
 
 
 							/// BEGIN UAF-34 Diagnostics
-							String[] classesToLog = new String[]{"PRJEAccountLine",
-									"PRJEBaseObject","PRJESet",
-									"PRJEBaseAccount","PRJEType"};
+							String[] classesToLog = new String[]{"KualiMaintainableImpl",
+									"FinancialSystemMaintainable"};
 							for(String className : classesToLog) {
 								if (newXml.contains(className)) {
 									String newclassPath2log = StringUtils.substringBetween(newXml, "edu", className);
