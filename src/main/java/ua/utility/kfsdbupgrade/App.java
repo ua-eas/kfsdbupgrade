@@ -2765,30 +2765,6 @@ public class App {
 
                         if (encryptService.isEnabled()) {
                             oldXml = encryptService.decrypt(res.getString(2));
-
-
-
-
-
-
-							/// BEGIN UAF-34 Diagnostics
-							String[] classesToLog = new String[]{"KualiMaintainableImpl",
-									"FinancialSystemMaintainable"};
-							for(String className : classesToLog) {
-								if (oldXml.contains(className)) {
-									String oldclassPath2log = StringUtils.substringBetween(oldXml, "edu", className);
-									LOGGER.info("BEFORE Found Old? Class Name: edu" + oldclassPath2log + className + " with document number: " + docid);
-								}
-							}
-							/// END UAF-34 Diagnostics
-
-
-
-
-
-
-
-
                         } else {
                             oldXml = res.getString(2);
                         }
@@ -2798,33 +2774,6 @@ public class App {
                         try {
 							LOGGER.trace("Converting maintainable xml with document number: " + docid);
                             newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml, docid);
-
-
-
-
-
-
-
-
-
-							/// BEGIN UAF-34 Diagnostics
-							String[] classesToLog = new String[]{"KualiMaintainableImpl",
-									"FinancialSystemMaintainable"};
-							for(String className : classesToLog) {
-								if (newXml.contains(className)) {
-									String newclassPath2log = StringUtils.substringBetween(newXml, "edu", className);
-									LOGGER.info("AFTER Found New? Class Name: edu" + newclassPath2log + className + " with document number: " + docid);
-								}
-							}
-							/// END UAF-34 Diagnostics
-
-
-
-
-
-
-
-
                         }
 
                         catch (Exception ex) {

@@ -289,9 +289,6 @@ public class MaintainableXMLConversionServiceImpl {
 			}
 		}
 
-
-		
-		
 		// replace classnames not updated so far that were captured by smoke test below
 		// Using context specific replacements in case match replacement pairs entered are too generic
 		for (String className : classNameRuleMap.keySet()) {
@@ -303,10 +300,6 @@ public class MaintainableXMLConversionServiceImpl {
 			}
 		}
 
-		
-		
-		
-		
 		// investigative logging, still useful as a smoke test
 		for (String oldClassName : classNameRuleMap.keySet()) {
 			if (xml.contains(oldClassName)) {
