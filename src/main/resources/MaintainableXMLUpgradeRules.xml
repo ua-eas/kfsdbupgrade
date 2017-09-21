@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+  <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright 2005-2014 The Kuali Foundation
@@ -160,6 +160,10 @@
       <match>com.rsmart.kuali.kfs.prje.bo.PRJEBaseAccount</match>
       <replacement>edu.arizona.kfs.module.prje.businessobject.PRJEBaseAccount</replacement>
     </pattern>
+    <pattern>
+      <match>org.kuali.rice.kns.maintenance.KualiMaintainableImpl</match>
+      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+    </pattern>    
   </rule>
 
   <!-- Rules specifying any change in class properties.
