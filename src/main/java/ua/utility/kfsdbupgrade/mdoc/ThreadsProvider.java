@@ -16,6 +16,8 @@ import javax.inject.Provider;
 public final class ThreadsProvider implements Provider<Integer> {
 
   private static final String KEY = "mdoc.threads";
+  // default is to use one thread per available processor
+  private static final String DEFAULT_VALUE = "1C";
 
   public ThreadsProvider() {
     this(new Properties());
@@ -41,7 +43,9 @@ public final class ThreadsProvider implements Provider<Integer> {
   }
 
   private String getValue(Properties props) {
-    String defaultValue = props.getProperty(KEY, "1C");
+    // default is to use one thread per available processor
+    String defaultValue = props.getProperty(KEY, DEFAULT_VALUE);
+    // always let system properties "win"
     return System.getProperty(KEY, defaultValue);
   }
 
