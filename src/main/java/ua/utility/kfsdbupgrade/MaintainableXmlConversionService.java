@@ -2,6 +2,6 @@ package ua.utility.kfsdbupgrade;
 
 public interface MaintainableXmlConversionService {
 
-  String transformMaintainableXML(String xml) throws Exception;
+  String transformMaintainableXML(String xml, String docId) throws Exception;
 
 }

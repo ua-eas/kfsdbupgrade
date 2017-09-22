@@ -22,7 +22,7 @@ public final class MaintDocCallable implements Callable<ConversionResult> {
   public ConversionResult call() {
     try {
       String decrypted = encryptor.isEnabled() ? encryptor.decrypt(document.getContent()) : document.getContent();
-      String converted = converter.transformMaintainableXML(decrypted);
+      String converted = converter.transformMaintainableXML(decrypted, document.getDocHeaderId());
       String encrypted = encryptor.isEnabled() ? encryptor.encrypt(converted) : converted;
       return new ConversionResult(document, new MaintDoc(document.getDocHeaderId(), encrypted));
     } catch (Throwable e) {

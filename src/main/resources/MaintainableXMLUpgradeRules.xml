@@ -94,23 +94,23 @@
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.prje.document.PRJEAccountLineMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.prje.document.PRJEAccountLineMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.prje.document.PRJETypeMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.prje.document.PRJETypeMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.prje.document.PRJEBaseObjectMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.prje.document.PRJEBaseObjectMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.prje.document.PRJESetMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.prje.document.PRJESetMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.prje.document.PRJEBaseAccountMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.prje.document.PRJEBaseAccountMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.sys.document.OutboundMessageQueueMaintainable</match>
@@ -122,7 +122,7 @@
     </pattern>
     <pattern>
       <match>com.rsmart.kuali.kfs.tax.document.PaymentMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.tax.document.PaymentMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.module.purap.document.PurchasingPdfLanguageMaintainableImpl</match>
@@ -130,7 +130,7 @@
     </pattern>
     <pattern>
       <match>edu.arizona.kfs.tax.document.PayeeMaintainableImpl</match>
-      <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
+      <replacement>edu.arizona.kfs.module.tax.document.PayeeMaintainableImpl</replacement>
     </pattern>
     <pattern>
       <match>edu.arizona.kns.web.struts.action.KFSMaintenanceDocumentAction</match>
@@ -139,6 +139,26 @@
     <pattern>
       <match>com.rsmart.kuali.kfs.fp.businessobject.ProcurementCardHolderDetail</match>
       <replacement>edu.arizona.kfs.fp.businessobject.ProcurementCardDefault</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.prje.bo.PRJEType</match>
+      <replacement>edu.arizona.kfs.module.prje.businessobject.PRJEType</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.prje.bo.PRJEAccountLine</match>
+      <replacement>edu.arizona.kfs.module.prje.businessobject.PRJEAccountLine</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.prje.bo.PRJEBaseObject</match>
+      <replacement>edu.arizona.kfs.module.prje.businessobject.PRJEBaseObject</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.prje.bo.PRJESet</match>
+      <replacement>edu.arizona.kfs.module.prje.businessobject.PRJESet</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.prje.bo.PRJEBaseAccount</match>
+      <replacement>edu.arizona.kfs.module.prje.businessobject.PRJEBaseAccount</replacement>
     </pattern>
   </rule>
 
@@ -464,3 +484,4 @@
       </pattern>
     </rule>
   </rules>
+

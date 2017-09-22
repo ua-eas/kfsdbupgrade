@@ -17,7 +17,7 @@ public final class MaintainableXMLConversionServiceImplTest {
 		MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
 				f);
 		String oldXml = FileUtils.readFileToString(new File("/home/quikkian/maintainableXml/323807-KFS3.xml"));
-		String newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml);
+		String newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml, "0");
 		Logger.getLogger(getClass().getName()).info(newXml);
 	}
 
