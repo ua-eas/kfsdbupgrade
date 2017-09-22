@@ -205,6 +205,10 @@ public class App {
             stmt.close();
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
+			     if (Boolean.parseBoolean(System.getProperty("mdoc.only"))) {
+			       convertMaintenanceDocuments(conn1);
+			       return;
+			     }
 
             if (doInitialProcessing(conn1, stmt)) {
                 doCommit(conn1);
