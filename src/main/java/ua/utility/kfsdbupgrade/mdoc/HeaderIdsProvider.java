@@ -51,7 +51,7 @@ public final class HeaderIdsProvider implements Provider<ImmutableList<String>> 
       info("acquiring %s document header ids", max.isPresent() ? max.get() : "all");
       conn = provider.get();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("SELECT DOC_HDR_ID FROM KRNS_MAINT_DOC_T");
+      rs = stmt.executeQuery("SELECT ROWID FROM KRNS_MAINT_DOC_T");
       while (rs.next()) {
         headerIds.add(rs.getString(1));
         if (max.isPresent() && headerIds.size() >= max.get()) {

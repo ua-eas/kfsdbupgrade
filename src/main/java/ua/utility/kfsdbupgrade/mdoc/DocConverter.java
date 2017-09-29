@@ -25,6 +25,7 @@ public final class DocConverter implements Provider<Long> {
   private final ImmutableList<String> headerIds;
   private final MDocMetrics metrics;
   private final int batchSize;
+  private final int selectSize;
   private final Function<MaintDoc, MaintDoc> function;
 
   public Long get() {
@@ -33,13 +34,14 @@ public final class DocConverter implements Provider<Long> {
     PreparedStatement pstmt = null;
     try {
       conn = provider.get();
-      pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
+      pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE ROWID = ?");
       sw = metrics.getUpdate().elapsed(sw);
-      for (List<String> partition : partition(headerIds, batchSize)) {
+      for (List<String> partition : partition(headerIds, selectSize)) {
         List<MaintDoc> original = new MaintDocSelector(conn, partition, metrics).get();
         sw = createStarted();
         List<MaintDoc> converted = transform(original, function);
         sw = metrics.getConvert().increment(converted.size(), sum(original) + sum(converted), sw);
+        int batched = 0;
         for (MaintDoc doc : converted) {
           pstmt.setString(1, doc.getContent());
           pstmt.setString(2, doc.getDocHeaderId());
@@ -50,10 +52,18 @@ public final class DocConverter implements Provider<Long> {
               new ProgressProvider(metrics).get();
             }
           }
+          batched++;
+          if (batched % batchSize == 0) {
+            sw = createStarted();
+            pstmt.executeBatch();
+            metrics.getUpdate().elapsed(sw);
+          }
         }
-        sw = createStarted();
-        pstmt.executeBatch();
-        metrics.getUpdate().elapsed(sw);
+        if (batched % batchSize != 0) {
+          sw = createStarted();
+          pstmt.executeBatch();
+          metrics.getUpdate().elapsed(sw);
+        }
       }
       sw = createStarted();
       conn.commit();
@@ -81,6 +91,7 @@ public final class DocConverter implements Provider<Long> {
     this.headerIds = copyOf(builder.headerIds);
     this.metrics = builder.metrics;
     this.batchSize = builder.batchSize;
+    this.selectSize = builder.selectSize;
     this.function = builder.function;
   }
 
@@ -93,7 +104,8 @@ public final class DocConverter implements Provider<Long> {
     private Provider<Connection> provider;
     private List<String> headerIds;
     private MDocMetrics metrics;
-    private int batchSize;
+    private int batchSize = -1;
+    private int selectSize = -1;
     private Function<MaintDoc, MaintDoc> function;
 
     public Builder withProvider(Provider<Connection> provider) {
@@ -108,6 +120,11 @@ public final class DocConverter implements Provider<Long> {
 
     public Builder withMetrics(MDocMetrics metrics) {
       this.metrics = metrics;
+      return this;
+    }
+
+    public Builder withSelectSize(int selectSize) {
+      this.selectSize = selectSize;
       return this;
     }
 
@@ -130,6 +147,7 @@ public final class DocConverter implements Provider<Long> {
       checkNotNull(instance.headerIds, "headerIds may not be null");
       checkNotNull(instance.metrics, "metrics may not be null");
       checkArgument(instance.batchSize > 0, "batchSize must be greater than zero");
+      checkArgument(instance.selectSize > 0, "selectSize must be greater than zero");
       checkNotNull(instance.function, "function may not be null");
       return instance;
     }
@@ -153,6 +171,10 @@ public final class DocConverter implements Provider<Long> {
 
   public MDocMetrics getMetrics() {
     return metrics;
+  }
+
+  public int getSelectSize() {
+    return selectSize;
   }
 
 }

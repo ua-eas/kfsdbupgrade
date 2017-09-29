@@ -63,6 +63,7 @@ import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import ua.utility.kfsdbupgrade.mdoc.DataLoader;
 import ua.utility.kfsdbupgrade.mdoc.DataPumper;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
@@ -115,22 +116,31 @@ public class App {
 	 * directory that were not configured to run.
 	 */
 	private final Set<File> postUpgradeFilesProcessed = new HashSet<File>();
-
-    /**
-	 * Main program entry point. Single argument is expected of a path to the
-	 * <code>kfsdbupgrade.properties</code> properties file. Optional second
-	 * argument of "<code>ingestWorkflow</code>" if the ingest workflow code
-	 * path should be followed instead of the database upgrade code path.
-	 * 
-	 * @param args
-	 */
-    public static void main(final String args[]) {
+	
+  /**
+   * Main program entry point. Single argument is expected of a path to the <code>kfsdbupgrade.properties</code> properties file. Optional second argument of
+   * "<code>ingestWorkflow</code>" if the ingest workflow code path should be followed instead of the database upgrade code path.
+   * 
+   * @param args
+   */
+  public static void main(final String args[]) {
+     if (parseBoolean(System.getProperty("mdoc.load"))) {
+        try {
+          doLoad();
+          System.exit(0);
+        } catch (Throwable e) {
+          e.printStackTrace();
+          LOGGER.error("unexpected loading error", e);
+          System.exit(1);
+        }
+      }
       if (parseBoolean(System.getProperty("mdoc.metrics"))) {
         try {
           doMetrics();
           System.exit(0);
         }catch(Throwable e) {
           e.printStackTrace();
+          LOGGER.error("unexpected metrics error", e);
           System.exit(1);
         }
       }
@@ -150,6 +160,14 @@ public class App {
 		}
     }
     
+    private static void doLoad() throws IOException {
+      File defaultFile = new File("./kfsdbupgrade.properties").getCanonicalFile();
+      File actualFile = new File(System.getProperty("upgrade.props", defaultFile.getPath())).getCanonicalFile();
+      Properties props = new PropertiesProvider(actualFile).get();
+      DataLoader loader = new DataLoader(props);
+      loader.get();
+    }
+
     private static void doMetrics() throws IOException {
       File defaultFile = new File("./kfsdbupgrade.properties").getCanonicalFile();
       File actualFile = new File(System.getProperty("upgrade.props", defaultFile.getPath())).getCanonicalFile();
