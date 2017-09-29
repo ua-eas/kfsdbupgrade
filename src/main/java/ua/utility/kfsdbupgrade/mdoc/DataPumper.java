@@ -9,7 +9,6 @@ import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.lang.StringUtils.reverse;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
@@ -79,19 +78,9 @@ public final class DataPumper implements Provider<Long> {
       info("convert -> %s", getSize(metrics.getConvert().getBytes().getValue()));
       info("elapsed -> %s", getTime(sw));
     } catch (Throwable e) {
-      e.printStackTrace();
       throw new IllegalStateException(e);
     }
     return 0L;
-  }
-
-  private enum ReverseContentFunction implements Function<MaintDoc, MaintDoc> {
-    INSTANCE;
-
-    public MaintDoc apply(MaintDoc input) {
-      return MaintDoc.build(input.getDocHeaderId(), reverse(input.getContent()));
-    }
-
   }
 
   private enum RandomContentFunction implements Function<MaintDoc, MaintDoc> {

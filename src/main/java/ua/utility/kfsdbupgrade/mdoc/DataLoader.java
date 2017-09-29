@@ -66,7 +66,6 @@ public class DataLoader {
       info("inserted ----> %s documents in %s [%s]", getCount(rows), getTime(sw), getThroughputInSeconds(sw, rows, "docs/second"));
       info("elapsed -----> %s", getTime(overall));
     } catch (Throwable e) {
-      e.printStackTrace();
       throw new IllegalStateException(e);
     }
     return overall.elapsed(MILLISECONDS);
