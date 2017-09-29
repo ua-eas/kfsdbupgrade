@@ -283,8 +283,8 @@ public class MaintainableXMLConversionServiceImpl {
 		for (String className : classNameRuleMap.keySet()) {
 			if (xml.contains("</" + className + ">")) {
 				LOGGER.info("Replacing close tag: </" + className + "> with: </"
-						+ classNameRuleMap.get(className) + ">");
-				xml = xml.replace("</" + className + ">" + " at docid= " + docid ,
+						+ classNameRuleMap.get(className) + ">" + " at docid= " + docid);
+				xml = xml.replace("</" + className + ">",
 						"</" + classNameRuleMap.get(className) + ">");
 			}
 		}
