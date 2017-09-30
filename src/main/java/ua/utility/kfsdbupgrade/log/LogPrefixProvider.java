@@ -1,13 +1,12 @@
 package ua.utility.kfsdbupgrade.log;
 
 import static com.google.common.base.Optional.of;
-import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.Thread.currentThread;
 import static org.apache.commons.lang3.StringUtils.left;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.Iterator;
 import java.util.TimeZone;
 
 import javax.inject.Provider;
@@ -21,7 +20,7 @@ import com.google.common.base.Splitter;
 public final class LogPrefixProvider implements Provider<String> {
 
   private static final String FORMAT = "yyyy-MM-dd HH:mm:ss.SSS zzz";
-  private static final String TIMEZONE = "US/Arizona";
+  private static final TimeZone TIMEZONE = TimeZone.getTimeZone("US/Arizona");
   private static final Integer PID = ProcessIdProvider.INSTANCE.get().orNull();
   private static final Splitter SPLITTER = Splitter.on('.').omitEmptyStrings().trimResults();
   private static final String ROOT = "root";
@@ -44,7 +43,7 @@ public final class LogPrefixProvider implements Provider<String> {
   public String get() {
     // New instance of SimpleDateFormat every single time because it isn't threadsafe
     SimpleDateFormat formatter = new SimpleDateFormat(FORMAT);
-    formatter.setTimeZone(TimeZone.getTimeZone(TIMEZONE));
+    formatter.setTimeZone(TIMEZONE);
 
     // extract the thread logging this event
     Thread thread = currentThread();
@@ -73,41 +72,41 @@ public final class LogPrefixProvider implements Provider<String> {
     sb.append("] ");
 
     // abbreviated package + class name
-    sb.append(shorten(name.orNull()));
+    sb.append(shorten(name));
     sb.append(" : ");
 
     return sb.toString();
 
   }
 
-  protected String shorten(String name) {
+  private String shorten(Optional<String> name) {
 
     // if it's null we are done, just return the magic value "root"
-    if (name == null) {
+    if (name.isPresent()) {
+
+      // split the package + class name into individual tokens
+      Iterator<String> itr = SPLITTER.split(name.get()).iterator();
+
+      // setup some storage
+      StringBuilder sb = new StringBuilder();
+      while (itr.hasNext()) {
+        // token is either a package name or a class name
+        String token = itr.next();
+        if (itr.hasNext()) {
+          // package name, just use the first letter
+          sb.append(token.substring(0, 1));
+          sb.append('.');
+        } else {
+          // display the full class name
+          sb.append(token);
+        }
+      }
+      // return the abbreviated package + class name
+      return sb.toString();
+    } else {
       return ROOT;
     }
 
-    // split the package + class name into individual tokens
-    List<String> tokens = copyOf(SPLITTER.split(name));
-
-    // setup some storage
-    StringBuilder sb = new StringBuilder();
-
-    // iterate over the package name tokens (do NOT process the class name)
-    for (int i = 0; i < tokens.size() - 1; i++) {
-
-      // shorten each token in the package name to one letter
-      sb.append(tokens.get(i).substring(0, 1));
-
-      // append a dot
-      sb.append('.');
-    }
-
-    // append the class name
-    sb.append(tokens.get(tokens.size() - 1));
-
-    // return the abbreviated package + class name
-    return sb.toString();
   }
 
 }
