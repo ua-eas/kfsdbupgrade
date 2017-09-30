@@ -4,7 +4,6 @@ import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Resources.asByteSource;
@@ -42,6 +41,7 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
+import ua.utility.kfsdbupgrade.log.Logging;
 
 public final class DataPumper implements Provider<Long> {
 
@@ -55,7 +55,7 @@ public final class DataPumper implements Provider<Long> {
 
   public Long get() {
     try {
-      Stopwatch sw = createStarted();
+      Stopwatch sw = Logging.java();
       int threads = new ThreadsProvider(props).get();
       int batchSize = parseInt(props.getProperty("mdoc.batch"));
       int selectSize = parseInt(props.getProperty("mdoc.select"));
@@ -91,6 +91,7 @@ public final class DataPumper implements Provider<Long> {
       info("update --> %s", getSize(metrics.getUpdate().getBytes().getValue()));
       info("convert -> %s", getSize(metrics.getConvert().getBytes().getValue()));
       info("elapsed -> %s", getTime(sw));
+      Logging.java();
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     }
