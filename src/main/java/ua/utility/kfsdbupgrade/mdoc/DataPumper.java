@@ -1,14 +1,19 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.ByteSource.wrap;
+import static com.google.common.io.Resources.asByteSource;
+import static com.google.common.io.Resources.getResource;
 import static java.lang.Integer.parseInt;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
-import static java.lang.System.currentTimeMillis;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.reverse;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
@@ -23,6 +28,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.inject.Provider;
 
@@ -31,6 +37,11 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
+import com.google.common.io.ByteSource;
+
+import ua.utility.kfsdbupgrade.EncryptionService;
+import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
+import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 
 public final class DataPumper implements Provider<Long> {
 
@@ -52,8 +63,11 @@ public final class DataPumper implements Provider<Long> {
       ConnectionProvider provider = new ConnectionProvider(props, false);
       Optional<Integer> max = getInteger(props, "mdoc.metrics.max");
       List<String> headerIds = new HeaderIdsProvider(provider, max).get();
+      ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
+      MaintainableXmlConversionService converter = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
+      EncryptionService encryptor = new EncryptionService(props.getProperty("encryption-key"));
       List<Callable<Long>> callables = newArrayList();
-      Function<MaintDoc, MaintDoc> function = RandomContentFunction.INSTANCE;
+      Function<MaintDoc, MaintDoc> function = getFunction(props.getProperty("mdoc.content", "noop"), encryptor, converter);
       for (List<String> distribution : distribute(headerIds, threads)) {
         // establish all connections before we start pumping
         Provider<Connection> connected = Providers.of(provider.get());
@@ -68,8 +82,8 @@ public final class DataPumper implements Provider<Long> {
         callables.add(fromProvider(dc));
       }
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
-      info("pumping data using %s connections, batch size %s, select size %s, cores %s", getCount(threads), getCount(batchSize), getCount(selectSize),
-          getRuntime().availableProcessors());
+      int cores = getRuntime().availableProcessors();
+      info("pumping data using %s connections, batch size %s, select size %s, cores %s", getCount(threads), getCount(batchSize), getCount(selectSize), cores);
       metrics.start();
       getFutures(executor, callables);
       new ProgressProvider(metrics, "finished").get();
@@ -83,14 +97,81 @@ public final class DataPumper implements Provider<Long> {
     return 0L;
   }
 
+  private Function<MaintDoc, MaintDoc> getFunction(String type, EncryptionService encryptor, MaintainableXmlConversionService converter) {
+    if (type.equalsIgnoreCase("random")) {
+      return RandomContentFunction.INSTANCE;
+    }
+    if (type.equalsIgnoreCase("shuffled")) {
+      return ShuffledContentFunction.INSTANCE;
+    }
+    if (type.equalsIgnoreCase("reverse")) {
+      return ReverseContentFunction.INSTANCE;
+    }
+    if (type.equalsIgnoreCase("convert")) {
+      return new ConverterFunction(encryptor, converter);
+    }
+    return identity();
+  }
+
+  private static class ConverterFunction implements Function<MaintDoc, MaintDoc> {
+
+    public ConverterFunction(EncryptionService encryptor, MaintainableXmlConversionService converter) {
+      this.encryptor = checkNotNull(encryptor);
+      this.converter = checkNotNull(converter);
+    }
+
+    private final EncryptionService encryptor;
+    private final MaintainableXmlConversionService converter;
+
+    public MaintDoc apply(MaintDoc input) {
+      try {
+        String decrypted = encryptor.decrypt(input.getContent());
+        String converted = converter.transformMaintainableXML(decrypted);
+        String encrypted = encryptor.encrypt(converted);
+        return MaintDoc.build(input.getDocHeaderId(), encrypted);
+      } catch (Throwable e) {
+        LOGGER.error("error converting -> " + input.getDocHeaderId(), e);
+      }
+      return input;
+    }
+
+  }
+
+  private enum ReverseContentFunction implements Function<MaintDoc, MaintDoc> {
+    INSTANCE;
+
+    public MaintDoc apply(MaintDoc input) {
+      return MaintDoc.build(input.getDocHeaderId(), reverse(input.getContent()));
+    }
+  }
+
+  private enum ShuffledContentFunction implements Function<MaintDoc, MaintDoc> {
+    INSTANCE;
+
+    public MaintDoc apply(MaintDoc input) {
+      char[] chars = input.getContent().toCharArray();
+      String content = new String(shuffle(chars));
+      return MaintDoc.build(input.getDocHeaderId(), content);
+    }
+
+    private char[] shuffle(char[] chars) {
+      Random rnd = ThreadLocalRandom.current();
+      for (int i = chars.length - 1; i > 0; i--) {
+        int index = rnd.nextInt(i + 1);
+        char a = chars[index];
+        chars[index] = chars[i];
+        chars[i] = a;
+      }
+      return chars;
+    }
+  }
+
   private enum RandomContentFunction implements Function<MaintDoc, MaintDoc> {
     INSTANCE;
 
-    private final Random random = new Random(currentTimeMillis());
-
     public MaintDoc apply(MaintDoc input) {
       byte[] bytes = new byte[20 * 1024];
-      random.nextBytes(bytes);
+      ThreadLocalRandom.current().nextBytes(bytes);
       String content = new String(bytes, UTF_8);
       return MaintDoc.build(input.getDocHeaderId(), content);
     }

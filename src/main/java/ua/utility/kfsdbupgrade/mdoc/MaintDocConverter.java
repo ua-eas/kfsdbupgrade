@@ -42,6 +42,7 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
   private final EncryptionService encryptor;
   private final MaintainableXmlConversionService converter;
   private final ExecutorService executor;
+  private final boolean rowId;
 
   @Override
   public MaintDocResult get() {
@@ -52,9 +53,10 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      pstmt = connection.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE DOC_HDR_ID = ?");
+      String field = (rowId) ? "ROWID" : "DOC_HDR_ID";
+      pstmt = connection.prepareStatement(format("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE %s = ?", field));
       stmt = connection.createStatement();
-      rs = stmt.executeQuery("SELECT DOC_HDR_ID, DOC_CNTNT FROM KRNS_MAINT_DOC_T");
+      rs = stmt.executeQuery(format("SELECT %s, DOC_CNTNT FROM KRNS_MAINT_DOC_T", field));
       List<MaintDoc> docs = newArrayList();
       Stopwatch sw = createStarted();
       while (rs.next()) {
@@ -190,6 +192,7 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
     this.encryptor = builder.encryptor;
     this.converter = builder.converter;
     this.executor = builder.executor;
+    this.rowId = builder.rowId;
   }
 
   public static Builder builder() {
@@ -203,6 +206,12 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
     private EncryptionService encryptor;
     private MaintainableXmlConversionService converter;
     private ExecutorService executor;
+    private boolean rowId = true;
+
+    public Builder withRowId(boolean rowId) {
+      this.rowId = rowId;
+      return this;
+    }
 
     public Builder withExecutor(ExecutorService executor) {
       this.executor = executor;

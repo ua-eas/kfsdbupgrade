@@ -16,6 +16,9 @@
 
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.io.ByteSource.wrap;
+import static com.google.common.io.Files.asByteSource;
+
 import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -56,6 +59,7 @@ import org.xml.sax.SAXParseException;
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
+import com.google.common.io.ByteSource;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.DomWriter;
@@ -102,7 +106,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 	 * {@link File} containing the rule maps that will be used to transform the
 	 * maintainable document XML.
 	 */
-	private final File rulesXmlFile;
+	private final ByteSource rulesXmlFile;
 	/**
 	 * {@link Set} of {@link String}s representing classnames to ignore during
 	 * transformation. Values are hardcoded and passed in during construction.
@@ -117,6 +121,9 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 	 */
     private Set <String> uaMaintenanceDocClasses = new HashSet <String>();
     
+    public MaintainableXMLConversionServiceImpl(File rulesXmlFile) throws Exception {
+      this(wrap(asByteSource(rulesXmlFile).read()));
+    }
 	/**
 	 * Constructor
 	 * 
@@ -124,8 +131,8 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 	 *            Value for {@link #rulesXmlFile}
 	 * @throws Exception
 	 */
-	public MaintainableXMLConversionServiceImpl(File rulesXmlFile) throws Exception {
-        this.rulesXmlFile = rulesXmlFile;
+	public MaintainableXMLConversionServiceImpl(ByteSource rulesXmlFile) throws Exception {
+	  this.rulesXmlFile= rulesXmlFile;
 		setRuleMaps();
         
         ignoreClassSet.add("org.kuali.rice.kim.api.identity.Person");
@@ -958,7 +965,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
 
-        Document doc = db.parse(rulesXmlFile);
+        Document doc = db.parse(rulesXmlFile.openBufferedStream());
 
         doc.getDocumentElement().normalize();
         XPath xpath = XPathFactory.newInstance().newXPath();
