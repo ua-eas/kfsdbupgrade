@@ -30,12 +30,16 @@ public final class Logging {
     return createStarted();
   }
 
-  private static void info(String msg, Object... args) {
+  public static void info(Logger logger, String msg, Object... args) {
     if (args == null || args.length == 0) {
-      LOGGER.info(msg);
+      logger.info(msg);
     } else {
-      LOGGER.info(format(msg, args));
+      logger.info(format(msg, args));
     }
+  }
+
+  private static void info(String msg, Object... args) {
+    info(LOGGER, msg, args);
   }
 
 }

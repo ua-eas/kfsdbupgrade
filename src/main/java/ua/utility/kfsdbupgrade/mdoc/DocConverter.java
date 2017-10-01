@@ -6,6 +6,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
 import static com.google.common.collect.Lists.transform;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 
@@ -30,6 +31,7 @@ public final class DocConverter implements Provider<Long> {
   private final int selectSize;
   private final Function<MaintDoc, MaintDoc> function;
   private final boolean update;
+  private final String field;
 
   public Long get() {
     Stopwatch sw = createStarted();
@@ -37,10 +39,10 @@ public final class DocConverter implements Provider<Long> {
     PreparedStatement pstmt = null;
     try {
       conn = provider.get();
-      pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE ROWID = ?");
+      pstmt = conn.prepareStatement(format("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE %s = ?", field));
       sw = metrics.getUpdate().elapsed(sw);
       for (List<String> partition : partition(headerIds, selectSize)) {
-        List<MaintDoc> original = new MaintDocSelector(conn, partition, metrics).get();
+        List<MaintDoc> original = new MaintDocSelector(conn, partition, metrics, field).get();
         if (update) {
           sw = createStarted();
           List<MaintDoc> converted = transform(original, function);
@@ -104,6 +106,7 @@ public final class DocConverter implements Provider<Long> {
     this.selectSize = builder.selectSize;
     this.function = builder.function;
     this.update = builder.update;
+    this.field = builder.field;
   }
 
   public static Builder builder() {
@@ -119,6 +122,12 @@ public final class DocConverter implements Provider<Long> {
     private int selectSize = -1;
     private Function<MaintDoc, MaintDoc> function;
     private boolean update = true;
+    private String field = "ROWID";
+
+    public Builder withField(String field) {
+      this.field = field;
+      return this;
+    }
 
     public Builder withUpdate(boolean update) {
       this.update = update;

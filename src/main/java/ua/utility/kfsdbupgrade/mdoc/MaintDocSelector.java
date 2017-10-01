@@ -4,6 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.primitives.Ints.checkedCast;
+import static java.lang.String.format;
+import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 
 import java.sql.Connection;
@@ -13,21 +16,27 @@ import java.util.List;
 
 import javax.inject.Provider;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
 
-  public MaintDocSelector(Connection conn, Iterable<String> headerIds, MDocMetrics metrics) {
+  private static final Logger LOGGER = getLogger(MaintDocSelector.class);
+
+  public MaintDocSelector(Connection conn, Iterable<String> headerIds, MDocMetrics metrics, String field) {
     this.conn = checkNotNull(conn);
     this.headerIds = copyOf(headerIds);
     this.metrics = checkNotNull(metrics);
+    this.field = checkNotNull(field);
   }
 
   private final Connection conn;
   private final ImmutableList<String> headerIds;
   private final MDocMetrics metrics;
+  private final String field;
 
   public ImmutableList<MaintDoc> get() {
     List<MaintDoc> docs = newArrayList();
@@ -36,12 +45,18 @@ public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
     try {
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("SELECT ROWID, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(headerIds) + ")");
+      rs = stmt.executeQuery(format("SELECT %s, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE %s IN (" + asInClause(headerIds) + ")", field, field));
       while (rs.next()) {
         String headerId = rs.getString(1);
         String content = rs.getString(2);
         docs.add(MaintDoc.build(headerId, content));
-        sw = metrics.getSelect().increment(headerId.length() + content.length(), sw);
+        synchronized (metrics) {
+          sw = metrics.getSelect().increment(headerId.length() + content.length(), sw);
+          int selected = checkedCast(metrics.getSelect().getCount().getValue());
+          if (selected % 1000 == 0) {
+
+          }
+        }
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);

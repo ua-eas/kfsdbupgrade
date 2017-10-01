@@ -64,13 +64,14 @@ public final class DataPumper implements Provider<Long> {
       MDocMetrics metrics = new MDocMetrics();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       Optional<Integer> max = getInteger(props, "mdoc.metrics.max");
-      List<String> headerIds = new HeaderIdsProvider(provider, max).get();
+      String field = props.getProperty("mdoc.field", "ROWID");
+      List<String> ids = new StringProvider(provider, max, field).get();
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService converter = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       EncryptionService encryptor = new EncryptionService(props.getProperty("encryption-key"));
       List<Callable<Long>> callables = newArrayList();
       Function<MaintDoc, MaintDoc> function = getFunction(props.getProperty("mdoc.content", "noop"), encryptor, converter);
-      for (List<String> distribution : distribute(headerIds, threads)) {
+      for (List<String> distribution : distribute(ids, threads)) {
         // establish all connections before we start pumping
         Provider<Connection> connected = Providers.of(provider.get());
         DocConverter.Builder builder = DocConverter.builder();
@@ -81,6 +82,7 @@ public final class DataPumper implements Provider<Long> {
         builder.withMetrics(metrics);
         builder.withProvider(connected);
         builder.withUpdate(update);
+        builder.withField(field);
         DocConverter dc = builder.build();
         callables.add(fromProvider(dc));
       }
