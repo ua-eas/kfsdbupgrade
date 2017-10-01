@@ -8,6 +8,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
@@ -59,6 +60,7 @@ public final class DataPumper implements Provider<Long> {
       int threads = new ThreadsProvider(props).get();
       int batchSize = parseInt(props.getProperty("mdoc.batch"));
       int selectSize = parseInt(props.getProperty("mdoc.select"));
+      boolean update = parseBoolean(props.getProperty("mdoc.update"));
       MDocMetrics metrics = new MDocMetrics();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       Optional<Integer> max = getInteger(props, "mdoc.metrics.max");
@@ -78,12 +80,13 @@ public final class DataPumper implements Provider<Long> {
         builder.withHeaderIds(distribution);
         builder.withMetrics(metrics);
         builder.withProvider(connected);
+        builder.withUpdate(update);
         DocConverter dc = builder.build();
         callables.add(fromProvider(dc));
       }
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       int cores = getRuntime().availableProcessors();
-      info("pumping data using %s connections, batch size %s, select size %s, cores %s", getCount(threads), getCount(batchSize), getCount(selectSize), cores);
+      info("pumping data using %s connections, batch:%s, select:%s, cores:%s update:%s", getCount(threads), getCount(batchSize), getCount(selectSize), cores, update);
       metrics.start();
       getFutures(executor, callables);
       new ProgressProvider(metrics, "finished").get();

@@ -29,6 +29,7 @@ public final class DocConverter implements Provider<Long> {
   private final int batchSize;
   private final int selectSize;
   private final Function<MaintDoc, MaintDoc> function;
+  private final boolean update;
 
   public Long get() {
     Stopwatch sw = createStarted();
@@ -40,40 +41,44 @@ public final class DocConverter implements Provider<Long> {
       sw = metrics.getUpdate().elapsed(sw);
       for (List<String> partition : partition(headerIds, selectSize)) {
         List<MaintDoc> original = new MaintDocSelector(conn, partition, metrics).get();
-        sw = createStarted();
-        List<MaintDoc> converted = transform(original, function);
-        sw = metrics.getConvert().increment(converted.size(), sum(original) + sum(converted), sw);
-        int batched = 0;
-        for (MaintDoc doc : converted) {
-          pstmt.setString(1, doc.getContent());
-          pstmt.setString(2, doc.getDocHeaderId());
-          pstmt.addBatch();
-          synchronized (metrics) {
-            sw = metrics.getUpdate().increment(doc.getContent().length(), sw);
-            if (metrics.getUpdate().getCount().getValue() % 1000 == 0) {
-              new ProgressProvider(metrics).get();
+        if (update) {
+          sw = createStarted();
+          List<MaintDoc> converted = transform(original, function);
+          sw = metrics.getConvert().increment(converted.size(), sum(original) + sum(converted), sw);
+          int batched = 0;
+          for (MaintDoc doc : converted) {
+            pstmt.setString(1, doc.getContent());
+            pstmt.setString(2, doc.getDocHeaderId());
+            pstmt.addBatch();
+            synchronized (metrics) {
+              sw = metrics.getUpdate().increment(doc.getContent().length(), sw);
+              if (metrics.getUpdate().getCount().getValue() % 1000 == 0) {
+                new ProgressProvider(metrics).get();
+              }
+              if (metrics.getUpdate().getCount().getValue() % 10000 == 0) {
+                Logging.java();
+              }
             }
-            if (metrics.getUpdate().getCount().getValue() % 10000 == 0) {
-              Logging.java();
+            batched++;
+            if (batched % batchSize == 0) {
+              sw = createStarted();
+              pstmt.executeBatch();
+              metrics.getUpdate().elapsed(sw);
             }
           }
-          batched++;
-          if (batched % batchSize == 0) {
+          if (batched % batchSize != 0) {
             sw = createStarted();
             pstmt.executeBatch();
             metrics.getUpdate().elapsed(sw);
           }
         }
-        if (batched % batchSize != 0) {
-          sw = createStarted();
-          pstmt.executeBatch();
-          metrics.getUpdate().elapsed(sw);
-        }
       }
-      sw = createStarted();
-      conn.commit();
-      metrics.getUpdate().elapsed(sw);
-      new ProgressProvider(metrics, "commit").get();
+      if (update) {
+        sw = createStarted();
+        conn.commit();
+        metrics.getUpdate().elapsed(sw);
+        new ProgressProvider(metrics, "commit").get();
+      }
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
@@ -98,6 +103,7 @@ public final class DocConverter implements Provider<Long> {
     this.batchSize = builder.batchSize;
     this.selectSize = builder.selectSize;
     this.function = builder.function;
+    this.update = builder.update;
   }
 
   public static Builder builder() {
@@ -112,6 +118,12 @@ public final class DocConverter implements Provider<Long> {
     private int batchSize = -1;
     private int selectSize = -1;
     private Function<MaintDoc, MaintDoc> function;
+    private boolean update = true;
+
+    public Builder withUpdate(boolean update) {
+      this.update = update;
+      return this;
+    }
 
     public Builder withProvider(Provider<Connection> provider) {
       this.provider = provider;
