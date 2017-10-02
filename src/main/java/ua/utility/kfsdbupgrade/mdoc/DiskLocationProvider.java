@@ -1,8 +1,10 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.base.Optional.of;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static java.lang.Integer.parseInt;
 import static java.lang.Math.round;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -47,13 +49,13 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       int count = 0;
       Optional<Integer> max = Optional.absent();
       if (props.containsKey("mdoc.rowids")) {
-        int value = Integer.parseInt(props.getProperty("mdoc.rowids"));
-        max = Optional.of(value);
+        int value = parseInt(props.getProperty("mdoc.rowids"));
+        max = of(value);
       }
       conn = new ConnectionProvider(props, false).get();
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("select rowid from krns_maint_doc_t order");
+      rs = stmt.executeQuery("select rowid from krns_maint_doc_t");
       ListMultimap<DiskLocation, RowId> mm = ArrayListMultimap.create();
       while (rs.next()) {
         String string = rs.getString(1);
