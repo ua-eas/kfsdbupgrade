@@ -3,7 +3,6 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.round;
 import static org.apache.log4j.Logger.getLogger;
@@ -15,6 +14,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -80,7 +80,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       info(LOGGER, "rows ------> %s", getCount(mm.size()));
       info(LOGGER, "locations -> %s", getCount(mm.keySet().size()));
       info(LOGGER, "reduction -> %s%%", round(reduction));
-      Map<DiskLocation, String> map = newLinkedHashMap();
+      Map<DiskLocation, String> map = new HashMap<>();
       for (DiskLocation location : mm.keySet()) {
         List<RowId> rowIds = mm.get(location);
         String rowId = rowIds.iterator().next().toString();
