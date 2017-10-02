@@ -3,7 +3,6 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static java.lang.Integer.parseInt;
 import static java.lang.Math.round;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -23,6 +22,7 @@ import javax.inject.Provider;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -47,7 +47,11 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
     try {
       RowIdConverter converter = new RowIdConverter();
       int count = 0;
-      int max = parseInt(props.getProperty("mdoc.rowids.max", Integer.MAX_VALUE + ""));
+      Optional<Integer> max = Optional.absent();
+      if (props.containsKey("mdoc.rowids")) {
+        int value = Integer.parseInt(props.getProperty("mdoc.rowids"));
+        max = Optional.of(value);
+      }
       conn = provider.get();
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
@@ -60,9 +64,9 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
         mm.put(location, id);
         count++;
         if (count % 1000 == 0) {
-          info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max), getTime(sw));
+          info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max.or(-1)), getTime(sw));
         }
-        if (count == max) {
+        if (max.isPresent() && max.get() == count) {
           break;
         }
       }
