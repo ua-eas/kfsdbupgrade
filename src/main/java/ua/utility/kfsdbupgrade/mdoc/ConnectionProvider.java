@@ -36,7 +36,9 @@ public final class ConnectionProvider implements Provider<Connection> {
     try {
       String username = checkedValue(props, "database-user");
       String password = checkedValue(props, "database-password");
-      String url = checkedValue(props, "database-url");
+      String name = checkedValue(props, "db.name");
+      String fragment = checkedValue(props, "db.fragment");
+      String url = format("jdbc:oracle:thin:@%s.%s:1521:%s", name.toLowerCase(), fragment, name.toUpperCase());
       info("connecting to --> %s as %s", url, username);
       Class.forName(checkedValue(props, "database-driver"));
       Stopwatch sw = createStarted();

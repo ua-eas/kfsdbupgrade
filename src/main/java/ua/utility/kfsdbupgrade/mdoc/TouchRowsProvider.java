@@ -2,9 +2,11 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 
@@ -49,6 +51,7 @@ public final class TouchRowsProvider implements Provider<Long> {
     }
     Callables.getFutures(executor, callables);
     Logging.info(LOGGER, "elapsed -> %s", getTime(sw));
+    Logging.info(LOGGER, "count ---> %s", getCount(checkedCast(counter.getValue())));
     return sw.elapsed(MILLISECONDS);
   }
 
