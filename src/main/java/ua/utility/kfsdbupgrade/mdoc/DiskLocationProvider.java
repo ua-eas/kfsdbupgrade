@@ -32,12 +32,10 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
 
   private static final Logger LOGGER = getLogger(DiskLocationProvider.class);
 
-  public DiskLocationProvider(Provider<Connection> provider, Properties props) {
-    this.provider = provider;
+  public DiskLocationProvider(Properties props) {
     this.props = props;
   }
 
-  private final Provider<Connection> provider;
   private final Properties props;
 
   public ImmutableMap<DiskLocation, String> get() {
@@ -52,7 +50,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
         int value = Integer.parseInt(props.getProperty("mdoc.rowids"));
         max = Optional.of(value);
       }
-      conn = provider.get();
+      conn = new ConnectionProvider(props, false).get();
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
       rs = stmt.executeQuery("select rowid from krns_maint_doc_t order");
