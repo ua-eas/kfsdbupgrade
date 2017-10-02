@@ -30,6 +30,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import ua.utility.kfsdbupgrade.log.Logging;
+
 public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLocation, String>> {
 
   private static final Logger LOGGER = getLogger(DiskLocationProvider.class);
@@ -63,8 +65,9 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
         DiskLocation location = new DiskLocation(id.getFileNumber(), id.getBlockNumber());
         mm.put(location, id);
         count++;
-        if (count % 1000 == 0) {
+        if (count % 10000 == 0) {
           info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max.or(-1)), getTime(sw));
+          Logging.java();
         }
         if (max.isPresent() && max.get() == count) {
           break;
