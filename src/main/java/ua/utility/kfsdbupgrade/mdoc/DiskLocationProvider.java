@@ -23,7 +23,6 @@ import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
@@ -81,14 +80,11 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       info(LOGGER, "rows ------> %s", getCount(mm.size()));
       info(LOGGER, "locations -> %s", getCount(mm.keySet().size()));
       info(LOGGER, "reduction -> %s%%", round(reduction));
-      info(LOGGER, "%s", Joiner.on('\n').join(mm.keySet()));
       Map<DiskLocation, String> map = newLinkedHashMap();
       for (DiskLocation location : mm.keySet()) {
         List<RowId> rowIds = mm.get(location);
-        if (!map.containsKey(location)) {
-          String rowId = rowIds.iterator().next().toString();
-          map.put(location, rowId);
-        }
+        String rowId = rowIds.iterator().next().toString();
+        map.put(location, rowId);
       }
       return copyOf(map);
     } catch (Throwable e) {
