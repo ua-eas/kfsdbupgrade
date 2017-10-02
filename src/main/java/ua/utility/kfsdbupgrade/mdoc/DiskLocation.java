@@ -21,8 +21,8 @@ public final class DiskLocation implements Comparable<DiskLocation> {
   @Override
   public int compareTo(DiskLocation other) {
     ComparisonChain chain = ComparisonChain.start();
-    chain.compare(fileNumber, other.fileNumber);
-    chain.compare(blockNumber, other.blockNumber);
+    chain = chain.compare(fileNumber, other.fileNumber);
+    chain = chain.compare(blockNumber, other.blockNumber);
     return chain.result();
   }
 

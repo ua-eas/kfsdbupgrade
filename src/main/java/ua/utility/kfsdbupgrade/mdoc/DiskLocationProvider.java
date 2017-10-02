@@ -64,7 +64,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
         DiskLocation location = new DiskLocation(id.getFileNumber(), id.getBlockNumber());
         mm.put(location, id);
         count++;
-        if (count % 10000 == 0) {
+        if (count % 100000 == 0) {
           info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max.or(-1)), getTime(sw));
           Logging.java();
         }
