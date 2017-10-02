@@ -15,7 +15,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -29,9 +28,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-import ua.utility.kfsdbupgrade.log.Logging;
-
-public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLocation, String>> {
+public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLocation, RowId>> {
 
   private static final Logger LOGGER = getLogger(DiskLocationProvider.class);
 
@@ -41,7 +38,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
 
   private final Properties props;
 
-  public ImmutableMap<DiskLocation, String> get() {
+  public ImmutableMap<DiskLocation, RowId> get() {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -66,7 +63,6 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
         count++;
         if (count % 100000 == 0) {
           info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max.or(-1)), getTime(sw));
-          Logging.java();
         }
         if (max.isPresent() && max.get() == count) {
           break;
@@ -80,11 +76,9 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       info(LOGGER, "rows ------> %s", getCount(mm.size()));
       info(LOGGER, "locations -> %s", getCount(mm.keySet().size()));
       info(LOGGER, "reduction -> %s%%", round(reduction));
-      Map<DiskLocation, String> map = new LinkedHashMap<>();
+      Map<DiskLocation, RowId> map = new LinkedHashMap<>();
       for (DiskLocation location : mm.keySet()) {
-        List<RowId> rowIds = mm.get(location);
-        String rowId = rowIds.iterator().next().toString();
-        map.put(location, rowId);
+        map.put(location, mm.get(location).iterator().next());
       }
       return copyOf(map);
     } catch (Throwable e) {
