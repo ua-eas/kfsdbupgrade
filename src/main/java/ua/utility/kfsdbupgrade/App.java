@@ -65,12 +65,12 @@ import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
 import ua.utility.kfsdbupgrade.mdoc.DataLoader;
 import ua.utility.kfsdbupgrade.mdoc.DataPumper;
-import ua.utility.kfsdbupgrade.mdoc.DiskLocationProvider;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
+import ua.utility.kfsdbupgrade.mdoc.TouchRowsProvider;
 
 public class App {
   private static final Logger LOGGER = Logger.getLogger(App.class);
@@ -169,7 +169,7 @@ public class App {
     File defaultFile = new File("./kfsdbupgrade.properties").getCanonicalFile();
     File actualFile = new File(System.getProperty("upgrade.props", defaultFile.getPath())).getCanonicalFile();
     Properties props = new PropertiesProvider(actualFile).get();
-    DiskLocationProvider dlp = new DiskLocationProvider(props);
+    TouchRowsProvider dlp = new TouchRowsProvider(props);
     dlp.get();
   }
 
