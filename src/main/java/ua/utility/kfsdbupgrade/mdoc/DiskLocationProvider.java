@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
@@ -45,7 +46,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
     try {
       RowIdConverter converter = new RowIdConverter();
       int count = 0;
-      Optional<Integer> max = Optional.absent();
+      Optional<Integer> max = absent();
       if (props.containsKey("mdoc.rowids")) {
         int value = parseInt(props.getProperty("mdoc.rowids"));
         max = of(value);
