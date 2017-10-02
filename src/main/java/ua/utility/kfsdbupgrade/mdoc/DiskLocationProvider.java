@@ -14,7 +14,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -80,7 +80,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       info(LOGGER, "rows ------> %s", getCount(mm.size()));
       info(LOGGER, "locations -> %s", getCount(mm.keySet().size()));
       info(LOGGER, "reduction -> %s%%", round(reduction));
-      Map<DiskLocation, String> map = new HashMap<>();
+      Map<DiskLocation, String> map = new LinkedHashMap<>();
       for (DiskLocation location : mm.keySet()) {
         List<RowId> rowIds = mm.get(location);
         String rowId = rowIds.iterator().next().toString();
