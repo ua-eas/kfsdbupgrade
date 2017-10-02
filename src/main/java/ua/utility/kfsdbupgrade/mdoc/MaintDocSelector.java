@@ -45,7 +45,7 @@ public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
     try {
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery(format("SELECT %s, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE %s IN (" + asInClause(headerIds) + ")", field, field));
+      rs = stmt.executeQuery(format("SELECT %s, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE %s IN (" + asInClause(headerIds, true) + ")", field, field));
       while (rs.next()) {
         String headerId = rs.getString(1);
         String content = rs.getString(2);
@@ -67,10 +67,14 @@ public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
     return copyOf(docs);
   }
 
-  private String asInClause(Iterable<String> strings) {
+  public static String asInClause(Iterable<?> iterable, boolean quote) {
     List<String> list = newArrayList();
-    for (String string : strings) {
-      list.add("'" + string + "'");
+    for (Object element : iterable) {
+      if (quote) {
+        list.add("'" + element.toString() + "'");
+      } else {
+        list.add(element.toString());
+      }
     }
     return Joiner.on(',').join(list);
   }
