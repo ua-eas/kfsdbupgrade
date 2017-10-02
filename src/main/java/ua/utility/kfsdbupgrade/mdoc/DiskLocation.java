@@ -39,7 +39,7 @@ public final class DiskLocation implements Comparable<DiskLocation> {
       return false;
     } else {
       DiskLocation other = (DiskLocation) object;
-      return compareTo(other) == 0;
+      return (hash == other.hash) && (fileNumber == other.fileNumber) && (blockNumber == other.blockNumber);
     }
   }
 
