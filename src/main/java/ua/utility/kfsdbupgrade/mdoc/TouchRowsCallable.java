@@ -10,6 +10,8 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
@@ -30,11 +32,11 @@ public final class TouchRowsCallable implements Callable<Long> {
 
   private static final Logger LOGGER = getLogger(TouchRowsCallable.class);
 
-  public TouchRowsCallable(Connection conn, int batchSize, Iterable<RowId> rows, Counter counter, Stopwatch sw, MaintDocField field) {
+  public TouchRowsCallable(Connection conn, int batchSize, Iterable<RowId> rows, DataMetrics metrics, Stopwatch sw, MaintDocField field) {
     this.conn = checkNotNull(conn);
     this.batchSize = batchSize;
     this.rows = copyOf(rows);
-    this.counter = counter;
+    this.metrics = metrics;
     this.sw = sw;
     this.field = field;
   }
@@ -42,7 +44,7 @@ public final class TouchRowsCallable implements Callable<Long> {
   private final Connection conn;
   private final int batchSize;
   private final ImmutableList<RowId> rows;
-  private final Counter counter;
+  private final DataMetrics metrics;
   private final Stopwatch sw;
   private final MaintDocField field;
 
@@ -59,15 +61,27 @@ public final class TouchRowsCallable implements Callable<Long> {
         List<String> rowIds = transform(partition, converter.reverse());
         String sql = String.format("SELECT %s FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")", field);
         rs = stmt.executeQuery(sql);
+        Stopwatch timer = createStarted();
         while (rs.next()) {
-          rs.getString(1);
-          synchronized (counter) {
-            int count = checkedCast(counter.increment());
-            if (count % 1000 == 0) {
-              info(LOGGER, "%s [%s]", getCount(count), getTime(sw));
+          String string = rs.getString(1);
+          synchronized (metrics) {
+            timer = metrics.increment(1, string.length(), timer);
+            if (metrics.getCount().getValue() % 100 == 0) {
+              String c = getCount(checkedCast(metrics.getCount().getValue()));
+              String s = getSize(metrics.getBytes().getValue());
+              long elapsed = metrics.getElapsed().getValue() / 1000;
+              String tp = getThroughputInSeconds(elapsed, checkedCast(metrics.getCount().getValue()), "rows/second");
+              info(LOGGER, "%s %s %s [%s]", c, s, tp, getTime(sw));
             }
           }
         }
+      }
+      synchronized (metrics) {
+        String c = getCount(checkedCast(metrics.getCount().getValue()));
+        String s = getSize(metrics.getBytes().getValue());
+        long elapsed = metrics.getElapsed().getValue() / 1000;
+        String tp = getThroughputInSeconds(elapsed, checkedCast(metrics.getCount().getValue()), "rows/second");
+        info(LOGGER, "%s %s %s [%s] - done", c, s, tp, getTime(sw));
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);

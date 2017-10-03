@@ -52,6 +52,7 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
         max = of(value);
       }
       conn = new ConnectionProvider(props, false).get();
+      info(LOGGER, "acquiring -> %s rowids", Formats.getCount(max.or(-1)));
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
       rs = stmt.executeQuery("select rowid from krns_maint_doc_t");

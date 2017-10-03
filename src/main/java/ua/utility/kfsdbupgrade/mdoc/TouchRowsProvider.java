@@ -3,10 +3,10 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
@@ -44,17 +44,17 @@ public final class TouchRowsProvider implements Provider<Long> {
     ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
     Map<DiskLocation, RowId> locations = new DiskLocationProvider(props).get();
     List<RowId> rowIds = copyOf(locations.values());
-    Counter counter = new Counter();
     Stopwatch timer = createUnstarted();
     List<TouchRowsCallable> callables = new ArrayList<>();
     MaintDocField field = asMaintDocField(props.getProperty("mdoc.field", "version"));
+    info(LOGGER, "selecting %s from %s rows", field, getCount(rowIds.size()));
+    DataMetrics metrics = new DataMetrics();
     for (List<RowId> distribution : distribute(rowIds, threads)) {
       Connection conn = new ConnectionProvider(props, false).get();
-      callables.add(new TouchRowsCallable(conn, batchSize, distribution, counter, timer, field));
+      callables.add(new TouchRowsCallable(conn, batchSize, distribution, metrics, timer, field));
     }
     Callables.getFutures(executor, callables);
-    Logging.info(LOGGER, "elapsed -> %s", getTime(sw));
-    Logging.info(LOGGER, "count ---> %s", getCount(checkedCast(counter.getValue())));
+    Logging.info(LOGGER, "total elapsed -> %s", getTime(sw));
     return sw.elapsed(MILLISECONDS);
   }
 

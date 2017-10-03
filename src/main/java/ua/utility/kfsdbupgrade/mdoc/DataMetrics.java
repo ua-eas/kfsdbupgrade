@@ -1,7 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 
 import com.google.common.base.Stopwatch;
 
@@ -38,7 +38,7 @@ public final class DataMetrics {
   }
 
   public synchronized Stopwatch increment(long count, long bytes, Stopwatch sw) {
-    this.elapsed.increment(sw.elapsed(MILLISECONDS));
+    this.elapsed.increment(sw.elapsed(MICROSECONDS));
     this.count.increment(count);
     this.bytes.increment(bytes);
     return createStarted();
