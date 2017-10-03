@@ -1,8 +1,11 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableList.copyOf;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
@@ -10,6 +13,7 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.asMaintDocField;
 
 import java.sql.Connection;
@@ -23,7 +27,9 @@ import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 import ua.utility.kfsdbupgrade.log.Logging;
 
@@ -41,9 +47,13 @@ public final class TouchRowsProvider implements Provider<Long> {
     Stopwatch sw = createStarted();
     int threads = new ThreadsProvider(props).get();
     int batchSize = parseInt(props.getProperty("mdoc.batch"));
+    boolean blocks = parseBoolean(props.getProperty("mdoc.blocks"));
     ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
-    Map<DiskLocation, RowId> locations = new DiskLocationProvider(props).get();
-    List<RowId> rowIds = copyOf(locations.values());
+    Optional<Integer> max = absent();
+    if (props.containsKey("mdoc.max")) {
+      max = of(parseInt(props.getProperty("mdoc.max")));
+    }
+    List<RowId> rowIds = getRowIds(blocks, max);
     Stopwatch timer = createUnstarted();
     List<TouchRowsCallable> callables = new ArrayList<>();
     MaintDocField field = asMaintDocField(props.getProperty("mdoc.field", "version"));
@@ -56,6 +66,17 @@ public final class TouchRowsProvider implements Provider<Long> {
     Callables.getFutures(executor, callables);
     Logging.info(LOGGER, "total elapsed -> %s", getTime(sw));
     return sw.elapsed(MILLISECONDS);
+  }
+
+  private ImmutableList<RowId> getRowIds(boolean blocks, Optional<Integer> max) {
+    RowIdConverter converter = new RowIdConverter();
+    if (blocks) {
+      List<String> strings = new StringProvider(new ConnectionProvider(props, false), max, "rowid").get();
+      return transform(strings, converter);
+    } else {
+      Map<DiskLocation, RowId> locations = new DiskLocationProvider(props).get();
+      return copyOf(locations.values());
+    }
   }
 
 }
