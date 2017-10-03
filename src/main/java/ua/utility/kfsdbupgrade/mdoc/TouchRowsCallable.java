@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
@@ -51,24 +52,27 @@ public final class TouchRowsCallable implements Callable<Long> {
     try {
       stmt = conn.createStatement();
       RowIdConverter converter = new RowIdConverter();
+      DataMetrics current = new DataMetrics();
+      Stopwatch timer = createStarted();
       for (List<RowId> partition : partition(rows, batchSize)) {
         List<String> rowIds = transform(partition, converter.reverse());
         String sql = String.format("SELECT %s FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")", field);
         rs = stmt.executeQuery(sql);
-        Stopwatch timer = createStarted();
         while (rs.next()) {
-          String string = rs.getString(1);
+          int length = rs.getString(1).length();
+          long elapsed = timer.elapsed(MICROSECONDS);
+          current.increment(1, length, elapsed);
           synchronized (metrics) {
-            metrics.increment(1, string.length(), timer);
-            if (metrics.getCount().getValue() % 1000 == 0) {
-              new TouchRowsProgressProvider(metrics, sw, "").get();
+            metrics.increment(1, length, elapsed);
+            if (current.getCount().getValue() % 10 == 0) {
+              new Show(metrics, sw, current, timer, "").get();
+              timer = createStarted();
             }
-            timer = createStarted();
           }
         }
       }
       synchronized (metrics) {
-        new TouchRowsProgressProvider(metrics, sw, "done").get();
+        new Show(metrics, sw, current, timer, "done").get();
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);

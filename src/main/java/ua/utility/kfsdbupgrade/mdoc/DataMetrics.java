@@ -38,7 +38,11 @@ public final class DataMetrics {
   }
 
   public synchronized Stopwatch increment(long count, long bytes, Stopwatch sw) {
-    this.elapsed.increment(sw.elapsed(MICROSECONDS));
+    return increment(count, bytes, sw.elapsed(MICROSECONDS));
+  }
+
+  public synchronized Stopwatch increment(long count, long bytes, long elapsed) {
+    this.elapsed.increment(elapsed);
     this.count.increment(count);
     this.bytes.increment(bytes);
     return createStarted();
