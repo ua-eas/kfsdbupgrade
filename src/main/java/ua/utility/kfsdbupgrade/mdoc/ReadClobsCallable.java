@@ -26,17 +26,16 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-public final class TouchRowsCallable implements Callable<Long> {
+public final class ReadClobsCallable implements Callable<Long> {
 
-  private static final Logger LOGGER = getLogger(TouchRowsCallable.class);
+  private static final Logger LOGGER = getLogger(ReadClobsCallable.class);
 
-  public TouchRowsCallable(Connection conn, int batchSize, Iterable<RowId> rows, Counter counter, Stopwatch sw, MaintDocField field) {
+  public ReadClobsCallable(Connection conn, int batchSize, Iterable<RowId> rows, Counter counter, Stopwatch sw) {
     this.conn = checkNotNull(conn);
     this.batchSize = batchSize;
     this.rows = copyOf(rows);
     this.counter = counter;
     this.sw = sw;
-    this.field = field;
   }
 
   private final Connection conn;
@@ -44,7 +43,6 @@ public final class TouchRowsCallable implements Callable<Long> {
   private final ImmutableList<RowId> rows;
   private final Counter counter;
   private final Stopwatch sw;
-  private final MaintDocField field;
 
   @Override
   public Long call() {
@@ -57,7 +55,7 @@ public final class TouchRowsCallable implements Callable<Long> {
       RowIdConverter converter = new RowIdConverter();
       for (List<RowId> partition : partition(rows, batchSize)) {
         List<String> rowIds = transform(partition, converter.reverse());
-        String sql = String.format("SELECT %s FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")", field);
+        String sql = "SELECT DOC_CONTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")";
         rs = stmt.executeQuery(sql);
         while (rs.next()) {
           rs.getString(1);
