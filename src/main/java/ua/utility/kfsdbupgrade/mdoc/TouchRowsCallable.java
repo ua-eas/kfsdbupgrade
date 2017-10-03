@@ -66,7 +66,7 @@ public final class TouchRowsCallable implements Callable<Long> {
           String string = rs.getString(1);
           synchronized (metrics) {
             timer = metrics.increment(1, string.length(), timer);
-            if (metrics.getCount().getValue() % 10000 == 0) {
+            if (metrics.getCount().getValue() % 1000 == 0) {
               String c = getCount(checkedCast(metrics.getCount().getValue()));
               String s = getSize(metrics.getBytes().getValue());
               long elapsed = metrics.getElapsed().getValue() / 1000;
