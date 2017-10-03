@@ -24,27 +24,34 @@ public final class Show implements Provider<Long> {
 
   private static final Logger LOGGER = getLogger(Show.class);
 
-  public Show(DataMetrics overall, Stopwatch sw, DataMetrics current, Stopwatch timer, String label) {
+  public Show(DataMetrics overall, Stopwatch sw, DataMetrics current, String label) {
     this.overall = overall;
     this.sw = sw;
     this.current = current;
-    this.timer = timer;
     this.label = label;
   }
 
   private final DataMetrics overall;
   private final Stopwatch sw;
   private final DataMetrics current;
-  private final Stopwatch timer;
   private final String label;
 
   public Long get() {
     List<String> args = Lists.newArrayList();
     args.addAll(getArgs(overall, sw));
-    args.addAll(getArgs(current, timer));
+    args.addAll(getArgs(current));
     args.add(label);
-    info(LOGGER, "%s, %s, %s, %s, [%s] %s, %s, %s, %s, [%s] %s", args.toArray());
+    info(LOGGER, "%s, %s, %s, %s, [%s] %s, %s, %s, %s, %s", args.toArray());
     return sw.elapsed(MILLISECONDS);
+  }
+
+  private ImmutableList<String> getArgs(DataMetrics metrics) {
+    String c = getCount(checkedCast(metrics.getCount().getValue()));
+    String s = getSize(metrics.getBytes().getValue());
+    long elapsed = metrics.getElapsed().getValue() / 1000;
+    String t = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
+    String r = getRate(elapsed, metrics.getBytes().getValue());
+    return ImmutableList.of(c, s, t, r);
   }
 
   private ImmutableList<String> getArgs(DataMetrics metrics, Stopwatch sw) {

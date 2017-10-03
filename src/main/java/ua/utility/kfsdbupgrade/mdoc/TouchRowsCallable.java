@@ -53,26 +53,26 @@ public final class TouchRowsCallable implements Callable<Long> {
       stmt = conn.createStatement();
       RowIdConverter converter = new RowIdConverter();
       DataMetrics current = new DataMetrics();
-      Stopwatch timer = createStarted();
       for (List<RowId> partition : partition(rows, batchSize)) {
         List<String> rowIds = transform(partition, converter.reverse());
         String sql = String.format("SELECT %s FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")", field);
         rs = stmt.executeQuery(sql);
+        Stopwatch timer = createStarted();
         while (rs.next()) {
           int length = rs.getString(1).length();
           long elapsed = timer.elapsed(MICROSECONDS);
+          timer = createStarted();
           current.increment(1, length, elapsed);
           synchronized (metrics) {
             metrics.increment(1, length, elapsed);
-            if (metrics.getCount().getValue() % 1000 == 0) {
-              new Show(metrics, sw, current, timer, "").get();
-              timer = createStarted();
+            if (current.getCount().getValue() % 50 == 0) {
+              new Show(metrics, sw, current, "").get();
             }
           }
         }
       }
       synchronized (metrics) {
-        new Show(metrics, sw, current, timer, "done").get();
+        new Show(metrics, sw, current, "done").get();
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);
