@@ -5,6 +5,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
@@ -33,9 +34,9 @@ public final class TouchRowsProgressProvider implements Provider<Long> {
     String c = getCount(checkedCast(metrics.getCount().getValue()));
     String s = getSize(metrics.getBytes().getValue());
     long elapsed = metrics.getElapsed().getValue() / 1000;
-    String tp1 = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
-    String tp2 = getThroughputInSeconds(elapsed, metrics.getBytes().getValue(), "bytes/sec");
-    info(LOGGER, "%s %s %s %s [%s] %s", c, s, tp1, tp2, getTime(sw), label);
+    String t = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
+    String r = getRate(elapsed, metrics.getBytes().getValue());
+    info(LOGGER, "%s, %s, %s, %s, %s [%s]", c, s, t, r, getTime(sw), label);
     return sw.elapsed(MILLISECONDS);
   }
 
