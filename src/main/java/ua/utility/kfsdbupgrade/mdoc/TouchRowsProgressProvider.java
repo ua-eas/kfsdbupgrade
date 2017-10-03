@@ -36,7 +36,7 @@ public final class TouchRowsProgressProvider implements Provider<Long> {
     long elapsed = metrics.getElapsed().getValue() / 1000;
     String t = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
     String r = getRate(elapsed, metrics.getBytes().getValue());
-    info(LOGGER, "%s, %s, %s, %s, %s [%s]", c, s, t, r, getTime(sw), label);
+    info(LOGGER, "%s, %s, %s, %s, [%s] %s", c, s, t, r, getTime(sw), label);
     return sw.elapsed(MILLISECONDS);
   }
 
