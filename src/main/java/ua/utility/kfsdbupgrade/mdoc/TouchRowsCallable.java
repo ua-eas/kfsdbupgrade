@@ -4,15 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
-import static com.google.common.primitives.Ints.checkedCast;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
@@ -67,22 +61,13 @@ public final class TouchRowsCallable implements Callable<Long> {
           synchronized (metrics) {
             timer = metrics.increment(1, string.length(), timer);
             if (metrics.getCount().getValue() % 1000 == 0) {
-              String c = getCount(checkedCast(metrics.getCount().getValue()));
-              String s = getSize(metrics.getBytes().getValue());
-              long elapsed = metrics.getElapsed().getValue() / 1000;
-              String tp1 = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
-              String tp2 = getThroughputInSeconds(elapsed, metrics.getBytes().getValue(), "bytes/sec");
-              info(LOGGER, "%s %s %s %s [%s]", c, s, tp1, tp2, getTime(sw));
+              new TouchRowsProgressProvider(metrics, sw).get();
             }
           }
         }
       }
       synchronized (metrics) {
-        String c = getCount(checkedCast(metrics.getCount().getValue()));
-        String s = getSize(metrics.getBytes().getValue());
-        long elapsed = metrics.getElapsed().getValue() / 1000;
-        String tp = getThroughputInSeconds(elapsed, checkedCast(metrics.getCount().getValue()), "rows/second");
-        info(LOGGER, "%s %s %s [%s] - done", c, s, tp, getTime(sw));
+        new TouchRowsProgressProvider(metrics, sw).get();
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);
