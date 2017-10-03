@@ -61,13 +61,13 @@ public final class TouchRowsCallable implements Callable<Long> {
           synchronized (metrics) {
             timer = metrics.increment(1, string.length(), timer);
             if (metrics.getCount().getValue() % 1000 == 0) {
-              new TouchRowsProgressProvider(metrics, sw).get();
+              new TouchRowsProgressProvider(metrics, sw, "").get();
             }
           }
         }
       }
       synchronized (metrics) {
-        new TouchRowsProgressProvider(metrics, sw).get();
+        new TouchRowsProgressProvider(metrics, sw, "done").get();
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);

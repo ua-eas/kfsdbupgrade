@@ -19,13 +19,15 @@ public final class TouchRowsProgressProvider implements Provider<Long> {
 
   private static final Logger LOGGER = getLogger(TouchRowsProgressProvider.class);
 
-  public TouchRowsProgressProvider(DataMetrics metrics, Stopwatch sw) {
+  public TouchRowsProgressProvider(DataMetrics metrics, Stopwatch sw, String label) {
     this.metrics = metrics;
     this.sw = sw;
+    this.label = label;
   }
 
   private final DataMetrics metrics;
   private final Stopwatch sw;
+  private final String label;
 
   public Long get() {
     String c = getCount(checkedCast(metrics.getCount().getValue()));
@@ -33,7 +35,7 @@ public final class TouchRowsProgressProvider implements Provider<Long> {
     long elapsed = metrics.getElapsed().getValue() / 1000;
     String tp1 = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
     String tp2 = getThroughputInSeconds(elapsed, metrics.getBytes().getValue(), "bytes/sec");
-    info(LOGGER, "%s %s %s %s [%s]", c, s, tp1, tp2, getTime(sw));
+    info(LOGGER, "%s %s %s %s [%s] %s", c, s, tp1, tp2, getTime(sw), label);
     return sw.elapsed(MILLISECONDS);
   }
 
