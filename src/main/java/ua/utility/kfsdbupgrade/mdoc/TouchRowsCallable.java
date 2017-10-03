@@ -59,10 +59,11 @@ public final class TouchRowsCallable implements Callable<Long> {
         while (rs.next()) {
           String string = rs.getString(1);
           synchronized (metrics) {
-            timer = metrics.increment(1, string.length(), timer);
+            metrics.increment(1, string.length(), timer);
             if (metrics.getCount().getValue() % 1000 == 0) {
               new TouchRowsProgressProvider(metrics, sw, "").get();
             }
+            timer = createStarted();
           }
         }
       }
