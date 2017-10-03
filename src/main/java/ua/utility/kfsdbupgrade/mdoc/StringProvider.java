@@ -65,7 +65,7 @@ public final class StringProvider implements Provider<ImmutableList<String>> {
       info(LOGGER, "field:%s count:%s", field, max.isPresent() ? max.get() : "all");
       conn = provider.get();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("SELECT %s FROM KRNS_MAINT_DOC_T");
+      rs = stmt.executeQuery(String.format("SELECT %s FROM KRNS_MAINT_DOC_T", field));
       while (rs.next()) {
         list.add(rs.getString(1));
         if (max.isPresent() && list.size() >= max.get()) {
