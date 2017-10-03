@@ -64,7 +64,7 @@ public final class TouchRowsCallable implements Callable<Long> {
           current.increment(1, length, elapsed);
           synchronized (metrics) {
             metrics.increment(1, length, elapsed);
-            if (current.getCount().getValue() % 10 == 0) {
+            if (current.getCount().getValue() % 1000 == 0) {
               new Show(metrics, sw, current, timer, "").get();
               timer = createStarted();
             }
