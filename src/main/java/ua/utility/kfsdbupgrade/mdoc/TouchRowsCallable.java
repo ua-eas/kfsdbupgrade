@@ -70,8 +70,9 @@ public final class TouchRowsCallable implements Callable<Long> {
               String c = getCount(checkedCast(metrics.getCount().getValue()));
               String s = getSize(metrics.getBytes().getValue());
               long elapsed = metrics.getElapsed().getValue() / 1000;
-              String tp = getThroughputInSeconds(elapsed, checkedCast(metrics.getCount().getValue()), "rows/second");
-              info(LOGGER, "%s %s %s [%s]", c, s, tp, getTime(sw));
+              String tp1 = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
+              String tp2 = getThroughputInSeconds(elapsed, metrics.getBytes().getValue(), "bytes/sec");
+              info(LOGGER, "%s %s %s %s [%s]", c, s, tp1, tp2, getTime(sw));
             }
           }
         }
