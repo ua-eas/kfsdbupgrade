@@ -38,7 +38,10 @@ public final class ConnectionProvider implements Provider<Connection> {
       String password = checkedValue(props, "database-password");
       String name = checkedValue(props, "db.name");
       String fragment = checkedValue(props, "db.fragment");
-      String url = format("jdbc:oracle:thin:@%s.%s:1521:%s", name.toLowerCase(), fragment, name.toUpperCase());
+      String port = props.getProperty("db.port", "1521");
+      String sid = props.getProperty("db.sid", name);
+      String formatted = format("jdbc:oracle:thin:@%s.%s:%s:%s", name.toLowerCase(), fragment, port, sid.toUpperCase());
+      String url = props.getProperty("db.url", formatted);
       info("connecting to --> %s as %s", url, username);
       Class.forName(checkedValue(props, "database-driver"));
       Stopwatch sw = createStarted();
