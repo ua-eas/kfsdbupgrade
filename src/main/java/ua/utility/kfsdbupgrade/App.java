@@ -15,6 +15,12 @@
  */
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -45,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +62,10 @@ import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
+import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
+import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
+import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class App {
 	private static final Logger LOGGER = Logger.getLogger(App.class);
@@ -194,6 +205,10 @@ public class App {
             stmt.close();
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
+			     if (Boolean.parseBoolean(System.getProperty("mdoc.only"))) {
+			       convertMaintenanceDocuments(conn1);
+			       return;
+			     }
 
             if (doInitialProcessing(conn1, stmt)) {
                 doCommit(conn1);
@@ -2736,99 +2751,39 @@ public class App {
 	 *            {@link Connection} to the upgrade database
 	 */
     private void convertMaintenanceDocuments(Connection upgradeConn) {
-        PreparedStatement pstmt = null;
-        Statement stmt = null;
-        ResultSet res = null;
-
-        try {
-            logHeader2("Converting legacy maintenance documents to rice 2.0...");
-
-            String fname = properties.getProperty("maintenance-document-conversion-rules-file");
-
-            if (StringUtils.isNotBlank(fname)) {
-                File f = new File(fname);
-
-                if (f.exists()) {
-					MaintainableXMLConversionServiceImpl maintainableXMLConversionServiceImpl = new MaintainableXMLConversionServiceImpl(
-							f);
-                    EncryptionService encryptService = new EncryptionService(properties.getProperty("encryption-key"));
-                    pstmt = upgradeConn.prepareStatement("update krns_maint_doc_t set DOC_CNTNT = ? where DOC_HDR_ID = ?");
-                    stmt = upgradeConn.createStatement();
-
-                    res = stmt.executeQuery("SELECT DOC_HDR_ID, DOC_CNTNT FROM krns_maint_doc_t ");
-
-                    int cnt = 0;
-                    long start = System.currentTimeMillis();
-                    while (res.next()) {
-                        String docid = res.getString(1);
-                        String oldXml = null;
-
-                        if (encryptService.isEnabled()) {
-                            oldXml = encryptService.decrypt(res.getString(2));
-                        } else {
-                            oldXml = res.getString(2);
-                        }
-
-                        String newXml  = null;
-
-                        try {
-							LOGGER.trace("Converting maintainable xml with document number: " + docid);
-                            newXml = maintainableXMLConversionServiceImpl.transformMaintainableXML(oldXml, docid);
-                        }
-
-                        catch (Exception ex) {
-                            newXml = null;
-							LOGGER.error("error occured while attempting to convert document " + docid, ex);
-							LOGGER.error(
-									"-------------------------------------------- xml ---------------------------------------------");
-							LOGGER.error(oldXml);
-							LOGGER.error(ex);
-                        }
-
-                        if (newXml != null) {
-                            if (encryptService.isEnabled()) {
-                                pstmt.setString(1, encryptService.encrypt(newXml));
-                            } else {
-                                pstmt.setString(1, newXml);
-                            }
-
-                            pstmt.setString(2, docid);
-
-                            pstmt.addBatch();
-
-                            cnt++;
-
-                            if ((cnt % MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE) == 0) {
-                                pstmt.executeBatch();
-
-                                if ((cnt % (5 * MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE)) == 0) {
-									LOGGER.info(cnt + " documents processed - "
-											+ ((System.currentTimeMillis() - start) / 1000) + "sec");
-                                    start = System.currentTimeMillis();
-                                }
-                            }
-                        }
-                    }
-
-                    if ((cnt % MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE) != 0) {
-                        pstmt.executeBatch();
-                    }
-
-                    doCommit(upgradeConn);
-
-					LOGGER.info(cnt + " maintenance documents upgraded.");
-                } else {
-					LOGGER.error("maintenance document conversion rules file " + f.getPath() + " does not exist");
-                }
-            } else {
-				LOGGER.error("no property 'maintenance-document-conversion-rules-file' entry in property file");
-            }
-        }
-
-        catch (Exception ex) {
-            doRollback(upgradeConn);
-			LOGGER.error(ex);
-        }
+      logHeader2("Converting legacy maintenance documents to rice 2.0...");
+      MaintDocConverter converter = getMaintDocConverter(upgradeConn);
+      try {
+        MaintDocResult result = converter.get();
+        String throughput = getThroughputInSeconds(result.getElapsed(), result.getConverted(), "docs/second");
+        LOGGER.info(format("maintenance docs converted -> %s", getCount(result.getConverted())));
+        LOGGER.info(format("maintenance docs errors ----> %s", getCount(result.getErrors())));
+        LOGGER.info(format("maintenance docs elapsed ---> %s", getTime(result.getElapsed())));
+        LOGGER.info(format("maintenance doc throughput -> %s", throughput));
+      } catch(Exception e) {
+        LOGGER.error(e);
+      }
+    }
+    
+    private MaintDocConverter getMaintDocConverter(Connection upgradeConn) {
+      try {
+        File rules = new File(properties.getProperty("maintenance-document-conversion-rules-file"));
+        checkArgument(rules.isFile(),"rules file does not exist -> %s", rules);
+        MaintainableXMLConversionServiceImpl converter = new MaintainableXMLConversionServiceImpl(rules);
+        EncryptionService encryptor = new EncryptionService(properties.getProperty("encryption-key"));
+        int threads = new ThreadsProvider(properties).get();
+        LOGGER.info(format("maintenance doc threads -> %s", threads));
+        ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
+        MaintDocConverter.Builder builder = MaintDocConverter.builder();
+        builder.withBatchSize(MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE);
+        builder.withConnection(upgradeConn);
+        builder.withConverter(converter);
+        builder.withEncryptor(encryptor);
+        builder.withExecutor(executor);
+        return builder.build();
+      }catch(Exception e) {
+        throw new IllegalStateException(e);
+      }
     }
 
 	/**

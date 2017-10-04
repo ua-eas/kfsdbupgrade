@@ -58,7 +58,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.DomWriter;
     
-public class MaintainableXMLConversionServiceImpl {
+public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConversionService {
 	private static final Logger LOGGER = Logger.getLogger(MaintainableXMLConversionServiceImpl.class);
 	private static final String SERIALIZATION_ATTRIBUTE = "serialization";
 	private static final String CLASS_ATTRIBUTE = "class";
@@ -201,7 +201,7 @@ public class MaintainableXMLConversionServiceImpl {
         String maintenanceAction = StringUtils.substringBetween(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">", "</" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
         xml = StringUtils.substringBefore(xml, "<" + MAINTENANCE_ACTION_ELEMENT_NAME + ">");
 
-        xml = upgradeBONotes(xml);
+        xml = upgradeBONotes(xml,docid);
         
         if (classNameRuleMap == null) {
             setRuleMaps();
@@ -562,11 +562,11 @@ public class MaintainableXMLConversionServiceImpl {
 	 *            - the xml to upgrade
 	 * @throws Exception
 	 */
-    private String upgradeBONotes(String oldXML) throws Exception {
+    private String upgradeBONotes(String oldXML, String docId) throws Exception {
         // Get the old bo note xml
         String notesXml = StringUtils.substringBetween(oldXML, "<boNotes>", "</boNotes>");
         if (notesXml != null) {
-			LOGGER.trace("BO Notes present, upgrading.");
+			LOGGER.info("BO Notes present, upgrading -> " + docId);
             notesXml = notesXml.replace("org.kuali.rice.kns.bo.Note", "org.kuali.rice.krad.bo.Note");
             notesXml = "<org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl>\n"
                     + notesXml
