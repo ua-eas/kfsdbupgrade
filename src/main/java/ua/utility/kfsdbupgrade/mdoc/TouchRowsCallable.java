@@ -5,8 +5,6 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
@@ -18,14 +16,10 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 public final class TouchRowsCallable implements Callable<Long> {
-
-  private static final Logger LOGGER = getLogger(TouchRowsCallable.class);
 
   public TouchRowsCallable(Connection conn, int batchSize, Iterable<RowId> rows, DataMetrics metrics, Stopwatch sw, MaintDocField field) {
     this.conn = checkNotNull(conn);
@@ -42,11 +36,11 @@ public final class TouchRowsCallable implements Callable<Long> {
   private final DataMetrics metrics;
   private final Stopwatch sw;
   private final MaintDocField field;
+  private final int show = Integer.parseInt(System.getProperty("mdoc.show", "1000"));
 
   @Override
   public Long call() {
     synchronizedStart(sw);
-    Stopwatch overall = createStarted();
     Statement stmt = null;
     ResultSet rs = null;
     try {
@@ -63,7 +57,7 @@ public final class TouchRowsCallable implements Callable<Long> {
           timer = createStarted();
           synchronized (metrics) {
             metrics.increment(1, length, elapsed);
-            if (metrics.getCount().getValue() % 1000 == 0) {
+            if (metrics.getCount().getValue() % show == 0) {
               new Show(metrics, sw, "").get();
             }
           }
@@ -78,7 +72,7 @@ public final class TouchRowsCallable implements Callable<Long> {
       closeQuietly(stmt);
       closeQuietly(conn);
     }
-    return overall.elapsed(MILLISECONDS);
+    return 0L;
   }
 
   public Connection getConn() {
