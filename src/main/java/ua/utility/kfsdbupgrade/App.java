@@ -113,7 +113,7 @@ public class App {
 	 */
 	private final Set<File> postUpgradeFilesProcessed = new HashSet<File>();
 
-    /**
+  /**
 	 * Main program entry point. Single argument is expected of a path to the
 	 * <code>kfsdbupgrade.properties</code> properties file. Optional second
 	 * argument of "<code>ingestWorkflow</code>" if the ingest workflow code
@@ -122,19 +122,28 @@ public class App {
 	 * @param args
 	 */
     public static void main(final String args[]) {
-        if (args.length > 0) {
-            String propertyFileName = args[0];
-            boolean ingestWorkflow = false;
-            if (args.length > 1) {
-                ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
-            }
-			App app = new App(propertyFileName);
-			if (ingestWorkflow) {
-				app.doWorkflow(propertyFileName);
-			} else {
-				app.doUpgrade();
-			}
-		}
+      if (args == null || args.length == 0) {
+        System.out.println("Usage: java -jar kfsdbupgrade.jar kfsdbupgrade.properties");
+        System.exit(1);
+      }
+      try {
+        String propertyFileName = args[0];
+        boolean ingestWorkflow = false;
+        if (args.length > 1) {
+          ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
+        }
+			  App app = new App(propertyFileName);
+			  if (ingestWorkflow) {
+			    app.doWorkflow(propertyFileName);
+			  } else {
+			    app.doUpgrade();
+        }
+			  System.exit(0);
+      } catch(Throwable e) {
+        LOGGER.fatal(e);
+        e.printStackTrace();
+        System.exit(1);
+      }
     }
 
     /**
@@ -293,7 +302,7 @@ public class App {
 		}
 
         catch (Exception ex) {
-			LOGGER.fatal(ex);
+			    throw new IllegalStateException(ex);
         } 
 
         finally {
@@ -412,9 +421,8 @@ public class App {
         try {
             reader = new FileReader(fname);
 			properties.load(reader);
-        } catch (Exception ex) {
-			LOGGER.error(ex);
-			properties = null;
+        } catch (Exception fatal) {
+			    throw new IllegalStateException(fatal);
         } finally {
             try {
                 if (reader != null) {
