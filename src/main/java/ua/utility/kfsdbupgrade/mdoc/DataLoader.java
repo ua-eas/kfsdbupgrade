@@ -48,8 +48,8 @@ public class DataLoader {
       Stopwatch sw = createStarted();
       int threads = new ThreadsProvider(props).get();
       int batchSize = parseInt(props.getProperty("mdoc.batch"));
-      int count = parseInt(props.getProperty("mdoc.gen.count", "5000"));
-      int iterations = parseInt(props.getProperty("mdoc.iterations", "126"));
+      int count = parseInt(props.getProperty("mdoc.gen.count", "10000"));
+      int iterations = parseInt(props.getProperty("mdoc.iterations", "65"));
       List<MaintDoc> documents = getDocuments(count);
       int rows = documents.size() * iterations;
       info("generated ------> %s fake documents [%s]", getCount(documents.size()), getTime(overall));

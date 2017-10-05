@@ -12,6 +12,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -45,11 +46,7 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
 
   @Override
   public Long call() {
-    synchronized (sw) {
-      if (!sw.isRunning()) {
-        sw.start();
-      }
-    }
+    synchronizedStart(sw);
     Stopwatch overall = createStarted();
     PreparedStatement pstmt = null;
     try {
@@ -58,10 +55,10 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
       for (int i = 0; i < iterations; i++) {
         for (List<MaintDoc> partition : partition(docs, batchSize)) {
           for (MaintDoc document : partition) {
-            int sequence = checkedCast(counter.increment());
-            pstmt.setString(1, Integer.toString(sequence));
+            pstmt.setString(1, document.getDocHeaderId());
             pstmt.setString(2, document.getContent());
             pstmt.addBatch();
+            int sequence = checkedCast(counter.increment());
             if (sequence % 1000 == 0) {
               long elapsed = sw.elapsed(MILLISECONDS);
               info("inserted -> %s docs in %s [%s]", getCount(sequence), getTime(elapsed), getThroughputInSeconds(elapsed, sequence, "docs/second"));
@@ -71,7 +68,6 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
         }
       }
       conn.commit();
-      // info("inserted -> %s docs in %s [%s]", getCount(docs.size()), getTime(overall), getThroughputInSeconds(overall, docs.size(), "docs/second"));
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
