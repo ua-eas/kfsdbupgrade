@@ -55,10 +55,11 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
       for (int i = 0; i < iterations; i++) {
         for (List<MaintDoc> partition : partition(docs, batchSize)) {
           for (MaintDoc document : partition) {
-            pstmt.setString(1, document.getDocHeaderId());
+            // the document header id from the object is not unique across threads
+            int sequence = checkedCast(counter.increment());
+            pstmt.setString(1, Integer.toString(sequence));
             pstmt.setString(2, document.getContent());
             pstmt.addBatch();
-            int sequence = checkedCast(counter.increment());
             if (sequence % 1000 == 0) {
               long elapsed = sw.elapsed(MILLISECONDS);
               info("inserted -> %s docs in %s [%s]", getCount(sequence), getTime(elapsed), getThroughputInSeconds(elapsed, sequence, "docs/second"));
