@@ -52,7 +52,6 @@ public class DataLoader {
       int iterations = parseInt(props.getProperty("mdoc.iterations", "65"));
       List<MaintDoc> documents = getDocuments(count);
       int rows = documents.size() * iterations;
-      info("generated ------> %s fake documents [%s]", getCount(documents.size()), getTime(overall));
       info("loading --------> %s fake documents", getCount(rows));
       ExecutorService executor = new ExecutorProvider("mdocs", threads).get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
@@ -72,6 +71,8 @@ public class DataLoader {
   }
 
   private ImmutableList<MaintDoc> getDocuments(int count) {
+    Stopwatch sw = createStarted();
+    info("generating -----> %s fake documents", getCount(count));
     Random random = new Random(currentTimeMillis());
     List<MaintDoc> list = newArrayList();
     byte[] bytes = new byte[20 * 1024];
@@ -80,6 +81,7 @@ public class DataLoader {
       String content = new String(bytes, UTF_8);
       list.add(MaintDoc.build(Integer.toString(i + 1), content));
     }
+    info("generated ------> %s fake documents [%s]", getCount(count), getTime(sw));
     return newList(list);
   }
 
