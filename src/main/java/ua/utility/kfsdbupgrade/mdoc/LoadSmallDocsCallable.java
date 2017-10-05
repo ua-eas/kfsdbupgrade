@@ -10,6 +10,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
@@ -28,11 +29,12 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
 
   private static final Logger LOGGER = getLogger(LoadSmallDocsCallable.class);
 
-  public LoadSmallDocsCallable(Connection conn, int batchSize, Iterable<MaintDoc> docs, Counter counter, Stopwatch sw, int iterations) {
+  public LoadSmallDocsCallable(Connection conn, int batchSize, Iterable<MaintDoc> docs, Counter counter, Counter bytes, Stopwatch sw, int iterations) {
     this.conn = checkNotNull(conn);
     this.batchSize = batchSize;
     this.docs = copyOf(docs);
     this.counter = counter;
+    this.bytes = bytes;
     this.sw = sw;
     this.iterations = iterations;
   }
@@ -41,6 +43,7 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
   private final int batchSize;
   private final ImmutableList<MaintDoc> docs;
   private final Counter counter;
+  private final Counter bytes;
   private final Stopwatch sw;
   private final int iterations;
 
@@ -55,15 +58,22 @@ public final class LoadSmallDocsCallable implements Callable<Long> {
       for (int i = 0; i < iterations; i++) {
         for (List<MaintDoc> partition : partition(docs, batchSize)) {
           for (MaintDoc document : partition) {
-            // the document header id from the object is not unique across threads
-            int sequence = checkedCast(counter.increment());
-            pstmt.setString(1, Integer.toString(sequence));
+            int sequence;
+            String documentHeaderId;
+            synchronized (counter) {
+              // the document header id from the object is not unique across threads
+              sequence = checkedCast(counter.increment());
+              documentHeaderId = Integer.toString(sequence);
+              bytes.increment(documentHeaderId.length() + document.getContent().length());
+              if (sequence % 1000 == 0) {
+                long elapsed = sw.elapsed(MILLISECONDS);
+                String rate = getRate(elapsed, bytes.getValue());
+                info("inserted -> %s docs in %s [%s] %s", getCount(sequence), getTime(elapsed), getThroughputInSeconds(elapsed, sequence, "docs/second"), rate);
+              }
+            }
+            pstmt.setString(1, documentHeaderId);
             pstmt.setString(2, document.getContent());
             pstmt.addBatch();
-            if (sequence % 1000 == 0) {
-              long elapsed = sw.elapsed(MILLISECONDS);
-              info("inserted -> %s docs in %s [%s]", getCount(sequence), getTime(elapsed), getThroughputInSeconds(elapsed, sequence, "docs/second"));
-            }
           }
           pstmt.executeBatch();
         }

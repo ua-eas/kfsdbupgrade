@@ -12,6 +12,7 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
@@ -59,10 +60,15 @@ public class DataLoader {
       info("established -> %s connections [%s]", getCount(conns.size()), getTime(overall));
       truncate(conns.iterator().next(), "KRNS_MAINT_DOC_T");
       info("truncated ---> KRNS_MAINT_DOC_T [%s]", getTime(overall));
-      List<LoadSmallDocsCallable> callables = getCallables(documents, conns, threads, batchSize, iterations);
-      info("inserting ---> %s encrypted documents [%s] using %s threads", getCount(documents.size()), getTime(overall), threads);
+      Counter counter = new Counter();
+      Counter bytes = new Counter();
+      List<LoadSmallDocsCallable> callables = getCallables(documents, conns, threads, batchSize, iterations, counter, bytes);
+      info("inserting ---> %s encrypted documents [%s] using %s threads", getCount(documents.size() * iterations), getTime(overall), threads);
+      Stopwatch futures = createStarted();
       getFutures(executor, callables);
-      info("inserted ----> %s documents in %s [%s]", getCount(rows), getTime(sw), getThroughputInSeconds(sw, rows, "docs/second"));
+      String rate = getRate(futures.elapsed(MILLISECONDS), bytes.getValue());
+      String size = Formats.getSize(bytes.getValue());
+      info("inserted ----> %s documents in %s [%s %s %s]", getCount(rows), getTime(sw), getThroughputInSeconds(sw, rows, "docs/second"), rate, size);
       info("elapsed -----> %s", getTime(overall));
     } catch (Throwable e) {
       throw new IllegalStateException(e);
@@ -93,14 +99,14 @@ public class DataLoader {
     return newList(conns);
   }
 
-  private ImmutableList<LoadSmallDocsCallable> getCallables(List<MaintDoc> documents, List<Connection> conns, int threads, int batchSize, int iterations) {
+  private ImmutableList<LoadSmallDocsCallable> getCallables(List<MaintDoc> documents, List<Connection> conns, int threads, int batchSize, int iterations, Counter counter,
+      Counter bytes) {
     List<LoadSmallDocsCallable> callables = newArrayList();
     int index = 0;
-    Counter counter = new Counter();
     Stopwatch sw = createUnstarted();
     for (List<MaintDoc> distribution : distribute(documents, threads)) {
       Connection conn = conns.get(index++);
-      callables.add(new LoadSmallDocsCallable(conn, batchSize, distribution, counter, sw, iterations));
+      callables.add(new LoadSmallDocsCallable(conn, batchSize, distribution, counter, bytes, sw, iterations));
     }
     return newList(callables);
   }
