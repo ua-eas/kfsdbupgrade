@@ -55,18 +55,15 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
       info(LOGGER, "acquiring -> %s rowids", getCount(max.or(-1)));
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("select rowid from krns_maint_doc_t");
+      String where = max.isPresent() ? " where rownum <= " + max.get() : "";
+      rs = stmt.executeQuery("select rowid from krns_maint_doc_t" + where);
       ListMultimap<BlockId, RowId> mm = ArrayListMultimap.create();
       while (rs.next()) {
         String string = rs.getString(1);
         RowId rowId = converter.convert(string);
         mm.put(rowId.getBlock(), rowId);
-        count++;
-        if (count % 100000 == 0) {
+        if (++count % 100000 == 0) {
           info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max.or(-1)), getTime(sw));
-        }
-        if (max.isPresent() && max.get() == count) {
-          break;
         }
       }
       int size = mm.size();
