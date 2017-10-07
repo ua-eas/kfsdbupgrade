@@ -7,9 +7,9 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.concat;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 
 import java.sql.ResultSet;
@@ -54,14 +54,15 @@ public class FirstTouchPenaltyTest {
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks -> %s", getCount(blocks.size()));
-      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE);
+      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
+      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 100);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
   }
 
-  private <T> ImmutableList<T> touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher) {
+  private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int divisor) {
     List<String> rowIds = transform(iterable, converter.reverse());
     ConnectionProvider provider = new ConnectionProvider(props, false);
     int threads = new ThreadsProvider(props).get();
@@ -72,14 +73,15 @@ public class FirstTouchPenaltyTest {
       builder.withFunction(function);
       builder.withWeigher(weigher);
       builder.withRowIds(distribution);
-      builder.withShow(rowIds.size() / 10);
+      builder.withShow(rowIds.size() / divisor);
       builder.withTable(table);
       builder.withProvider(provider);
       builder.withField(field);
+      builder.withDiscard(true);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
-    return concat(getFutures(executor, callables));
+    getFutures(executor, callables);
   }
 
   private ImmutableMap<BlockId, RowId> getBlocks(Iterable<RowId> rowIds) {

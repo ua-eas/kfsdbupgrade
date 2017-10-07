@@ -46,6 +46,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Function<T, Long> weigher;
   private final Optional<Integer> show;
   private final Optional<Integer> max;
+  private final boolean discard;
 
   @Override
   public ImmutableList<T> get() {
@@ -111,7 +112,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     while (rs.next()) {
       T instance = function.apply(rs);
       long weight = weigher.apply(instance);
-      list.add(instance);
+      if (!discard) {
+        list.add(instance);
+      }
       sw = increment(metrics, weight, sw);
     }
     return newList(list);
@@ -140,6 +143,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.function = builder.function;
     this.weigher = builder.weigher;
     this.max = builder.max;
+    this.discard = builder.discard;
   }
 
   public static <T> Builder<T> builder() {
@@ -160,6 +164,12 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Optional<Integer> show = absent();
     private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
+    private boolean discard;
+
+    public Builder<T> withDiscard(boolean discard) {
+      this.discard = discard;
+      return this;
+    }
 
     public Builder<T> withMax(Optional<Integer> max) {
       this.max = max;
