@@ -4,6 +4,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
@@ -140,13 +141,17 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.max = builder.max;
   }
 
+  public static <T> Builder<T> builder() {
+    return new Builder<T>();
+  }
+
   public static class Builder<T> {
 
     private Provider<Connection> provider;
     private int batchSize = 75;
     private List<String> rowIds = newArrayList();
-    private DataMetrics metrics;
-    private Stopwatch timer;
+    private DataMetrics metrics = new DataMetrics();
+    private Stopwatch timer = createUnstarted();
     private Optional<String> schema = absent();
     private String table;
     private List<String> fields = newArrayList("ROWID");

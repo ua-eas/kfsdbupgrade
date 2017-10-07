@@ -13,6 +13,15 @@ import com.google.common.base.Joiner;
 
 public final class RowIdConverter extends Converter<String, RowId> {
 
+  private RowIdConverter() {
+  }
+
+  private static final RowIdConverter SINGLETON = new RowIdConverter();
+
+  public static RowIdConverter getInstance() {
+    return SINGLETON;
+  }
+
   private final char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
   private final int radix = alphabet.length;
   private final int oracleRowIdLength = 18;
