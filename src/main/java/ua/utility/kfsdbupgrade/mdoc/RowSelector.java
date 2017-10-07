@@ -295,4 +295,68 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   }
 
+  public Provider<Connection> getProvider() {
+    return provider;
+  }
+
+  public int getBatchSize() {
+    return batchSize;
+  }
+
+  public ImmutableList<String> getRowIds() {
+    return rowIds;
+  }
+
+  public DataMetrics getOverall() {
+    return overall;
+  }
+
+  public DataMetrics getCurrent() {
+    return current;
+  }
+
+  public Stopwatch getTimer() {
+    return timer;
+  }
+
+  public Stopwatch getLast() {
+    return last;
+  }
+
+  public Optional<String> getSchema() {
+    return schema;
+  }
+
+  public String getTable() {
+    return table;
+  }
+
+  public ImmutableList<String> getFields() {
+    return fields;
+  }
+
+  public Function<ResultSet, T> getFunction() {
+    return function;
+  }
+
+  public Function<T, Long> getWeigher() {
+    return weigher;
+  }
+
+  public Optional<Integer> getShow() {
+    return show;
+  }
+
+  public Optional<Integer> getMax() {
+    return max;
+  }
+
+  public boolean isDiscard() {
+    return discard;
+  }
+
+  public boolean isCloseConnection() {
+    return closeConnection;
+  }
+
 }
