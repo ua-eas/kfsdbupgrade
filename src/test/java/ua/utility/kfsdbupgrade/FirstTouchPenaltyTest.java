@@ -57,12 +57,12 @@ public class FirstTouchPenaltyTest {
     try {
       String table = "KRNS_MAINT_DOC_T";
       Properties props = new PropertiesProvider().get();
-      List<RowId> rowIds = getRowIds(props, table, 10000);
+      List<RowId> rowIds = getRowIds(props, table, 50000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks -> %s", getCount(blocks.size()));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
-      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
+      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 500);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
