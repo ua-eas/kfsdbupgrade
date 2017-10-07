@@ -53,7 +53,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   @Override
   public ImmutableList<T> get() {
-    synchronizedStart(timer);
+    synchronizedStart(timer, last);
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;

@@ -125,6 +125,7 @@ public class FirstTouchPenaltyTest {
     DataMetrics overall = new DataMetrics();
     DataMetrics current = new DataMetrics();
     Stopwatch timer = createUnstarted();
+    Stopwatch last = createUnstarted();
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
       RowSelector.Builder<T> builder = RowSelector.builder();
@@ -139,6 +140,7 @@ public class FirstTouchPenaltyTest {
       builder.withOverall(overall);
       builder.withCurrent(current);
       builder.withTimer(timer);
+      builder.withLast(last);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }

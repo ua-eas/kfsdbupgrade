@@ -4,11 +4,14 @@ import com.google.common.base.Stopwatch;
 
 public final class Stopwatches {
 
-  public static Stopwatch synchronizedStart(Stopwatch sw) {
-    synchronized (sw) {
-      return sw.isRunning() ? sw : sw.start();
+  public static void synchronizedStart(Stopwatch... timers) {
+    for (Stopwatch timer : timers) {
+      synchronized (timer) {
+        if (!timer.isRunning()) {
+          timer.start();
+        }
+      }
     }
-
   }
 
 }
