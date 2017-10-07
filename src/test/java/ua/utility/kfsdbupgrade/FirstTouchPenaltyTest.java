@@ -79,9 +79,9 @@ public class FirstTouchPenaltyTest {
     Connection conn = null;
     Statement stmt = null;
     try {
+      info(LOGGER, "adding clob index for krns_maint_doc_t.doc_cntnt");
       conn = new ConnectionProvider(props, true).get();
       stmt = conn.createStatement();
-      info(LOGGER, "adding clob index for krns_maint_doc_t.doc_cntnt");
       stmt.execute("ALTER TABLE KRNS_MAINT_DOC_T MODIFY LOB (DOC_CNTNT) (CACHE)");
     } catch (Throwable e) {
       throw new IOException(e);
