@@ -89,7 +89,7 @@ public class FirstTouchPenaltyTest {
       conn = new ConnectionProvider(props, true).get();
       stmt = conn.createStatement();
       stmt.execute(format("ANALYZE TABLE KRNS_MAINT_DOC_T COMPUTE STATISTICS"));
-      info(LOGGER, "finished computing statistics [%s]", getTime(sw));
+      info(LOGGER, "finished computing statistics for krns_maint_doc_t.doc_cntnt [%s]", getTime(sw));
     } catch (Throwable e) {
       throw new IOException(e);
     } finally {
