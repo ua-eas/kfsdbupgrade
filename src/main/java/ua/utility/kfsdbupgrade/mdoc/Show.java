@@ -30,7 +30,7 @@ public final class Show {
         args.addAll(getArgs(current));
         args.add(getTime(timer));
         args.add(label);
-        info(LOGGER, "[%s, %s, %s, %s] [%s, %s, %s, %s] %s %s", args);
+        info(LOGGER, "[%s, %s, %s, %s] [%s, %s, %s, %s] %s %s", args.toArray());
       }
     }
   }
