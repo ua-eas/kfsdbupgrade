@@ -1,5 +1,8 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static java.lang.Math.round;
@@ -31,30 +34,24 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
 
   private static final Logger LOGGER = getLogger(BlockProvider.class);
 
-  public BlockProvider(Connection conn, String schema, String table, Optional<Integer> max, Optional<Integer> show) {
-    this.conn = conn;
-    this.schema = schema.toUpperCase();
-    this.table = table.toUpperCase();
-    this.max = max;
-    this.show = show;
-  }
-
-  private final Connection conn;
-  private final String schema;
+  private final Provider<Connection> provider;
+  private final Optional<String> schema;
   private final String table;
   private final Optional<Integer> max;
   private final Optional<Integer> show;
   private final RowIdConverter converter = new RowIdConverter();
 
   public ImmutableMap<BlockId, RowId> get() {
+    Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     try {
       info(LOGGER, "acquiring -> %s rowids for %s.%s", max.isPresent() ? getCount(max.get()) : "all", schema, table);
       Stopwatch sw = createStarted();
-      stmt = conn.createStatement();
+      stmt = provider.get().createStatement();
       String where = max.isPresent() ? "WHERE ROWNUM <= " + max.get() : "";
-      rs = stmt.executeQuery(format("SELECT ROWID FROM %s.%s %s", schema, table, where).trim());
+      String from = schema.isPresent() ? schema.get() + "." + table : table;
+      rs = stmt.executeQuery(format("SELECT ROWID FROM %s %s", from, where).trim());
       int count = 0;
       ListMultimap<BlockId, RowId> mm = ArrayListMultimap.create();
       while (rs.next()) {
@@ -86,8 +83,65 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
     } finally {
       closeQuietly(rs);
       closeQuietly(stmt);
+      closeQuietly(conn);
     }
 
+  }
+
+  private BlockProvider(Builder builder) {
+    this.provider = builder.provider;
+    this.schema = builder.schema;
+    this.table = builder.table;
+    this.max = builder.max;
+    this.show = builder.show;
+  }
+
+  public static class Builder {
+
+    private Provider<Connection> provider;
+    private Optional<String> schema = absent();
+    private String table;
+    private Optional<Integer> max = absent();
+    private Optional<Integer> show = of(1000);
+
+    public Builder withProvider(Provider<Connection> provider) {
+      this.provider = provider;
+      return this;
+    }
+
+    public Builder withSchema(Optional<String> schema) {
+      this.schema = schema;
+      return this;
+    }
+
+    public Builder withTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public Builder withMax(Optional<Integer> max) {
+      this.max = max;
+      return this;
+    }
+
+    public Builder withShow(Optional<Integer> show) {
+      this.show = show;
+      return this;
+    }
+
+    public BlockProvider build() {
+      return validate(new BlockProvider(this));
+    }
+
+    private static BlockProvider validate(BlockProvider instance) {
+      checkNotNull(instance.provider, "provider may not be null");
+      checkNotNull(instance.schema, "schema may not be blank");
+      checkNotNull(instance.table, "table may not be blank");
+      checkNotNull(instance.max, "max may not be null");
+      checkNotNull(instance.show, "show may not be null");
+      checkNotNull(instance.converter, "converter may not be null");
+      return instance;
+    }
   }
 
 }
