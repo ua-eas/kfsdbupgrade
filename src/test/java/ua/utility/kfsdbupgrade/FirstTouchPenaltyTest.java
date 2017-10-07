@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
@@ -15,7 +16,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
@@ -53,7 +53,7 @@ public class FirstTouchPenaltyTest {
     RowSelector.Builder<Integer> builder = RowSelector.builder();
     builder.withFunction(SingleIntegerFunction.INSTANCE);
     builder.withWeigher(IntegerWeigher.INSTANCE);
-    builder.withShow(Iterables.size(rowIds) / 100);
+    builder.withShow(size(rowIds) / 100);
     builder.withTable(table);
     builder.withProvider(provider);
     RowSelector<Integer> selector = builder.build();
