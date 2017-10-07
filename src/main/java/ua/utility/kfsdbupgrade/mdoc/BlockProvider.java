@@ -50,7 +50,7 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      info(LOGGER, "acquiring -> %s rowids in %s.%s", max.isPresent() ? getCount(max.get()) : "all", schema, table);
+      info(LOGGER, "acquiring -> %s rowids for %s.%s", max.isPresent() ? getCount(max.get()) : "all", schema, table);
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
       String where = max.isPresent() ? "WHERE ROWNUM <= " + max.get() : "";
