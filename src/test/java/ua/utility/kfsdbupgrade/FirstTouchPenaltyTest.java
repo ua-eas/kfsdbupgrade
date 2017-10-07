@@ -2,12 +2,15 @@ package ua.utility.kfsdbupgrade;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -24,12 +27,16 @@ import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 
 public class FirstTouchPenaltyTest {
 
+  private static final Logger LOGGER = Logger.getLogger(FirstTouchPenaltyTest.class);
+
   @Test
   public void test() {
     try {
       Properties props = new PropertiesProvider().get();
       List<RowId> rowIds = getRowIds(props, "KRNS_MAINT_DOC_T", 100000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
+      info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
+      info(LOGGER, "blocks -> %s", getCount(blocks.size()));
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
