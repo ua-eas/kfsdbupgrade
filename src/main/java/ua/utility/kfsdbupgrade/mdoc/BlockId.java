@@ -54,4 +54,12 @@ public final class BlockId implements Comparable<BlockId> {
     return helper.toString();
   }
 
+  public long getFileNumber() {
+    return fileNumber;
+  }
+
+  public long getBlockNumber() {
+    return blockNumber;
+  }
+
 }

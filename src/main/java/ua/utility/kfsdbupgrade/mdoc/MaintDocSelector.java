@@ -67,6 +67,10 @@ public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
     return copyOf(docs);
   }
 
+  public static String asInClause(Iterable<String> iterable) {
+    return asInClause(iterable, true);
+  }
+
   public static String asInClause(Iterable<?> iterable, boolean quote) {
     List<String> list = newArrayList();
     for (Object element : iterable) {

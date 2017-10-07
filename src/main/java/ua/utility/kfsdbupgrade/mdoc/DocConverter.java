@@ -54,10 +54,10 @@ public final class DocConverter implements Provider<Long> {
             pstmt.addBatch();
             synchronized (metrics) {
               sw = metrics.getUpdate().increment(doc.getContent().length(), sw);
-              if (metrics.getUpdate().getCount().getValue() % 1000 == 0) {
+              if (metrics.getUpdate().getCount() % 1000 == 0) {
                 new ProgressProvider(metrics).get();
               }
-              if (metrics.getUpdate().getCount().getValue() % 10000 == 0) {
+              if (metrics.getUpdate().getCount() % 10000 == 0) {
                 Logging.java();
               }
             }

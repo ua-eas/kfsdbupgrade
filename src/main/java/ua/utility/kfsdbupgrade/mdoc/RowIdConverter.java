@@ -27,8 +27,7 @@ public final class RowIdConverter extends Converter<String, RowId> {
 
     RowId.Builder builder = new RowId.Builder();
     builder.withObjectId(objectId);
-    builder.withFileNumber(fileNumber);
-    builder.withBlockNumber(blockNumber);
+    builder.withBlock(new BlockId(fileNumber, blockNumber));
     builder.withRowNumber(rowNumber);
     return builder.build();
   }
@@ -42,8 +41,8 @@ public final class RowIdConverter extends Converter<String, RowId> {
     // BBBBBB is the block number
     // RRR is the row number
     String objectId = base64(b.getObjectId(), 6);
-    String fileNumber = base64(b.getFileNumber(), 3);
-    String blockNumber = base64(b.getBlockNumber(), 6);
+    String fileNumber = base64(b.getBlock().getFileNumber(), 3);
+    String blockNumber = base64(b.getBlock().getBlockNumber(), 6);
     String rowNumber = base64(b.getRowNumber(), 3);
     return Joiner.on("").join(objectId, fileNumber, blockNumber, rowNumber);
 

@@ -44,10 +44,10 @@ public final class Show implements Provider<Long> {
 
   private ImmutableList<String> getArgs(DataMetrics metrics, Stopwatch sw) {
     long elapsed = sw.elapsed(MILLISECONDS);
-    String c = getCount(checkedCast(metrics.getCount().getValue()));
-    String s = getSize(metrics.getBytes().getValue());
-    String t = getThroughputInSeconds(elapsed, metrics.getCount().getValue(), "rows/sec");
-    String r = getRate(elapsed, metrics.getBytes().getValue());
+    String c = getCount(checkedCast(metrics.getCount()));
+    String s = getSize(metrics.getBytes());
+    String t = getThroughputInSeconds(elapsed, metrics.getCount(), "rows/sec");
+    String r = getRate(elapsed, metrics.getBytes());
     return ImmutableList.of(c, s, t, r, getTime(elapsed));
   }
 

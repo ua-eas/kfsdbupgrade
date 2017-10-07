@@ -92,9 +92,9 @@ public final class DataPumper implements Provider<Long> {
       metrics.start();
       getFutures(executor, callables);
       new ProgressProvider(metrics, "finished").get();
-      info("select --> %s", getSize(metrics.getSelect().getBytes().getValue()));
-      info("update --> %s", getSize(metrics.getUpdate().getBytes().getValue()));
-      info("convert -> %s", getSize(metrics.getConvert().getBytes().getValue()));
+      info("select --> %s", getSize(metrics.getSelect().getBytes()));
+      info("update --> %s", getSize(metrics.getUpdate().getBytes()));
+      info("convert -> %s", getSize(metrics.getConvert().getBytes()));
       info("elapsed -> %s", getTime(sw));
       Logging.java();
     } catch (Throwable e) {

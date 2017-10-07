@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
@@ -48,16 +47,14 @@ public final class TouchRowsCallable implements Callable<Long> {
       RowIdConverter converter = new RowIdConverter();
       for (List<RowId> partition : partition(rows, batchSize)) {
         List<String> rowIds = transform(partition, converter.reverse());
-        String sql = String.format("SELECT %s FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")", field);
+        String sql = String.format("SELECT %s FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds) + ")", field);
         rs = stmt.executeQuery(sql);
         Stopwatch timer = createStarted();
         while (rs.next()) {
           int length = rs.getString(1).length();
-          long elapsed = timer.elapsed(MICROSECONDS);
-          timer = createStarted();
           synchronized (metrics) {
-            metrics.increment(1, length, elapsed);
-            if (metrics.getCount().getValue() % show == 0) {
+            timer = metrics.increment(1, length, timer);
+            if (metrics.getCount() % show == 0) {
               new Show(metrics, sw, "").get();
             }
           }

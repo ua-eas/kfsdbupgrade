@@ -59,9 +59,8 @@ public final class BlockIdProvider implements Provider<ImmutableMap<BlockId, Row
       ListMultimap<BlockId, RowId> mm = ArrayListMultimap.create();
       while (rs.next()) {
         String string = rs.getString(1);
-        RowId id = converter.convert(string);
-        BlockId location = new BlockId(id.getFileNumber(), id.getBlockNumber());
-        mm.put(location, id);
+        RowId row = converter.convert(string);
+        mm.put(row.getBlock(), row);
         count++;
         if (count % 100000 == 0) {
           info(LOGGER, "%s of %s [%s]", getCount(count), getCount(max.or(-1)), getTime(sw));
