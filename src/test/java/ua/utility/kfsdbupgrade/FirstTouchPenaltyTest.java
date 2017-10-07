@@ -6,6 +6,7 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class FirstTouchPenaltyTest {
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks -> %s", getCount(blocks.size()));
-      touch(props, table, "VER_NBR", blocks.values());
+      touch(props, table, VER_NBR.name(), blocks.values());
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -56,6 +57,7 @@ public class FirstTouchPenaltyTest {
     builder.withShow(size(rowIds) / 100);
     builder.withTable(table);
     builder.withProvider(provider);
+    builder.withField(field);
     RowSelector<Integer> selector = builder.build();
     return selector.get();
   }

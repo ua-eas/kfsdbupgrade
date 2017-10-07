@@ -9,6 +9,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
@@ -209,7 +210,11 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       return this;
     }
 
-    public Builder<T> withField(List<String> fields) {
+    public Builder<T> withField(String field) {
+      return withFields(asList(field));
+    }
+
+    public Builder<T> withFields(List<String> fields) {
       this.fields = fields;
       return this;
     }
