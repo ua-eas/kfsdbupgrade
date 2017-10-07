@@ -30,7 +30,7 @@ public final class Show {
         args.addAll(getArgs(current));
         args.add(getTime(timer));
         args.add(label);
-        info(LOGGER, "[%s, %s, %s, %s] [%s, %s, %s, %s] %s %s", args.toArray());
+        info(LOGGER, "[%s, %s, %s, %s, %s] [%s, %s, %s, %s, %s] %s %s", args.toArray());
       }
     }
   }
@@ -40,8 +40,9 @@ public final class Show {
     long millis = metrics.getMicroseconds() / 1000;
     args.add(getCount(checkedCast(metrics.getCount())));
     args.add(getSize(metrics.getBytes()));
-    args.add(getThroughputInSeconds(millis, metrics.getCount(), "rows/sec"));
+    args.add(getThroughputInSeconds(millis, metrics.getCount(), "r/s"));
     args.add(getRate(millis, metrics.getBytes()));
+    args.add(getTime(millis));
     return newList(args);
   }
 
