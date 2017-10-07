@@ -40,7 +40,7 @@ public final class Show {
     long millis = metrics.getMicroseconds() / 1000;
     args.add(getCount(checkedCast(metrics.getCount())));
     args.add(getSize(metrics.getBytes()));
-    args.add(getThroughputInSeconds(millis, metrics.getCount(), "r/s"));
+    args.add(getThroughputInSeconds(millis, metrics.getCount(), "rows/sec"));
     args.add(getRate(millis, metrics.getBytes()));
     args.add(getTime(millis));
     return newList(args);
