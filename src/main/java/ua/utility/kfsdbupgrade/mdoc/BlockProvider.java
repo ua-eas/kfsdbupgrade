@@ -75,8 +75,8 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
       info(LOGGER, "locations -> %s", getCount(mm.keySet().size()));
       info(LOGGER, "reduction -> %s%%", round(reduction));
       Map<BlockId, RowId> map = new LinkedHashMap<>();
-      for (BlockId location : mm.keySet()) {
-        map.put(location, mm.get(location).iterator().next());
+      for (BlockId block : mm.keySet()) {
+        map.put(block, mm.get(block).iterator().next());
       }
       return copyOf(map);
     } catch (Throwable e) {
