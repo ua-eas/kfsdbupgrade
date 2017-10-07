@@ -12,6 +12,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -52,29 +54,29 @@ public class FirstTouchPenaltyTest {
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks -> %s", getCount(blocks.size()));
-      touch(props, table, VER_NBR.name(), blocks.values());
+      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
   }
 
-  private ImmutableList<Integer> touch(Properties props, String table, String field, Iterable<RowId> iterable) {
+  private <T> ImmutableList<T> touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher) {
     List<String> rowIds = transform(iterable, converter.reverse());
     ConnectionProvider provider = new ConnectionProvider(props, false);
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
-    List<Callable<ImmutableList<Integer>>> callables = newArrayList();
+    List<Callable<ImmutableList<T>>> callables = newArrayList();
     for (List<String> distribution : distribute(rowIds, threads)) {
-      RowSelector.Builder<Integer> builder = RowSelector.builder();
-      builder.withFunction(SingleIntegerFunction.INSTANCE);
-      builder.withWeigher(IntegerWeigher.INSTANCE);
+      RowSelector.Builder<T> builder = RowSelector.builder();
+      builder.withFunction(function);
+      builder.withWeigher(weigher);
       builder.withRowIds(distribution);
       builder.withShow(rowIds.size() / 10);
       builder.withTable(table);
       builder.withProvider(provider);
       builder.withField(field);
-      RowSelector<Integer> selector = builder.build();
+      RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
     return concat(getFutures(executor, callables));
