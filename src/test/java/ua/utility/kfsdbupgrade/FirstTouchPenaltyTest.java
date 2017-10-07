@@ -11,13 +11,17 @@ import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
+import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+
+import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -64,11 +68,11 @@ public class FirstTouchPenaltyTest {
 
   private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int divisor) {
     List<String> rowIds = transform(iterable, converter.reverse());
-    ConnectionProvider provider = new ConnectionProvider(props, false);
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
     for (List<String> distribution : distribute(rowIds, threads)) {
+      Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
       RowSelector.Builder<T> builder = RowSelector.builder();
       builder.withFunction(function);
       builder.withWeigher(weigher);
