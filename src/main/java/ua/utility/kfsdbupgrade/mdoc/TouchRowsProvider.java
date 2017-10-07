@@ -59,7 +59,7 @@ public final class TouchRowsProvider implements Provider<Long> {
     DataMetrics metrics = new DataMetrics();
     for (List<RowId> distribution : distribute(rowIds, threads)) {
       Connection conn = new ConnectionProvider(props, false).get();
-      callables.add(new TouchRowsCallable(conn, batchSize, distribution, metrics, timer, field));
+      // callables.add(new TouchRowsCallable(conn, batchSize, distribution, metrics, timer, field));
     }
     Callables.getFutures(executor, callables);
     Logging.info(LOGGER, "total elapsed -> %s", getTime(sw));

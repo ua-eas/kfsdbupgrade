@@ -1,8 +1,5 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
-import static com.google.common.base.Optional.of;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
@@ -28,29 +25,6 @@ import com.google.common.collect.ImmutableList;
 public final class StringProvider implements Provider<ImmutableList<String>> {
 
   private static final Logger LOGGER = getLogger(StringProvider.class);
-
-  public StringProvider(Provider<Connection> provider) {
-    this(provider, Optional.<Integer>absent());
-  }
-
-  public StringProvider(Provider<Connection> provider, int max) {
-    this(provider, of(max), "ROWID");
-  }
-
-  public StringProvider(Provider<Connection> provider, int max, String field) {
-    this(provider, of(max), field);
-  }
-
-  public StringProvider(Provider<Connection> provider, Optional<Integer> max) {
-    this(provider, max, "ROWID");
-  }
-
-  public StringProvider(Provider<Connection> provider, Optional<Integer> max, String field) {
-    checkArgument(max.isPresent() ? max.get() > 0 : true, "max must be greater than zero");
-    this.provider = checkNotNull(provider);
-    this.max = max;
-    this.field = field.toUpperCase();
-  }
 
   private final Provider<Connection> provider;
   private final Optional<Integer> max;

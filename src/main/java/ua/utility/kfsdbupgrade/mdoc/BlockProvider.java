@@ -46,11 +46,11 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      info(LOGGER, "acquiring -> %s rowids for %s.%s", max.isPresent() ? getCount(max.get()) : "all", schema, table);
+      String from = schema.isPresent() ? schema.get() + "." + table : table;
+      info(LOGGER, "acquiring -> %s rowids for %s", max.isPresent() ? getCount(max.get()) : "all", from);
       Stopwatch sw = createStarted();
       stmt = provider.get().createStatement();
       String where = max.isPresent() ? "WHERE ROWNUM <= " + max.get() : "";
-      String from = schema.isPresent() ? schema.get() + "." + table : table;
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s %s", from.toUpperCase(), where).trim());
       int count = 0;
       ListMultimap<BlockId, RowId> mm = ArrayListMultimap.create();
@@ -72,7 +72,7 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
       info(LOGGER, "rows -------> %s", getCount(rows));
       info(LOGGER, "blocks -----> %s", getCount(blocks));
       info(LOGGER, "reduction --> %s%%", round(reduction));
-      info(LOGGER, "rows/block -> %s%%", getCount(rows / blocks));
+      info(LOGGER, "rows/block -> %s", getCount(rows / blocks));
       Map<BlockId, RowId> map = new LinkedHashMap<>();
       for (BlockId block : mm.keySet()) {
         map.put(block, mm.get(block).iterator().next());
@@ -128,9 +128,17 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
       return this;
     }
 
+    public Builder withMax(int max) {
+      return withMax(of(max));
+    }
+
     public Builder withShow(Optional<Integer> show) {
       this.show = show;
       return this;
+    }
+
+    public Builder withShow(int show) {
+      return withShow(of(show));
     }
 
     public BlockProvider build() {
@@ -139,8 +147,8 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
 
     private static BlockProvider validate(BlockProvider instance) {
       checkNotNull(instance.provider, "provider may not be null");
-      checkNotNull(instance.schema, "schema may not be blank");
-      checkNotNull(instance.table, "table may not be blank");
+      checkNotNull(instance.schema, "schema may not be null");
+      checkNotNull(instance.table, "table may not be null");
       checkNotNull(instance.max, "max may not be null");
       checkNotNull(instance.show, "show may not be null");
       checkNotNull(instance.converter, "converter may not be null");

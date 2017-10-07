@@ -36,18 +36,23 @@ public final class ConnectionProvider implements Provider<Connection> {
     try {
       String username = checkedValue(props, "database-user");
       String password = checkedValue(props, "database-password");
-      String name = checkedValue(props, "db.name");
-      String fragment = checkedValue(props, "db.fragment");
-      String port = props.getProperty("db.port", "1521");
-      String sid = props.getProperty("db.sid", name);
-      String formatted = format("jdbc:oracle:thin:@%s.%s:%s:%s", name.toLowerCase(), fragment, port, sid.toUpperCase());
-      String url = props.getProperty("db.url", formatted);
-      info("connecting to --> %s as %s", url, username);
+      String url;
+      if (!props.containsKey("db.url")) {
+        String name = checkedValue(props, "db.name");
+        String fragment = checkedValue(props, "db.fragment");
+        String port = props.getProperty("db.port", "1521");
+        String sid = props.getProperty("db.sid", name);
+        String formatted = format("jdbc:oracle:thin:@%s.%s:%s:%s", name.toLowerCase(), fragment, port, sid.toUpperCase());
+        url = formatted;
+      } else {
+        url = props.getProperty("db.url");
+      }
+      info("connecting to --> %s as '%s'", url, username);
       Class.forName(checkedValue(props, "database-driver"));
       Stopwatch sw = createStarted();
       connection = getConnection(url, username, password);
       connection.setAutoCommit(autoCommit);
-      info("connected to ---> %s as %s [%s]", url, username, getTime(sw));
+      info("connected to ---> %s as '%s' [%s]", url, username, getTime(sw));
       return connection;
     } catch (Throwable e) {
       closeQuietly(connection);
