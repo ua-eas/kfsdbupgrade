@@ -7,6 +7,7 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
@@ -14,8 +15,10 @@ import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -64,11 +67,29 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(select.intValue()));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
+      addDocumentContentIndex(props);
       touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 250);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
+  }
+
+  private void addDocumentContentIndex(Properties props) throws IOException {
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      conn = new ConnectionProvider(props, true).get();
+      stmt = conn.createStatement();
+      info(LOGGER, "adding clob index for krns_maint_doc_t.doc_cntnt");
+      stmt.execute("ALTER TABLE KRNS_MAINT_DOC_T MODIFY LOB (DOC_CNTNT) (CACHE)");
+    } catch (Throwable e) {
+      throw new IOException(e);
+    } finally {
+      closeQuietly(stmt);
+      closeQuietly(conn);
+    }
+
   }
 
   private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int divisor) {
