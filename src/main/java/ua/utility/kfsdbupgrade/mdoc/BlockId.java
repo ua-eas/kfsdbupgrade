@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.hash;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -9,6 +10,8 @@ import com.google.common.collect.ComparisonChain;
 public final class BlockId implements Comparable<BlockId> {
 
   public BlockId(long fileNumber, long blockNumber) {
+    checkArgument(fileNumber >= 0, "fileNumber cannot be negative");
+    checkArgument(blockNumber >= 0, "blockNumber cannot be negative");
     this.fileNumber = fileNumber;
     this.blockNumber = blockNumber;
     this.hash = hash(fileNumber, blockNumber);

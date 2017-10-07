@@ -35,13 +35,13 @@ public final class ProgressProvider implements Provider<Long> {
   private final Optional<String> label;
 
   public Long get() {
-    int count = checkedCast(metrics.getUpdate().getCount().getValue());
+    int count = checkedCast(metrics.getUpdate().getCount());
     long elapsed = metrics.elapsed();
     String dps = getThroughputInSeconds(elapsed, count, "docs/second");
-    String select = getTime(metrics.getSelect().getElapsed().getValue());
-    String update = getTime(metrics.getUpdate().getElapsed().getValue());
-    String convert = getTime(metrics.getConvert().getElapsed().getValue());
-    String rate = getRate(elapsed, metrics.getSelect().getBytes().getValue() + metrics.getUpdate().getBytes().getValue());
+    String select = getTime(metrics.getSelect().getElapsed());
+    String update = getTime(metrics.getUpdate().getElapsed());
+    String convert = getTime(metrics.getConvert().getElapsed());
+    String rate = getRate(elapsed, metrics.getSelect().getBytes() + metrics.getUpdate().getBytes());
     info("%s %s %s, %s [s:%s u:%s c:%s] %s", getCount(count), getTime(elapsed), dps, rate, select, update, convert, label.or(""));
     return 0L;
   }

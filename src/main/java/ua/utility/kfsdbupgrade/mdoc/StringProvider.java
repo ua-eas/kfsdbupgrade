@@ -66,12 +66,10 @@ public final class StringProvider implements Provider<ImmutableList<String>> {
       info(LOGGER, "field:%s count:%s", field, max.isPresent() ? max.get() : "all");
       conn = provider.get();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery(format("SELECT %s FROM KRNS_MAINT_DOC_T", field));
+      String where = max.isPresent() ? " WHERE ROWNUM <= " + max.get() : "";
+      rs = stmt.executeQuery(format("SELECT %s FROM KRNS_MAINT_DOC_T" + where, field));
       while (rs.next()) {
         list.add(rs.getString(1));
-        if (max.isPresent() && list.size() >= max.get()) {
-          break;
-        }
       }
       info(LOGGER, "field:%s count:%s [%s]", field, max.isPresent() ? max.get() : "all", getTime(sw));
     } catch (Throwable e) {

@@ -17,16 +17,16 @@ public final class DataMetrics {
   private final Counter bytes;
   private final Counter elapsed;
 
-  public Counter getCount() {
-    return count;
+  public synchronized long getCount() {
+    return count.getValue();
   }
 
-  public Counter getBytes() {
-    return bytes;
+  public synchronized long getBytes() {
+    return bytes.getValue();
   }
 
-  public Counter getElapsed() {
-    return elapsed;
+  public synchronized long getElapsed() {
+    return elapsed.getValue() / 1000;
   }
 
   public synchronized Stopwatch elapsed(Stopwatch sw) {

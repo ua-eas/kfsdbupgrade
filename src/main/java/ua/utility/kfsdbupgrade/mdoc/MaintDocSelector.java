@@ -52,7 +52,7 @@ public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
         docs.add(MaintDoc.build(headerId, content));
         synchronized (metrics) {
           sw = metrics.getSelect().increment(headerId.length() + content.length(), sw);
-          int selected = checkedCast(metrics.getSelect().getCount().getValue());
+          int selected = checkedCast(metrics.getSelect().getCount());
           if (selected % 1000 == 0) {
 
           }
