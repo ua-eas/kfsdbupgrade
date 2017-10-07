@@ -11,7 +11,7 @@ public class FirstTouchPenaltyTest {
   private static final Logger LOGGER = getLogger(FirstTouchPenaltyTest.class);
 
   @Test
-  private void test() {
+  public void test() {
     try {
       info(LOGGER, "hello world");
     } catch (Throwable e) {
