@@ -70,9 +70,9 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(select.intValue()));
-      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
+      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       addDocumentContentIndex(props);
-      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 250);
+      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 2500);
       computeStats(props);
     } catch (Throwable e) {
       e.printStackTrace();
@@ -115,7 +115,7 @@ public class FirstTouchPenaltyTest {
 
   }
 
-  private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int divisor) {
+  private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
@@ -128,7 +128,7 @@ public class FirstTouchPenaltyTest {
       builder.withFunction(function);
       builder.withWeigher(weigher);
       builder.withRowIds(distribution);
-      builder.withShow(rowIds.size() / divisor);
+      builder.withShow(show);
       builder.withTable(table);
       builder.withProvider(provider);
       builder.withField(field);
