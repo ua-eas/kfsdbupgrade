@@ -41,6 +41,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final DataMetrics overall;
   private final DataMetrics current;
   private final Stopwatch timer;
+  private final Stopwatch last;
   private final Optional<String> schema;
   private final String table;
   private final ImmutableList<String> fields;
@@ -69,7 +70,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show(overall, current, timer, "done");
+      show(overall, current, timer, last, "done");
       closeQuietly(rs);
       closeQuietly(stmt);
       closeQuietly(conn);
@@ -129,8 +130,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
         this.overall.increment(1, weight, micros);
         this.current.increment(1, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
-          show(overall, current, timer, "");
+          show(overall, current, timer, last, "");
           this.current.reset();
+          this.last.reset();
         }
       }
     }
@@ -152,6 +154,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.max = builder.max;
     this.discard = builder.discard;
     this.current = builder.current;
+    this.last = builder.last;
   }
 
   public static <T> Builder<T> builder() {
@@ -174,6 +177,12 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
     private boolean discard;
+    private Stopwatch last;
+
+    public Builder<T> withLast(Stopwatch last) {
+      this.last = last;
+      return this;
+    }
 
     public Builder<T> withCurrent(DataMetrics current) {
       this.current = current;
