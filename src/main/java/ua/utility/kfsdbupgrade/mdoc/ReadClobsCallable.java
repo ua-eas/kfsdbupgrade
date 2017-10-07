@@ -52,7 +52,7 @@ public final class ReadClobsCallable implements Callable<Long> {
     ResultSet rs = null;
     try {
       stmt = conn.createStatement();
-      RowIdConverter converter = new RowIdConverter();
+      RowIdConverter converter = RowIdConverter.getInstance();
       for (List<RowId> partition : partition(rows, batchSize)) {
         List<String> rowIds = transform(partition, converter.reverse());
         String sql = "SELECT DOC_CONTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (" + asInClause(rowIds, true) + ")";

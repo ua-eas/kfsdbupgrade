@@ -67,7 +67,7 @@ public final class TouchRowsProvider implements Provider<Long> {
   }
 
   private ImmutableList<RowId> getRowIds(boolean blocks, Optional<Integer> max) {
-    RowIdConverter converter = new RowIdConverter();
+    RowIdConverter converter = RowIdConverter.getInstance();
     if (blocks) {
       // Map<BlockId, RowId> locations = null;
       return null; // copyOf(locations.values());
