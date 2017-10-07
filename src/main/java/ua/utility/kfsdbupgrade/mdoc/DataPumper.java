@@ -63,9 +63,9 @@ public final class DataPumper implements Provider<Long> {
       boolean update = parseBoolean(props.getProperty("mdoc.update"));
       MDocMetrics metrics = new MDocMetrics();
       ConnectionProvider provider = new ConnectionProvider(props, false);
-      Optional<Integer> max = getInteger(props, "mdoc.metrics.max");
+      // Optional<Integer> max = null;// getInteger(props, "mdoc.metrics.max");
       String field = props.getProperty("mdoc.field", "ROWID");
-      List<String> ids = new StringProvider(provider, max, field).get();
+      List<String> ids = null; // new StringProvider(provider, max, field).get();
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService converter = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       EncryptionService encryptor = new EncryptionService(props.getProperty("encryption-key"));

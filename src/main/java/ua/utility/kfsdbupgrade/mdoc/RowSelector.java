@@ -109,8 +109,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     while (rs.next()) {
       T instance = function.apply(rs);
       long weight = weigher.apply(instance);
-      sw = increment(metrics, weight, sw);
       list.add(instance);
+      sw = increment(metrics, weight, sw);
     }
     return newList(list);
   }

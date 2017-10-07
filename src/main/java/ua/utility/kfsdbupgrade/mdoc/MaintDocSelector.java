@@ -6,7 +6,6 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.String.format;
-import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 
 import java.sql.Connection;
@@ -16,15 +15,11 @@ import java.util.List;
 
 import javax.inject.Provider;
 
-import org.apache.log4j.Logger;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 public class MaintDocSelector implements Provider<ImmutableList<MaintDoc>> {
-
-  private static final Logger LOGGER = getLogger(MaintDocSelector.class);
 
   public MaintDocSelector(Connection conn, Iterable<String> headerIds, MDocMetrics metrics, String field) {
     this.conn = checkNotNull(conn);
