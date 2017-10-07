@@ -62,8 +62,8 @@ public class FirstTouchPenaltyTest {
   @Test
   public void test() {
     try {
-      String table = "KRNS_MAINT_DOC_T";
       Properties props = new PropertiesProvider().get();
+      String table = props.getProperty("db.table", "KRNS_MAINT_DOC_T");
       List<RowId> rowIds = getRowIds(props, table, 50000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       Double select = ((blocks.size() * 1d) / rowIds.size() * 100);
