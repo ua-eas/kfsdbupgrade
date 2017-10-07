@@ -1,14 +1,17 @@
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
@@ -70,9 +73,28 @@ public class FirstTouchPenaltyTest {
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
       addDocumentContentIndex(props);
       touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 250);
+      computeStats(props);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
+    }
+  }
+
+  public void computeStats(Properties props) throws IOException {
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      Stopwatch sw = createStarted();
+      info(LOGGER, "compute statistics for krns_maint_doc_t.doc_cntnt");
+      conn = new ConnectionProvider(props, true).get();
+      stmt = conn.createStatement();
+      stmt.execute(format("ANALYZE TABLE KRNS_MAINT_DOC_T COMPUTE STATISTICS"));
+      info(LOGGER, "finished computing statistics [%s]", getTime(sw));
+    } catch (Throwable e) {
+      throw new IOException(e);
+    } finally {
+      closeQuietly(stmt);
+      closeQuietly(conn);
     }
   }
 
