@@ -11,9 +11,9 @@ import java.sql.SQLException;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 
-public final class AddDoToBachFunction implements Function<MaintDoc, Long> {
+public final class AddDocToBatchFunction implements Function<MaintDoc, Long> {
 
-  public AddDoToBachFunction(PreparedStatement pstmt) {
+  public AddDocToBatchFunction(PreparedStatement pstmt) {
     this.pstmt = checkNotNull(pstmt);
   }
 
