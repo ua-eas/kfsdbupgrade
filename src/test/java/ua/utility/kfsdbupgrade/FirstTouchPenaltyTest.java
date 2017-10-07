@@ -63,7 +63,7 @@ public class FirstTouchPenaltyTest {
   public void test() {
     try {
       Properties props = new PropertiesProvider().get();
-      String table = props.getProperty("db.table", "KRNS_MAINT_DOC_T");
+      String table = "KRNS_MAINT_DOC_T";
       List<RowId> rowIds = getRowIds(props, table, 50000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       Double select = ((blocks.size() * 1d) / rowIds.size() * 100);
@@ -73,23 +73,23 @@ public class FirstTouchPenaltyTest {
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
       touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
-      computeStats(props);
+      computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
   }
 
-  public void computeStats(Properties props) throws IOException {
+  public void computeStats(Properties props, String table) throws IOException {
     Connection conn = null;
     Statement stmt = null;
     try {
       Stopwatch sw = createStarted();
-      info(LOGGER, "compute statistics for krns_maint_doc_t.doc_cntnt");
+      info(LOGGER, "compute statistics for %s", table);
       conn = new ConnectionProvider(props, true).get();
       stmt = conn.createStatement();
-      stmt.execute(format("ANALYZE TABLE KRNS_MAINT_DOC_T COMPUTE STATISTICS"));
-      info(LOGGER, "finished computing statistics for krns_maint_doc_t.doc_cntnt [%s]", getTime(sw));
+      stmt.execute(format("ANALYZE TABLE %s COMPUTE STATISTICS", table.toUpperCase()));
+      info(LOGGER, "finished computing statistics for %s [%s]", table, getTime(sw));
     } catch (Throwable e) {
       throw new IOException(e);
     } finally {

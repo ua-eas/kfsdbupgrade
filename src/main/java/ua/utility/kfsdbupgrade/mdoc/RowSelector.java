@@ -10,6 +10,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
@@ -109,25 +110,30 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private ImmutableList<T> doResultSet(ResultSet rs) throws SQLException {
     Stopwatch sw = createStarted();
     List<T> list = newArrayList();
+    DataMetrics current = new DataMetrics();
     while (rs.next()) {
       T instance = function.apply(rs);
       long weight = weigher.apply(instance);
       if (!discard) {
         list.add(instance);
       }
-      sw = increment(metrics, weight, sw);
+      long micros = sw.elapsed(MICROSECONDS);
+      current.increment(1, weight, micros);
+      current = increment(metrics, current, weight, micros);
+      sw = createStarted();
     }
     return newList(list);
   }
 
-  private Stopwatch increment(DataMetrics metrics, long weight, Stopwatch sw) {
-    synchronized (metrics) {
-      metrics.increment(1, weight, sw);
-      if (show.isPresent() && metrics.getCount() % show.get() == 0) {
-        show(metrics, timer, "");
+  private DataMetrics increment(DataMetrics overall, DataMetrics current, long weight, long micros) {
+    synchronized (overall) {
+      overall.increment(1, weight, micros);
+      if (show.isPresent() && overall.getCount() % show.get() == 0) {
+        show(overall, timer, "");
+        return new DataMetrics();
       }
     }
-    return createStarted();
+    return current;
   }
 
   private RowSelector(Builder<T> builder) {
