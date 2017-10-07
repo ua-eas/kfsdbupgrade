@@ -8,6 +8,7 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
 import java.sql.Connection;
@@ -62,7 +63,8 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
         mm.put(rowId.getBlock(), rowId);
         count++;
         if (show.isPresent() && count % show.get() == 0) {
-          info(LOGGER, "%s of %s [%s]", getCount(count), max.isPresent() ? getCount(max.get()) : "?", getTime(sw));
+          String throughput = getThroughputInSeconds(sw, count, "rows/second");
+          info(LOGGER, "%s of %s [%s] %s", getCount(count), max.isPresent() ? getCount(max.get()) : "?", getTime(sw), throughput);
         }
       }
       int rows = mm.size();
@@ -73,7 +75,7 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
       info(LOGGER, "rows -------> %s", getCount(rows));
       info(LOGGER, "blocks -----> %s", getCount(blocks));
       info(LOGGER, "reduction --> %s%%", round(reduction));
-      info(LOGGER, "blocks/row -> %s%%", getCount(blocks / rows));
+      info(LOGGER, "rows/block -> %s%%", getCount(rows / blocks));
       Map<BlockId, RowId> map = new LinkedHashMap<>();
       for (BlockId block : mm.keySet()) {
         map.put(block, mm.get(block).iterator().next());
