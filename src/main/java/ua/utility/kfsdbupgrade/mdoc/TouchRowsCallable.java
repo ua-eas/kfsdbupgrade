@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
+import static java.lang.Integer.parseInt;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
@@ -35,7 +36,7 @@ public final class TouchRowsCallable implements Callable<Long> {
   private final DataMetrics metrics;
   private final Stopwatch sw;
   private final MaintDocField field;
-  private final int show = Integer.parseInt(System.getProperty("mdoc.show", "1000"));
+  private final int show = parseInt(System.getProperty("mdoc.show", "1000"));
 
   @Override
   public Long call() {
