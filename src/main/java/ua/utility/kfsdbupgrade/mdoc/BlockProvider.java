@@ -62,7 +62,7 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
         RowId rowId = converter.convert(string);
         mm.put(rowId.getBlock(), rowId);
         count++;
-        if (show.isPresent() && count % show.get() == 0) {
+        if (show.isPresent() && (count % show.get()) == 0) {
           String throughput = getThroughputInSeconds(sw, count, "rows/second");
           info(LOGGER, "%s of %s [%s] %s", getCount(count), max.isPresent() ? getCount(max.get()) : "?", getTime(sw), throughput);
         }
