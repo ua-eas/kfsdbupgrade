@@ -39,7 +39,7 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
   private final String table;
   private final Optional<Integer> max;
   private final Optional<Integer> show;
-  private final RowIdConverter converter = new RowIdConverter();
+  private final RowIdConverter converter = RowIdConverter.getInstance();
 
   public ImmutableMap<BlockId, RowId> get() {
     Connection conn = null;
