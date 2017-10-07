@@ -177,7 +177,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
     private boolean discard;
-    private Stopwatch last;
+    private Stopwatch last = createUnstarted();
 
     public Builder<T> withLast(Stopwatch last) {
       this.last = last;
