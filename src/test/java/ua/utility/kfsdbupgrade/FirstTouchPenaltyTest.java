@@ -2,7 +2,6 @@ package ua.utility.kfsdbupgrade;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static java.lang.Integer.parseInt;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class FirstTouchPenaltyTest {
   public void test() {
     try {
       Properties props = new PropertiesProvider().get();
-      List<RowId> rowIds = getRowIds(props, "KRNS_MAINT_DOC_T");
+      List<RowId> rowIds = getRowIds(props, "KRNS_MAINT_DOC_T", 100000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
     } catch (Throwable e) {
       e.printStackTrace();
@@ -45,15 +44,12 @@ public class FirstTouchPenaltyTest {
     return copyOf(map);
   }
 
-  private ImmutableList<RowId> getRowIds(Properties props, String table) {
+  private ImmutableList<RowId> getRowIds(Properties props, String table, int show) {
     RowIdConverter converter = RowIdConverter.getInstance();
     ConnectionProvider provider = new ConnectionProvider(props, false);
-    int max = parseInt(props.getProperty("rows.max"));
-    int show = parseInt(props.getProperty("rows.show", max / 10 + ""));
     RowSelector.Builder<String> builder = RowSelector.builder();
     builder.withFunction(SingleStringFunction.INSTANCE);
     builder.withWeigher(StringWeigher.INSTANCE);
-    builder.withMax(max);
     builder.withShow(show);
     builder.withTable(table);
     builder.withProvider(provider);
