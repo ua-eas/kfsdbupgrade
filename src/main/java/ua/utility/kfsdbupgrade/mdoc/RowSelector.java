@@ -2,6 +2,7 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
@@ -10,6 +11,7 @@ import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
+import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
@@ -62,9 +64,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      synchronized (metrics) {
-        new Show(metrics, timer, "done").get();
-      }
+      show(metrics, timer, "done");
       closeQuietly(rs);
       closeQuietly(stmt);
       closeQuietly(conn);
@@ -74,7 +74,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private ImmutableList<T> doSelect(Statement stmt, String select, String from) throws IOException {
     ResultSet rs = null;
     try {
-      String where = max.isPresent() ? "ROWNUM <= " + max.get() : "";
+      String where = max.isPresent() ? "WHERE ROWNUM <= " + max.get() : "";
       String sql = format("SELECT %s FROM %s %s", select, from, where).trim();
       rs = stmt.executeQuery(sql);
       return doResultSet(rs);
@@ -119,7 +119,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     synchronized (metrics) {
       metrics.increment(1, weight, sw);
       if (show.isPresent() && metrics.getCount() % show.get() == 0) {
-        new Show(metrics, timer, "").get();
+        show(metrics, timer, "");
       }
     }
     return createStarted();
@@ -143,13 +143,13 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   public static class Builder<T> {
 
     private Provider<Connection> provider;
-    private int batchSize;
-    private List<String> rowIds;
+    private int batchSize = 75;
+    private List<String> rowIds = newArrayList();
     private DataMetrics metrics;
     private Stopwatch timer;
     private Optional<String> schema = absent();
     private String table;
-    private List<String> fields;
+    private List<String> fields = newArrayList("ROWID");
     private Optional<Integer> max = absent();
     private Optional<Integer> show = absent();
     private Function<ResultSet, T> function;
@@ -224,7 +224,15 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     }
 
     public RowSelector<T> build() {
-      return checkNoBlanks(new RowSelector<T>(this));
+      return validate(new RowSelector<T>(this));
+    }
+
+    private static <T> RowSelector<T> validate(RowSelector<T> instance) {
+      checkNoBlanks(instance);
+      if (instance.rowIds.size() > 0) {
+        checkArgument(!instance.max.isPresent(), "max is ignored when row ids are supplied");
+      }
+      return instance;
     }
 
   }

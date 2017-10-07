@@ -7,6 +7,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
+import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 
 import java.sql.Connection;
@@ -53,13 +54,13 @@ public final class TouchRowsCallable implements Callable<Long> {
           synchronized (metrics) {
             timer = metrics.increment(1, length, timer);
             if (show.isPresent() && metrics.getCount() % show.get() == 0) {
-              new Show(metrics, sw, "").get();
+              show(metrics, sw, "");
             }
           }
         }
       }
       synchronized (metrics) {
-        new Show(metrics, sw, "done").get();
+        show(metrics, sw, "done");
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);

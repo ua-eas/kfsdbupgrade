@@ -72,7 +72,7 @@ public final class TouchRowsProvider implements Provider<Long> {
       // Map<BlockId, RowId> locations = null;
       return null; // copyOf(locations.values());
     } else {
-      List<String> strings = new StringProvider(new ConnectionProvider(props, false), max, "rowid").get();
+      List<String> strings = null; // new StringProvider(new ConnectionProvider(props, false), max, "rowid").get();
       return transform(strings, converter);
     }
   }

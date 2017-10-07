@@ -26,9 +26,9 @@ public final class StringProvider implements Provider<ImmutableList<String>> {
 
   private static final Logger LOGGER = getLogger(StringProvider.class);
 
-  private final Provider<Connection> provider;
-  private final Optional<Integer> max;
-  private final String field;
+  private Provider<Connection> provider;
+  private Optional<Integer> max;
+  private String field;
 
   public ImmutableList<String> get() {
     List<String> list = newArrayList();
