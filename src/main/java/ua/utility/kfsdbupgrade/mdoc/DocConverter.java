@@ -50,7 +50,7 @@ public final class DocConverter implements Provider<Long> {
           int batched = 0;
           for (MaintDoc doc : converted) {
             pstmt.setString(1, doc.getContent());
-            pstmt.setString(2, doc.getDocHeaderId());
+            pstmt.setString(2, doc.getId());
             pstmt.addBatch();
             synchronized (metrics) {
               sw = metrics.getUpdate().increment(doc.getContent().length(), sw);

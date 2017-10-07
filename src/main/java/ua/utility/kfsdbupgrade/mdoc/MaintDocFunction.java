@@ -22,7 +22,7 @@ public final class MaintDocFunction implements Function<MaintDoc, ConversionResu
       String decrypted = encryptor.isEnabled() ? encryptor.decrypt(input.getContent()) : input.getContent();
       String converted = converter.transformMaintainableXML(decrypted);
       String encrypted = encryptor.isEnabled() ? encryptor.encrypt(converted) : converted;
-      return new ConversionResult(input, MaintDoc.build(input.getDocHeaderId(), encrypted));
+      return new ConversionResult(input, MaintDoc.build(input.getId(), encrypted));
     } catch (Throwable e) {
       return new ConversionResult(input, e);
     }

@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonDeserialize(builder = MaintDoc.Builder.class)
 public final class MaintDoc {
 
-  private final String docHeaderId;
+  private final String id;
   private final String content;
 
-  public String getDocHeaderId() {
-    return docHeaderId;
+  public String getId() {
+    return id;
   }
 
   public String getContent() {
@@ -20,21 +20,21 @@ public final class MaintDoc {
   }
 
   private MaintDoc(Builder builder) {
-    this.docHeaderId = builder.docHeaderId;
+    this.id = builder.id;
     this.content = builder.content;
   }
 
-  public static MaintDoc build(String docHeaderId, String content) {
-    return new Builder().withDocHeaderId(docHeaderId).withContent(content).build();
+  public static MaintDoc build(String id, String content) {
+    return new Builder().withId(id).withContent(content).build();
   }
 
   public static class Builder {
 
-    private String docHeaderId;
+    private String id;
     private String content;
 
-    public Builder withDocHeaderId(String docHeaderId) {
-      this.docHeaderId = docHeaderId;
+    public Builder withId(String id) {
+      this.id = id;
       return this;
     }
 
@@ -48,7 +48,7 @@ public final class MaintDoc {
     }
 
     private static MaintDoc validate(MaintDoc instance) {
-      checkArgument(isNotBlank(instance.docHeaderId), "docHeaderId may not be blank");
+      checkArgument(isNotBlank(instance.id), "id may not be blank");
       checkArgument(isNotBlank(instance.content), "content may not be blank");
       return instance;
     }

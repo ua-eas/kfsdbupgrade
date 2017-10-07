@@ -122,7 +122,7 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
       if (result.getNewDocument().isPresent()) {
         MaintDoc doc = result.getNewDocument().get();
         pstmt.setString(1, doc.getContent());
-        pstmt.setString(2, doc.getDocHeaderId());
+        pstmt.setString(2, doc.getId());
         pstmt.addBatch();
         batched++;
       }
@@ -137,7 +137,7 @@ public final class MaintDocConverter implements Provider<MaintDocResult> {
       if (result.getException().isPresent()) {
         MaintDoc doc = result.getOldDocument();
         Throwable e = result.getException().get();
-        LOGGER.error("error converting document " + doc.getDocHeaderId(), e);
+        LOGGER.error("error converting document " + doc.getId(), e);
         errors++;
       }
     }

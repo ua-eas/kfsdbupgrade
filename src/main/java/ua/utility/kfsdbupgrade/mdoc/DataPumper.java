@@ -134,9 +134,9 @@ public final class DataPumper implements Provider<Long> {
         String decrypted = encryptor.decrypt(input.getContent());
         String converted = converter.transformMaintainableXML(decrypted);
         String encrypted = encryptor.encrypt(converted);
-        return MaintDoc.build(input.getDocHeaderId(), encrypted);
+        return MaintDoc.build(input.getId(), encrypted);
       } catch (Throwable e) {
-        LOGGER.error("error converting -> " + input.getDocHeaderId(), e);
+        LOGGER.error("error converting -> " + input.getId(), e);
       }
       return input;
     }
@@ -147,7 +147,7 @@ public final class DataPumper implements Provider<Long> {
     INSTANCE;
 
     public MaintDoc apply(MaintDoc input) {
-      return MaintDoc.build(input.getDocHeaderId(), reverse(input.getContent()));
+      return MaintDoc.build(input.getId(), reverse(input.getContent()));
     }
   }
 
@@ -157,7 +157,7 @@ public final class DataPumper implements Provider<Long> {
     public MaintDoc apply(MaintDoc input) {
       char[] chars = input.getContent().toCharArray();
       String content = new String(shuffle(chars));
-      return MaintDoc.build(input.getDocHeaderId(), content);
+      return MaintDoc.build(input.getId(), content);
     }
 
     private char[] shuffle(char[] chars) {
@@ -179,7 +179,7 @@ public final class DataPumper implements Provider<Long> {
       byte[] bytes = new byte[20 * 1024];
       ThreadLocalRandom.current().nextBytes(bytes);
       String content = new String(bytes, UTF_8);
-      return MaintDoc.build(input.getDocHeaderId(), content);
+      return MaintDoc.build(input.getId(), content);
     }
 
   }

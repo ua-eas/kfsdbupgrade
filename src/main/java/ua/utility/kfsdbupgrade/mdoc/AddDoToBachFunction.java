@@ -11,9 +11,9 @@ import java.sql.SQLException;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 
-public final class AddDocFunction implements Function<MaintDoc, Long> {
+public final class AddDoToBachFunction implements Function<MaintDoc, Long> {
 
-  public AddDocFunction(PreparedStatement pstmt) {
+  public AddDoToBachFunction(PreparedStatement pstmt) {
     this.pstmt = checkNotNull(pstmt);
   }
 
@@ -24,7 +24,7 @@ public final class AddDocFunction implements Function<MaintDoc, Long> {
     Stopwatch sw = createStarted();
     try {
       pstmt.setString(1, input.getContent());
-      pstmt.setString(2, input.getDocHeaderId());
+      pstmt.setString(2, input.getId());
       pstmt.addBatch();
     } catch (SQLException e) {
       throw illegalState(e);
