@@ -55,7 +55,7 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks -> %s", getCount(blocks.size()));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
-      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 100);
+      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
