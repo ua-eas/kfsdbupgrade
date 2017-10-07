@@ -4,7 +4,6 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
-import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -19,7 +18,6 @@ import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.asMaintDocField;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
@@ -71,8 +69,8 @@ public final class TouchRowsProvider implements Provider<Long> {
   private ImmutableList<RowId> getRowIds(boolean blocks, Optional<Integer> max) {
     RowIdConverter converter = new RowIdConverter();
     if (blocks) {
-      Map<BlockId, RowId> locations = new BlockProvider(props).get();
-      return copyOf(locations.values());
+      // Map<BlockId, RowId> locations = null;
+      return null; // copyOf(locations.values());
     } else {
       List<String> strings = new StringProvider(new ConnectionProvider(props, false), max, "rowid").get();
       return transform(strings, converter);
