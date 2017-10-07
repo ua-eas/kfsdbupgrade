@@ -72,7 +72,7 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(select.intValue()));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 3000);
+      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 2500);
       computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
