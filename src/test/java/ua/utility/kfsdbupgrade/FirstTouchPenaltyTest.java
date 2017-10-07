@@ -120,7 +120,8 @@ public class FirstTouchPenaltyTest {
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
-    DataMetrics metrics = new DataMetrics();
+    DataMetrics overall = new DataMetrics();
+    DataMetrics current = new DataMetrics();
     Stopwatch timer = createUnstarted();
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
@@ -133,7 +134,8 @@ public class FirstTouchPenaltyTest {
       builder.withProvider(provider);
       builder.withField(field);
       builder.withDiscard(true);
-      builder.withMetrics(metrics);
+      builder.withOverall(overall);
+      builder.withCurrent(current);
       builder.withTimer(timer);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
