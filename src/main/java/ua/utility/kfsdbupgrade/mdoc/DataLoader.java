@@ -13,6 +13,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
@@ -67,7 +68,7 @@ public class DataLoader {
       Stopwatch futures = createStarted();
       getFutures(executor, callables);
       String rate = getRate(futures.elapsed(MILLISECONDS), bytes.getValue());
-      String size = Formats.getSize(bytes.getValue());
+      String size = getSize(bytes.getValue());
       info("inserted ----> %s documents in %s [%s %s %s]", getCount(rows), getTime(sw), getThroughputInSeconds(sw, rows, "docs/second"), rate, size);
       info("elapsed -----> %s", getTime(overall));
     } catch (Throwable e) {

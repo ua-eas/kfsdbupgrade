@@ -6,9 +6,9 @@ import static java.util.Objects.hash;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ComparisonChain;
 
-public final class DiskLocation implements Comparable<DiskLocation> {
+public final class BlockId implements Comparable<BlockId> {
 
-  public DiskLocation(long fileNumber, long blockNumber) {
+  public BlockId(long fileNumber, long blockNumber) {
     this.fileNumber = fileNumber;
     this.blockNumber = blockNumber;
     this.hash = hash(fileNumber, blockNumber);
@@ -19,7 +19,7 @@ public final class DiskLocation implements Comparable<DiskLocation> {
   private final int hash;
 
   @Override
-  public int compareTo(DiskLocation other) {
+  public int compareTo(BlockId other) {
     ComparisonChain chain = ComparisonChain.start();
     chain = chain.compare(fileNumber, other.fileNumber);
     chain = chain.compare(blockNumber, other.blockNumber);
@@ -38,7 +38,7 @@ public final class DiskLocation implements Comparable<DiskLocation> {
     } else if (object == null || object.getClass() != getClass()) {
       return false;
     } else {
-      DiskLocation other = (DiskLocation) object;
+      BlockId other = (BlockId) object;
       return (hash == other.hash) && (fileNumber == other.fileNumber) && (blockNumber == other.blockNumber);
     }
   }

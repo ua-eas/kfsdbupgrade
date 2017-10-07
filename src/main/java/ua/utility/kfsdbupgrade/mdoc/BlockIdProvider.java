@@ -29,17 +29,17 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLocation, RowId>> {
+public final class BlockIdProvider implements Provider<ImmutableMap<BlockId, RowId>> {
 
-  private static final Logger LOGGER = getLogger(DiskLocationProvider.class);
+  private static final Logger LOGGER = getLogger(BlockIdProvider.class);
 
-  public DiskLocationProvider(Properties props) {
+  public BlockIdProvider(Properties props) {
     this.props = props;
   }
 
   private final Properties props;
 
-  public ImmutableMap<DiskLocation, RowId> get() {
+  public ImmutableMap<BlockId, RowId> get() {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -56,11 +56,11 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       Stopwatch sw = createStarted();
       stmt = conn.createStatement();
       rs = stmt.executeQuery("select rowid from krns_maint_doc_t");
-      ListMultimap<DiskLocation, RowId> mm = ArrayListMultimap.create();
+      ListMultimap<BlockId, RowId> mm = ArrayListMultimap.create();
       while (rs.next()) {
         String string = rs.getString(1);
         RowId id = converter.convert(string);
-        DiskLocation location = new DiskLocation(id.getFileNumber(), id.getBlockNumber());
+        BlockId location = new BlockId(id.getFileNumber(), id.getBlockNumber());
         mm.put(location, id);
         count++;
         if (count % 100000 == 0) {
@@ -78,8 +78,8 @@ public final class DiskLocationProvider implements Provider<ImmutableMap<DiskLoc
       info(LOGGER, "rows ------> %s", getCount(mm.size()));
       info(LOGGER, "locations -> %s", getCount(mm.keySet().size()));
       info(LOGGER, "reduction -> %s%%", round(reduction));
-      Map<DiskLocation, RowId> map = new LinkedHashMap<>();
-      for (DiskLocation location : mm.keySet()) {
+      Map<BlockId, RowId> map = new LinkedHashMap<>();
+      for (BlockId location : mm.keySet()) {
         map.put(location, mm.get(location).iterator().next());
       }
       return copyOf(map);

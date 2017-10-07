@@ -71,7 +71,7 @@ public final class TouchRowsProvider implements Provider<Long> {
   private ImmutableList<RowId> getRowIds(boolean blocks, Optional<Integer> max) {
     RowIdConverter converter = new RowIdConverter();
     if (blocks) {
-      Map<DiskLocation, RowId> locations = new DiskLocationProvider(props).get();
+      Map<BlockId, RowId> locations = new BlockIdProvider(props).get();
       return copyOf(locations.values());
     } else {
       List<String> strings = new StringProvider(new ConnectionProvider(props, false), max, "rowid").get();

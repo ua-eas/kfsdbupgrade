@@ -1,25 +1,25 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.hash;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.ComparisonChain;
 
-public final class RowId {
+public final class RowId implements Comparable<RowId> {
 
   private final long objectId;
-  private final long fileNumber;
-  private final long blockNumber;
+  private final BlockId block;
   private final long rowNumber;
   private final int hash;
 
   private RowId(Builder builder) {
     this.objectId = builder.objectId;
-    this.fileNumber = builder.fileNumber;
-    this.blockNumber = builder.blockNumber;
+    this.block = builder.block;
     this.rowNumber = builder.rowNumber;
-    this.hash = hash(objectId, fileNumber, blockNumber, rowNumber);
+    this.hash = hash(objectId, block, rowNumber);
   }
 
   public static Builder builder() {
@@ -29,8 +29,7 @@ public final class RowId {
   public static class Builder {
 
     private long objectId = -1;
-    private long fileNumber = -1;
-    private long blockNumber = -1;
+    private BlockId block;
     private long rowNumber = -1;
 
     public Builder withObjectId(long objectId) {
@@ -38,13 +37,8 @@ public final class RowId {
       return this;
     }
 
-    public Builder withFileNumber(long fileNumber) {
-      this.fileNumber = fileNumber;
-      return this;
-    }
-
-    public Builder withBlockNumber(long blockNumber) {
-      this.blockNumber = blockNumber;
+    public Builder withBlock(BlockId block) {
+      this.block = block;
       return this;
     }
 
@@ -59,8 +53,7 @@ public final class RowId {
 
     private static RowId validate(RowId instance) {
       checkArgument(instance.objectId >= 0L, "objectId must be greater than or equal to zero");
-      checkArgument(instance.fileNumber >= 0L, "fileNumber must be greater than or equal to zero");
-      checkArgument(instance.blockNumber >= 0L, "blockNumber must be greater than or equal to zero");
+      checkArgument(instance.block != null, "block cannot be null");
       checkArgument(instance.rowNumber >= 0L, "rowNumber must be greater than or equal to zero");
       return instance;
     }
@@ -79,22 +72,24 @@ public final class RowId {
       return false;
     } else {
       RowId other = (RowId) object;
-      boolean equal = (hash == other.hash);
-      equal = equal && (objectId == other.objectId);
-      equal = equal && (fileNumber == other.fileNumber);
-      equal = equal && (blockNumber == other.blockNumber);
-      equal = equal && (rowNumber == other.rowNumber);
-      return equal;
+      return (hash == other.hash) && (objectId == other.objectId) && (rowNumber == other.rowNumber) && equal(block, other.block);
     }
+  }
 
+  @Override
+  public int compareTo(RowId other) {
+    ComparisonChain chain = ComparisonChain.start();
+    chain = chain.compare(objectId, other.objectId);
+    chain = chain.compare(block, other.block);
+    chain = chain.compare(rowNumber, other.rowNumber);
+    return chain.result();
   }
 
   @Override
   public String toString() {
     ToStringHelper helper = toStringHelper(this);
     helper.add("objectId", objectId);
-    helper.add("fileNumber", fileNumber);
-    helper.add("blockNumber", blockNumber);
+    helper.add("block", block);
     helper.add("rowNumber", rowNumber);
     return helper.toString();
   }
@@ -103,12 +98,8 @@ public final class RowId {
     return objectId;
   }
 
-  public long getFileNumber() {
-    return fileNumber;
-  }
-
-  public long getBlockNumber() {
-    return blockNumber;
+  public BlockId getBlock() {
+    return block;
   }
 
   public long getRowNumber() {
