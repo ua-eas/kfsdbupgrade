@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
@@ -27,11 +28,13 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
+import ua.utility.kfsdbupgrade.mdoc.DataMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
@@ -71,6 +74,8 @@ public class FirstTouchPenaltyTest {
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
+    DataMetrics metrics = new DataMetrics();
+    Stopwatch timer = createUnstarted();
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
       RowSelector.Builder<T> builder = RowSelector.builder();
@@ -82,6 +87,8 @@ public class FirstTouchPenaltyTest {
       builder.withProvider(provider);
       builder.withField(field);
       builder.withDiscard(true);
+      builder.withMetrics(metrics);
+      builder.withTimer(timer);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
