@@ -51,7 +51,7 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
       stmt = provider.get().createStatement();
       String where = max.isPresent() ? "WHERE ROWNUM <= " + max.get() : "";
       String from = schema.isPresent() ? schema.get() + "." + table : table;
-      rs = stmt.executeQuery(format("SELECT ROWID FROM %s %s", from, where).trim());
+      rs = stmt.executeQuery(format("SELECT ROWID FROM %s %s", from.toUpperCase(), where).trim());
       int count = 0;
       ListMultimap<BlockId, RowId> mm = ArrayListMultimap.create();
       while (rs.next()) {
@@ -94,6 +94,10 @@ public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId
     this.table = builder.table;
     this.max = builder.max;
     this.show = builder.show;
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   public static class Builder {
