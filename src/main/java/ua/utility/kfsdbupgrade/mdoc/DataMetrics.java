@@ -8,14 +8,18 @@ import com.google.common.base.Stopwatch;
 public final class DataMetrics {
 
   public DataMetrics() {
+    reset();
+  }
+
+  private Counter count;
+  private Counter bytes;
+  private Counter elapsed;
+
+  public synchronized void reset() {
     this.count = new Counter();
     this.bytes = new Counter();
     this.elapsed = new Counter();
   }
-
-  private final Counter count;
-  private final Counter bytes;
-  private final Counter elapsed;
 
   public synchronized long getCount() {
     return count.getValue();
@@ -35,10 +39,6 @@ public final class DataMetrics {
 
   public synchronized Stopwatch increment(long bytes, Stopwatch sw) {
     return increment(1, bytes, sw);
-  }
-
-  public synchronized Stopwatch increment(DataMetrics metrics) {
-    return increment(metrics.getCount(), metrics.getBytes(), metrics.getMicroseconds());
   }
 
   public synchronized Stopwatch increment(long count, long bytes, Stopwatch sw) {

@@ -38,7 +38,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Provider<Connection> provider;
   private final int batchSize;
   private final ImmutableList<String> rowIds;
-  private final DataMetrics metrics;
+  private final DataMetrics overall;
+  private final DataMetrics current;
   private final Stopwatch timer;
   private final Optional<String> schema;
   private final String table;
@@ -68,7 +69,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show(metrics, timer, "done");
+      show(overall, current, timer, "done");
       closeQuietly(rs);
       closeQuietly(stmt);
       closeQuietly(conn);
@@ -110,37 +111,37 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private ImmutableList<T> doResultSet(ResultSet rs) throws SQLException {
     Stopwatch sw = createStarted();
     List<T> list = newArrayList();
-    DataMetrics current = new DataMetrics();
     while (rs.next()) {
       T instance = function.apply(rs);
       long weight = weigher.apply(instance);
       if (!discard) {
         list.add(instance);
       }
-      long micros = sw.elapsed(MICROSECONDS);
-      current.increment(1, weight, micros);
-      current = increment(metrics, current, weight, micros);
-      sw = createStarted();
+      sw = increment(weight, sw);
     }
     return newList(list);
   }
 
-  private DataMetrics increment(DataMetrics overall, DataMetrics current, long weight, long micros) {
+  private Stopwatch increment(long weight, Stopwatch sw) {
+    long micros = sw.elapsed(MICROSECONDS);
     synchronized (overall) {
-      overall.increment(1, weight, micros);
-      if (show.isPresent() && overall.getCount() % show.get() == 0) {
-        show(overall, timer, "");
-        return new DataMetrics();
+      synchronized (current) {
+        this.overall.increment(1, weight, micros);
+        this.current.increment(1, weight, micros);
+        if (show.isPresent() && overall.getCount() % show.get() == 0) {
+          show(overall, current, timer, "");
+          this.current.reset();
+        }
       }
     }
-    return current;
+    return createStarted();
   }
 
   private RowSelector(Builder<T> builder) {
     this.provider = builder.provider;
     this.batchSize = builder.batchSize;
     this.rowIds = copyOf(builder.rowIds);
-    this.metrics = builder.metrics;
+    this.overall = builder.overall;
     this.timer = builder.timer;
     this.schema = builder.schema;
     this.table = builder.table;
@@ -150,6 +151,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.weigher = builder.weigher;
     this.max = builder.max;
     this.discard = builder.discard;
+    this.current = builder.current;
   }
 
   public static <T> Builder<T> builder() {
@@ -161,7 +163,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Provider<Connection> provider;
     private int batchSize = 75;
     private List<String> rowIds = newArrayList();
-    private DataMetrics metrics = new DataMetrics();
+    private DataMetrics overall = new DataMetrics();
+    private DataMetrics current = new DataMetrics();
     private Stopwatch timer = createUnstarted();
     private Optional<String> schema = absent();
     private String table;
@@ -171,6 +174,11 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
     private boolean discard;
+
+    public Builder<T> withCurrent(DataMetrics current) {
+      this.current = current;
+      return this;
+    }
 
     public Builder<T> withDiscard(boolean discard) {
       this.discard = discard;
@@ -211,8 +219,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       return this;
     }
 
-    public Builder<T> withMetrics(DataMetrics metrics) {
-      this.metrics = metrics;
+    public Builder<T> withOverall(DataMetrics overall) {
+      this.overall = overall;
       return this;
     }
 
