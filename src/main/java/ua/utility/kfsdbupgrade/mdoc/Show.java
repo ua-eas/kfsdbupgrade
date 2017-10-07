@@ -23,6 +23,10 @@ public final class Show {
 
   private static final Logger LOGGER = getLogger(Show.class);
 
+  public static void show(DataMetrics overall, DataMetrics current, Stopwatch total, Stopwatch last) {
+    show(overall, current, total, last, "");
+  }
+
   public static void show(DataMetrics overall, DataMetrics current, Stopwatch total, Stopwatch last, String label) {
     synchronized (overall) {
       synchronized (current) {

@@ -130,7 +130,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
         this.overall.increment(1, weight, micros);
         this.current.increment(1, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
-          show(overall, current, timer, last, "");
+          show(overall, current, timer, last);
           this.current.reset();
           this.last.reset().start();
         }
