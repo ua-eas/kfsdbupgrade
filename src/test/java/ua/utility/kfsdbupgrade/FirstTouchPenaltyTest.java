@@ -28,7 +28,6 @@ public class FirstTouchPenaltyTest {
   @Test
   public void test() {
     try {
-      System.setProperty("rows.max", "872");
       Properties props = new PropertiesProvider().get();
       List<RowId> rowIds = getRowIds(props, "KRNS_MAINT_DOC_T");
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
