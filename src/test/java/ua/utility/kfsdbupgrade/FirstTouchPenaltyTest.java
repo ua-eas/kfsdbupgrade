@@ -60,9 +60,9 @@ public class FirstTouchPenaltyTest {
       List<RowId> rowIds = getRowIds(props, table, 50000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       Double select = ((blocks.size() * 1d) / rowIds.size() * 100);
-      info(LOGGER, "rows ---> %s", getCount(rowIds.size()));
-      info(LOGGER, "blocks -> %s", getCount(blocks.size()));
-      info(LOGGER, "select -> %s%%", getCount(select.intValue()));
+      info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
+      info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
+      info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(select.intValue()));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10);
       touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 250);
     } catch (Throwable e) {
