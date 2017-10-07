@@ -173,6 +173,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private DataMetrics overall = new DataMetrics();
     private DataMetrics current = new DataMetrics();
     private Stopwatch timer = createUnstarted();
+    private Stopwatch last = createUnstarted();
     private Optional<String> schema = absent();
     private String table;
     private List<String> fields = newArrayList("ROWID");
@@ -181,7 +182,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
     private boolean discard;
-    private Stopwatch last = createUnstarted();
     private boolean closeConnection;
 
     public Builder<T> withCloseConnection(boolean closeConnection) {
