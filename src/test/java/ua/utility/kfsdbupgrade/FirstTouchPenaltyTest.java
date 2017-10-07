@@ -10,6 +10,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
@@ -93,7 +94,7 @@ public class FirstTouchPenaltyTest {
   }
 
   private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int divisor) {
-    List<String> rowIds = transform(iterable, converter.reverse());
+    List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
