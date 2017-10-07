@@ -2,6 +2,7 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.primitives.Ints.checkedCast;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
@@ -26,17 +27,17 @@ public final class Show {
     synchronized (overall) {
       synchronized (current) {
         List<Object> args = newArrayList();
-        args.addAll(getArgs(overall));
-        args.addAll(getArgs(current));
+        args.addAll(getArgs(overall, total));
+        args.addAll(getArgs(current, last));
         args.add(label);
-        info(LOGGER, "[%s, %s, %s, %s, %s] [%s, %s, %s, %s, %s] %s %s", args.toArray());
+        info(LOGGER, "[%s, %s, %s, %s, %s] [%s, %s, %s, %s, %s] %s", args.toArray());
       }
     }
   }
 
-  private static ImmutableList<Object> getArgs(DataMetrics metrics) {
+  private static ImmutableList<Object> getArgs(DataMetrics metrics, Stopwatch wallTime) {
     List<Object> args = newArrayList();
-    long millis = metrics.getMicroseconds() / 1000;
+    long millis = wallTime.elapsed(MILLISECONDS);
     args.add(getCount(checkedCast(metrics.getCount())));
     args.add(getSize(metrics.getBytes()));
     args.add(getThroughputInSeconds(millis, metrics.getCount(), "rows/sec"));
