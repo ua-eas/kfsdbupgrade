@@ -33,7 +33,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-public final class RowSelector<T> implements Provider<ImmutableList<T>> {
+public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
 
   private final Provider<Connection> provider;
   private final int batchSize;
@@ -50,7 +50,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Optional<Integer> show;
   private final Optional<Integer> max;
   private final boolean discard;
-  private final boolean closeConnection;
 
   @Override
   public ImmutableList<T> get() {
@@ -74,9 +73,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       show(overall, current, timer, last, "done");
       closeQuietly(rs);
       closeQuietly(stmt);
-      if (closeConnection) {
-        closeQuietly(conn);
-      }
+      closeQuietly(conn);
     }
   }
 
@@ -142,7 +139,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     return createStarted();
   }
 
-  private RowSelector(Builder<T> builder) {
+  private RowUpdater(Builder<T> builder) {
     this.provider = builder.provider;
     this.batchSize = builder.batchSize;
     this.rowIds = copyOf(builder.rowIds);
@@ -158,7 +155,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.discard = builder.discard;
     this.current = builder.current;
     this.last = builder.last;
-    this.closeConnection = builder.closeConnection;
   }
 
   public static <T> Builder<T> builder() {
@@ -182,12 +178,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<T, Long> weigher;
     private boolean discard;
     private Stopwatch last = createUnstarted();
-    private boolean closeConnection;
-
-    public Builder<T> withCloseConnection(boolean closeConnection) {
-      this.closeConnection = closeConnection;
-      return this;
-    }
 
     public Builder<T> withLast(Stopwatch last) {
       this.last = last;
@@ -221,11 +211,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     public Builder<T> withFunction(Function<ResultSet, T> function) {
       this.function = function;
       return this;
-    }
-
-    public Builder<T> withConnection(Connection connection, boolean closeConnection) {
-      withProvider(Providers.of(connection));
-      return withCloseConnection(closeConnection);
     }
 
     public Builder<T> withProvider(Provider<Connection> provider) {
@@ -281,11 +266,11 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       return withShow(of(show));
     }
 
-    public RowSelector<T> build() {
-      return validate(new RowSelector<T>(this));
+    public RowUpdater<T> build() {
+      return validate(new RowUpdater<T>(this));
     }
 
-    private static <T> RowSelector<T> validate(RowSelector<T> instance) {
+    private static <T> RowUpdater<T> validate(RowUpdater<T> instance) {
       checkNoBlanks(instance);
       if (instance.rowIds.size() > 0) {
         checkArgument(!instance.max.isPresent(), "max is ignored when row ids are supplied");
