@@ -29,11 +29,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-public final class BlockIdProvider implements Provider<ImmutableMap<BlockId, RowId>> {
+public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId>> {
 
-  private static final Logger LOGGER = getLogger(BlockIdProvider.class);
+  private static final Logger LOGGER = getLogger(BlockProvider.class);
 
-  public BlockIdProvider(Properties props) {
+  public BlockProvider(Properties props) {
     this.props = props;
   }
 
