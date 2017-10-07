@@ -1,7 +1,6 @@
 package ua.utility.kfsdbupgrade;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
@@ -33,6 +32,8 @@ public class FirstTouchPenaltyTest {
 
   private static final Logger LOGGER = Logger.getLogger(FirstTouchPenaltyTest.class);
 
+  private final RowIdConverter converter = RowIdConverter.getInstance();
+
   @Test
   public void test() {
     try {
@@ -49,12 +50,14 @@ public class FirstTouchPenaltyTest {
     }
   }
 
-  private ImmutableList<Integer> touch(Properties props, String table, String field, Iterable<RowId> rowIds) {
+  private ImmutableList<Integer> touch(Properties props, String table, String field, Iterable<RowId> iterable) {
+    List<String> rowIds = transform(iterable, converter.reverse());
     ConnectionProvider provider = new ConnectionProvider(props, false);
     RowSelector.Builder<Integer> builder = RowSelector.builder();
     builder.withFunction(SingleIntegerFunction.INSTANCE);
     builder.withWeigher(IntegerWeigher.INSTANCE);
-    builder.withShow(size(rowIds) / 100);
+    builder.withRowIds(rowIds);
+    builder.withShow(rowIds.size() / 10);
     builder.withTable(table);
     builder.withProvider(provider);
     builder.withField(field);
@@ -71,7 +74,6 @@ public class FirstTouchPenaltyTest {
   }
 
   private ImmutableList<RowId> getRowIds(Properties props, String table, int show) {
-    RowIdConverter converter = RowIdConverter.getInstance();
     ConnectionProvider provider = new ConnectionProvider(props, false);
     RowSelector.Builder<String> builder = RowSelector.builder();
     builder.withFunction(SingleStringFunction.INSTANCE);
