@@ -71,7 +71,7 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(select.intValue()));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
-      addDocumentContentIndex(props);
+      // addDocumentContentIndex(props);
       touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       computeStats(props);
     } catch (Throwable e) {
