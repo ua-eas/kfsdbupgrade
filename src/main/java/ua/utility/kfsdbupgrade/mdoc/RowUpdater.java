@@ -43,6 +43,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
   private final ImmutableList<String> fields;
   private final Function<T, Long> weigher;
   private final Optional<Integer> show;
+  private final boolean closeConnection;
 
   @Override
   public ImmutableList<T> get() {
@@ -77,7 +78,9 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
       show("u", overall, current, timer, last, "done");
       closeQuietly(stmt);
       closeQuietly(pstmt);
-      closeQuietly(conn);
+      if (closeConnection) {
+        closeQuietly(conn);
+      }
     }
     return entities;
   }
@@ -132,6 +135,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
     this.batch = builder.batch;
     this.last = builder.last;
     this.where = builder.where;
+    this.closeConnection = builder.closeConnection;
     this.entities = copyOf(builder.entities);
   }
 
@@ -155,6 +159,12 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
     private Function<BatchContext<T>, Long> batch;
     private String where;
     private List<T> entities;
+    private boolean closeConnection;
+
+    public Builder<T> withCloseConnection(boolean closeConnection) {
+      this.closeConnection = closeConnection;
+      return this;
+    }
 
     public Builder<T> withWhere(String where) {
       this.where = where;
