@@ -63,8 +63,8 @@ public class ConvertDocsTest {
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
       List<RowUpdateProvider<MaintDoc>> updaters = newArrayList();
+      Function<MaintDoc, MaintDoc> converter = identity();
       for (RowSelector<MaintDoc> selector : selectors) {
-        Function<MaintDoc, MaintDoc> converter = identity();
         RowUpdaterFunction function = new RowUpdaterFunction(10, overall, current);
         RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
         updaters.add(updater);
