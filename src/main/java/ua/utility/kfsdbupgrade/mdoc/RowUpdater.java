@@ -17,7 +17,6 @@ import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +51,6 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
     Connection conn = null;
     Statement stmt = null;
     PreparedStatement pstmt = null;
-    ResultSet rs = null;
     try {
       conn = provider.get();
       stmt = conn.createStatement();
@@ -77,7 +75,6 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
       throw new IllegalStateException(e);
     } finally {
       show(overall, current, timer, last, "done");
-      closeQuietly(rs);
       closeQuietly(stmt);
       closeQuietly(pstmt);
       closeQuietly(conn);
