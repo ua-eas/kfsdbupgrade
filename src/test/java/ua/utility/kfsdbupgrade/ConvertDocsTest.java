@@ -3,6 +3,9 @@ package ua.utility.kfsdbupgrade;
 import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.ByteSource.wrap;
+import static com.google.common.io.Resources.asByteSource;
+import static com.google.common.io.Resources.getResource;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
@@ -18,11 +21,13 @@ import org.junit.Test;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.ByteSource;
 
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DataMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
+import ua.utility.kfsdbupgrade.mdoc.MaintDocConverterFunction;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
@@ -50,8 +55,11 @@ public class ConvertDocsTest {
       DataMetrics current = new DataMetrics();
       Stopwatch timer = createUnstarted();
       Stopwatch last = createUnstarted();
+      ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
+      MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
+      EncryptionService encryptor = new EncryptionService(props.getProperty("encryption-key"));
       RowUpdaterFunction function = new RowUpdaterFunction(show, new DataMetrics(), new DataMetrics(), createUnstarted(), createUnstarted());
-      Function<MaintDoc, MaintDoc> converter = identity();
+      Function<MaintDoc, MaintDoc> converter = getConverter(props, service, encryptor);
       List<MaintDocCallable> callables = newArrayList();
       for (List<RowId> distribution : distribute(ids, threads)) {
         MaintDocCallable.Builder builder = MaintDocCallable.builder();
@@ -74,6 +82,14 @@ public class ConvertDocsTest {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
+  }
+
+  private Function<MaintDoc, MaintDoc> getConverter(Properties props, MaintainableXmlConversionService service, EncryptionService encryptor) {
+    String type = props.getProperty("mdoc.content");
+    if ("convert".equals(type)) {
+      return new MaintDocConverterFunction(encryptor, service);
+    }
+    return identity();
   }
 
   private ImmutableList<RowId> getRowIds(Properties props, String table, int max, int show) {
