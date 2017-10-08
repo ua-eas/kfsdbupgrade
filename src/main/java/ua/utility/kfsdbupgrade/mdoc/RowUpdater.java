@@ -74,7 +74,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show("u", overall, current, timer, last, "");
+      // show("u", overall, current, timer, last, "");
       closeQuietly(stmt);
       closeQuietly(pstmt);
       if (closeConnection) {

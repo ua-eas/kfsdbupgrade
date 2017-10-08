@@ -46,4 +46,24 @@ public class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, Row
     builder.withCloseConnection(false);
     return builder.build();
   }
+
+  public int getShow() {
+    return show;
+  }
+
+  public DataMetrics getOverall() {
+    return overall;
+  }
+
+  public DataMetrics getCurrent() {
+    return current;
+  }
+
+  public Stopwatch getTimer() {
+    return timer;
+  }
+
+  public Stopwatch getLast() {
+    return last;
+  }
 }

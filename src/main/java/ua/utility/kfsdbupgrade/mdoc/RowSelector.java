@@ -71,7 +71,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show("s", overall, current, timer, last, "");
+      // show("s", overall, current, timer, last, "");
       closeQuietly(rs);
       closeQuietly(stmt);
       if (closeConnection) {

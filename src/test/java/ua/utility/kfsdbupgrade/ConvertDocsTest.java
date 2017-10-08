@@ -6,6 +6,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 
 import java.util.List;
 import java.util.Properties;
@@ -34,13 +35,14 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
+      System.setProperty("mdoc.threads", "2");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int max = 10000;
-      int show = 1000;
+      int max = 327;
+      int show = 100;
       int batchSize = 75;
       List<RowId> ids = getRowIds(props, table, max, show);
       DataMetrics overall = new DataMetrics();
@@ -65,6 +67,8 @@ public class ConvertDocsTest {
         callables.add(builder.build());
       }
       getFutures(executor, callables);
+      show("s", overall, current, timer, last);
+      show("u", function.getOverall(), function.getCurrent(), function.getTimer(), function.getLast());
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
