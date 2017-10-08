@@ -1,0 +1,6 @@
+2017-10-06 20:28:22,966 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: acquiring -> 100 rowids for Optional.absent().KRNS_MAINT_DOC_T
+2017-10-06 20:30:10,278 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: acquiring -> 100 rowids for Optional.absent().KRNS_MAINT_DOC_T
+2017-10-06 20:31:46,168 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: acquiring -> 100 rowids for Optional.absent().KRNS_MAINT_DOC_T
+2017-10-06 20:31:46,182 DB [INFO] ua.utility.kfsdbupgrade.mdoc.ConnectionProvider: connecting to --> jdbc:oracle:thin:@kfs35535.cryfdp9i1uh4.us-west-2.rds.amazonaws.com:1521:KFS35535 as KULOWNER
+2017-10-06 20:33:15,450 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: acquiring -> 100 rowids for Optional.absent().KRNS_MAINT_DOC_T
+2017-10-06 20:33:15,465 DB [INFO] ua.utility.kfsdbupgrade.mdoc.ConnectionProvider: connecting to --> jdbc:oracle:thin:@kfs35535.cryfdp9i1uh4.us-west-2.rds.amazonaws.com:1521:KFS35535 as 'KULOWNER'

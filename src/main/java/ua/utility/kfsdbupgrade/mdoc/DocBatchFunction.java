@@ -1,6 +1,5 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
@@ -11,20 +10,17 @@ import java.sql.SQLException;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 
-public final class DocumentBatchFunction implements Function<MaintDoc, Long> {
-
-  public DocumentBatchFunction(PreparedStatement pstmt) {
-    this.pstmt = checkNotNull(pstmt);
-  }
-
-  private final PreparedStatement pstmt;
+public enum DocBatchFunction implements Function<BatchContext<MaintDoc>, Long> {
+  INSTANCE;
 
   @Override
-  public Long apply(MaintDoc input) {
+  public Long apply(BatchContext<MaintDoc> input) {
     Stopwatch sw = createStarted();
     try {
-      pstmt.setString(1, input.getContent());
-      pstmt.setString(2, input.getId());
+      PreparedStatement pstmt = input.getPstmt();
+      MaintDoc doc = input.getInstance();
+      pstmt.setString(1, doc.getContent());
+      pstmt.setString(2, doc.getId());
       pstmt.addBatch();
     } catch (SQLException e) {
       throw illegalState(e);

@@ -117,7 +117,8 @@ public class FirstTouchPenaltyTest {
 
   }
 
-  private <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
+  private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
+    RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
