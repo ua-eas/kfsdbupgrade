@@ -51,7 +51,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Optional<Integer> max;
   private final boolean discard;
   private final boolean closeConnection;
-  private final Optional<Function<SelectContext<T>, RowUpdater<T>>> updater;
 
   @Override
   public ImmutableList<T> get() {
@@ -124,12 +123,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       }
       sw = increment(weight, sw);
     }
-    if (updater.isPresent()) {
-      SelectContext<T> context = new SelectContext<T>(list, this);
-      return updater.get().apply(context).get();
-    } else {
-      return newList(list);
-    }
+    return newList(list);
   }
 
   private Stopwatch increment(long weight, Stopwatch sw) {
@@ -165,7 +159,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.current = builder.current;
     this.last = builder.last;
     this.closeConnection = builder.closeConnection;
-    this.updater = builder.updater;
   }
 
   public static <T> Builder<T> builder() {
@@ -190,16 +183,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<T, Long> weigher;
     private boolean discard;
     private boolean closeConnection;
-    private Optional<Function<SelectContext<T>, RowUpdater<T>>> updater = absent();
-
-    public Builder<T> withUpdater(Optional<Function<SelectContext<T>, RowUpdater<T>>> updater) {
-      this.updater = updater;
-      return this;
-    }
-
-    public Builder<T> withUpdater(Function<SelectContext<T>, RowUpdater<T>> updater) {
-      return withUpdater(of(updater));
-    }
 
     public Builder<T> withCloseConnection(boolean closeConnection) {
       this.closeConnection = closeConnection;

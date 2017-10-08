@@ -43,31 +43,30 @@ public final class MaintDocCallable implements Callable<Long> {
 
   public Long call() {
     Stopwatch sw = createStarted();
-    Connection conn = provider.get();
+    Provider<Connection> conn = of(provider.get());
     for (List<RowId> partition : partition(rowIds, batchSize)) {
-      RowSelector<MaintDoc> selector = getSelector(of(conn), partition, overall, current, timer, last, show);
+      RowSelector<MaintDoc> selector = getSelector(conn, partition);
       RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
       updater.get();
     }
     return sw.elapsed(MILLISECONDS);
   }
 
-  private static RowSelector<MaintDoc> getSelector(Provider<Connection> provider, List<RowId> ids, DataMetrics overall, DataMetrics current, Stopwatch timer, Stopwatch last,
-      int show) {
+  private RowSelector<MaintDoc> getSelector(Provider<Connection> provider, List<RowId> ids) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(ids, converter.reverse()));
     RowSelector.Builder<MaintDoc> builder = RowSelector.builder();
     builder.withFunction(MaintDocFunction.INSTANCE);
     builder.withWeigher(MaintDocWeigher.INSTANCE);
+    builder.withOverall(overall);
+    builder.withCurrent(current);
+    builder.withTimer(timer);
+    builder.withLast(last);
     builder.withRowIds(rowIds);
     builder.withShow(show);
     builder.withTable("KRNS_MAINT_DOC_T");
     builder.withProvider(provider);
     builder.withFields(asList("ROWID", "DOC_CNTNT"));
-    builder.withOverall(overall);
-    builder.withCurrent(current);
-    builder.withTimer(timer);
-    builder.withLast(last);
     builder.withCloseConnection(false);
     return builder.build();
   }
@@ -83,6 +82,10 @@ public final class MaintDocCallable implements Callable<Long> {
     this.current = builder.current;
     this.timer = builder.timer;
     this.last = builder.last;
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   public static class Builder {

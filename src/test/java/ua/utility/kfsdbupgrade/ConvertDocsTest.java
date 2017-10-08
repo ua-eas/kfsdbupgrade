@@ -3,9 +3,8 @@ package ua.utility.kfsdbupgrade;
 import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.partition;
 import static java.util.Arrays.asList;
-import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
+import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
@@ -15,7 +14,6 @@ import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
 import javax.inject.Provider;
@@ -34,7 +32,6 @@ import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
-import ua.utility.kfsdbupgrade.mdoc.RowUpdateProvider;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
@@ -44,13 +41,15 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
+      System.setProperty("mdoc.threads", "1");
       Properties props = new PropertiesProvider().get();
+      ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int max = 10000;
-      int show = max / 10;
-      int batchSize = 75;
+      int max = 5;
+      int show = max / 1;
+      int batchSize = 1;
       List<RowId> ids = getRowIds(props, table, max, show);
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
@@ -58,13 +57,22 @@ public class ConvertDocsTest {
       Stopwatch last = createUnstarted();
       RowUpdaterFunction function = new RowUpdaterFunction(show, new DataMetrics(), new DataMetrics(), createUnstarted(), createUnstarted());
       Function<MaintDoc, MaintDoc> converter = identity();
+      List<MaintDocCallable> callables = newArrayList();
       for (List<RowId> distribution : distribute(ids, threads)) {
-        for (List<RowId> partition : partition(distribution, batchSize)) {
-          RowSelector<MaintDoc> selector = getSelector(null, partition, overall, current, timer, last, show);
-          RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
-          Callable<ImmutableList<MaintDoc>> callable = fromProvider(updater);
-        }
+        MaintDocCallable.Builder builder = MaintDocCallable.builder();
+        builder.withBatchSize(batchSize);
+        builder.withCurrent(current);
+        builder.withFunction(function);
+        builder.withLast(last);
+        builder.withConverter(converter);
+        builder.withOverall(overall);
+        builder.withProvider(provider);
+        builder.withRowIds(distribution);
+        builder.withShow(show);
+        builder.withTimer(timer);
+        callables.add(builder.build());
       }
+      getFutures(executor, callables);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
