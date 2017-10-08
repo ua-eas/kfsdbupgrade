@@ -41,8 +41,8 @@ public class ConvertDocsTest {
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int max = 327;
-      int show = 100;
+      int max = 13422;
+      int show = 1000;
       int batchSize = 75;
       List<RowId> ids = getRowIds(props, table, max, show);
       DataMetrics overall = new DataMetrics();
