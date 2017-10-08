@@ -162,7 +162,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
     private Function<BatchContext<T>, Long> batch;
     private String where;
     private List<T> entities;
-    private boolean showFinal;
+    private boolean showFinal = true;
     private boolean closeConnection;
 
     public Builder<T> withShowFinal(boolean showFinal) {

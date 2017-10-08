@@ -187,7 +187,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<T, Long> weigher;
     private boolean discard;
     private boolean closeConnection;
-    private boolean showFinal;
+    private boolean showFinal = true;
 
     public Builder<T> withShowFinal(boolean showFinal) {
       this.showFinal = showFinal;
