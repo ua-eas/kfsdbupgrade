@@ -51,6 +51,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Optional<Integer> max;
   private final boolean discard;
   private final boolean closeConnection;
+  private final boolean showFinal;
 
   @Override
   public ImmutableList<T> get() {
@@ -71,7 +72,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show("s", overall, current, timer, last, "");
+      if (showFinal) {
+        show("s", overall, current, timer, last, "");
+      }
       closeQuietly(rs);
       closeQuietly(stmt);
       if (closeConnection) {
@@ -159,6 +162,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.current = builder.current;
     this.last = builder.last;
     this.closeConnection = builder.closeConnection;
+    this.showFinal = (show.isPresent() && ((rowIds.size() % show.get() != 0) || rowIds.size() == 0));
   }
 
   public static <T> Builder<T> builder() {
