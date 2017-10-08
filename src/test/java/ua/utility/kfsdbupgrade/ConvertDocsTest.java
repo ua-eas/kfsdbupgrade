@@ -56,9 +56,9 @@ public class ConvertDocsTest {
       int max = 10000;
       int show = max / 10;
       List<RowId> ids = getRowIds(props, table, max, show);
-      List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, show);
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
+      List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, show);
       List<RowUpdateProvider<MaintDoc>> updaters = newArrayList();
       Function<MaintDoc, MaintDoc> converter = identity();
       for (RowSelector<MaintDoc> selector : selectors) {
