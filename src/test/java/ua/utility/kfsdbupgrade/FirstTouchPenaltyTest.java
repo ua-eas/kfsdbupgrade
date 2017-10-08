@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -75,7 +74,8 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000, Optional.of(50000));
+      int max = Math.min(rowIds.size(), 50000);
+      touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
@@ -102,11 +102,6 @@ public class FirstTouchPenaltyTest {
   }
 
   private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
-    touch(props, table, field, iterable, function, weigher, show, Optional.<Integer>absent());
-  }
-
-  private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show,
-      Optional<Integer> max) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
@@ -131,7 +126,6 @@ public class FirstTouchPenaltyTest {
       builder.withCurrent(current);
       builder.withTimer(timer);
       builder.withLast(last);
-      builder.withMax(max);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
