@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutorService;
 
 import javax.inject.Provider;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -46,10 +45,6 @@ import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class ConvertDocsTest {
-
-  private static final Logger LOGGER = Logger.getLogger(ConvertDocsTest.class);
-
-  private final RowIdConverter converter = RowIdConverter.getInstance();
 
   @Test
   public void test() {
@@ -174,7 +169,7 @@ public class ConvertDocsTest {
     builder.withProvider(provider);
     RowSelector<String> selector = builder.build();
     List<String> strings = selector.get();
-    return transform(strings, converter);
+    return transform(strings, RowIdConverter.getInstance());
   }
 
 }
