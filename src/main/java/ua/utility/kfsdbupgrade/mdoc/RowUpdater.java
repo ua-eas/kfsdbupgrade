@@ -70,12 +70,11 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
         increment(sw);
       }
       Stopwatch sw = createStarted();
-      conn.commit();
       increment(sw);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show("u", overall, current, timer, last, "done");
+      show("u", overall, current, timer, last, "");
       closeQuietly(stmt);
       closeQuietly(pstmt);
       if (closeConnection) {

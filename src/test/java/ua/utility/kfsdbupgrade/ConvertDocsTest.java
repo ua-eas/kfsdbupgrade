@@ -3,20 +3,13 @@ package ua.utility.kfsdbupgrade;
 import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Arrays.asList;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
-import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-
-import javax.inject.Provider;
 
 import org.junit.Test;
 
@@ -41,15 +34,14 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
-      System.setProperty("mdoc.threads", "1");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int max = 5;
-      int show = max / 1;
-      int batchSize = 1;
+      int max = 10000;
+      int show = 1000;
+      int batchSize = 75;
       List<RowId> ids = getRowIds(props, table, max, show);
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
@@ -77,36 +69,6 @@ public class ConvertDocsTest {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
-  }
-
-  // setup selectors that extract maintenance documents
-  private static ImmutableList<RowSelector<MaintDoc>> getSelectors(Properties props, List<RowId> ids, int threads, int show) {
-    RowIdConverter converter = RowIdConverter.getInstance();
-    List<String> rowIds = shuffle(transform(ids, converter.reverse()));
-    DataMetrics overall = new DataMetrics();
-    DataMetrics current = new DataMetrics();
-    Stopwatch timer = createUnstarted();
-    Stopwatch last = createUnstarted();
-    List<RowSelector<MaintDoc>> list = newArrayList();
-    for (List<String> distribution : distribute(rowIds, threads)) {
-      Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
-      RowSelector.Builder<MaintDoc> builder = RowSelector.builder();
-      builder.withFunction(MaintDocFunction.INSTANCE);
-      builder.withWeigher(MaintDocWeigher.INSTANCE);
-      builder.withRowIds(distribution);
-      builder.withShow(show);
-      builder.withTable("KRNS_MAINT_DOC_T");
-      builder.withProvider(provider);
-      builder.withFields(asList("ROWID", "DOC_CNTNT"));
-      builder.withOverall(overall);
-      builder.withCurrent(current);
-      builder.withTimer(timer);
-      builder.withLast(last);
-      builder.withCloseConnection(true);
-      RowSelector<MaintDoc> selector = builder.build();
-      list.add(selector);
-    }
-    return newList(list);
   }
 
   private ImmutableList<RowId> getRowIds(Properties props, String table, int max, int show) {

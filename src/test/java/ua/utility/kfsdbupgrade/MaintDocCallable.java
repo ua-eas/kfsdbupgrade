@@ -42,14 +42,19 @@ public final class MaintDocCallable implements Callable<Long> {
   private final Stopwatch last;
 
   public Long call() {
-    Stopwatch sw = createStarted();
-    Provider<Connection> conn = of(provider.get());
-    for (List<RowId> partition : partition(rowIds, batchSize)) {
-      RowSelector<MaintDoc> selector = getSelector(conn, partition);
-      RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
-      updater.get();
+    try {
+      Stopwatch sw = createStarted();
+      Connection conn = provider.get();
+      for (List<RowId> partition : partition(rowIds, batchSize)) {
+        RowSelector<MaintDoc> selector = getSelector(of(conn), partition);
+        RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
+        updater.get();
+      }
+      conn.commit();
+      return sw.elapsed(MILLISECONDS);
+    } catch (Throwable e) {
+      throw new IllegalStateException(e);
     }
-    return sw.elapsed(MILLISECONDS);
   }
 
   private RowSelector<MaintDoc> getSelector(Provider<Connection> provider, List<RowId> ids) {
