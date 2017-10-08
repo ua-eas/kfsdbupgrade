@@ -59,19 +59,29 @@ public class ConvertDocsTest {
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
       List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, show);
-      List<RowUpdateProvider<MaintDoc>> updaters = newArrayList();
-      Function<MaintDoc, MaintDoc> converter = identity();
-      for (RowSelector<MaintDoc> selector : selectors) {
-        RowUpdaterFunction function = new RowUpdaterFunction(show, overall, current);
-        RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
-        updaters.add(updater);
-      }
       List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
-      for (RowUpdateProvider<MaintDoc> updater : updaters) {
-        Callable<ImmutableList<MaintDoc>> callable = fromProvider(updater);
+      for (RowSelector<MaintDoc> selector : selectors) {
+        Callable<ImmutableList<MaintDoc>> callable = fromProvider(selector);
         callables.add(callable);
       }
       getFutures(executor, callables);
+      if (true) {
+        return;
+      }
+
+      List<RowUpdateProvider<MaintDoc>> updaters = newArrayList();
+      Function<MaintDoc, MaintDoc> converter = identity();
+      RowUpdaterFunction function = new RowUpdaterFunction(show, overall, current);
+      for (RowSelector<MaintDoc> selector : selectors) {
+        RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
+        updaters.add(updater);
+      }
+      // List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
+      // for (RowUpdateProvider<MaintDoc> updater : updaters) {
+      // Callable<ImmutableList<MaintDoc>> callable = fromProvider(updater);
+      // callables.add(callable);
+      // }
+      // getFutures(executor, callables);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -112,10 +122,13 @@ public class ConvertDocsTest {
   private static ImmutableList<RowSelector<MaintDoc>> getSelectors(Properties props, List<RowId> ids, int threads, int show) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(ids, converter.reverse()));
-    DataMetrics overall = new DataMetrics();
-    DataMetrics current = new DataMetrics();
+    DataMetrics overallSelect = new DataMetrics();
+    DataMetrics currentSelect = new DataMetrics();
+    DataMetrics overallUpdate = new DataMetrics();
+    DataMetrics currentUpdate = new DataMetrics();
     Stopwatch timer = createUnstarted();
     Stopwatch last = createUnstarted();
+    RowUpdaterFunction updater = new RowUpdaterFunction(show, overallUpdate, currentUpdate);
     List<RowSelector<MaintDoc>> list = newArrayList();
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
@@ -127,11 +140,12 @@ public class ConvertDocsTest {
       builder.withTable("KRNS_MAINT_DOC_T");
       builder.withProvider(provider);
       builder.withFields(asList("ROWID", "DOC_CNTNT"));
-      builder.withOverall(overall);
-      builder.withCurrent(current);
+      builder.withOverall(overallSelect);
+      builder.withCurrent(currentSelect);
       builder.withTimer(timer);
       builder.withLast(last);
-      builder.withCloseConnection(false);
+      builder.withCloseConnection(true);
+      builder.withUpdater(updater);
       RowSelector<MaintDoc> selector = builder.build();
       list.add(selector);
     }
