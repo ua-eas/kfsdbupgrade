@@ -30,7 +30,7 @@ public final class MaintDocConverterFunction implements Function<MaintDoc, Maint
       return MaintDoc.build(input.getId(), encrypted);
     } catch (Throwable e) {
       e.printStackTrace();
-      LOGGER.error("unexpected error converting document -> " + input.getId(), e);
+      LOGGER.error("document conversion error -> " + input.getId(), e);
       return input;
     }
   }
