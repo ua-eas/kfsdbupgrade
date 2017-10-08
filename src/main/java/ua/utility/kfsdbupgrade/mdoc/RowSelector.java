@@ -71,7 +71,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show(overall, current, timer, last, "done");
+      show("s", overall, current, timer, last, "done");
       closeQuietly(rs);
       closeQuietly(stmt);
       if (closeConnection) {
@@ -133,7 +133,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
         this.overall.increment(1, weight, micros);
         this.current.increment(1, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
-          show(overall, current, timer, last);
+          show("s", overall, current, timer, last);
           this.current.reset();
           this.last.reset().start();
         }

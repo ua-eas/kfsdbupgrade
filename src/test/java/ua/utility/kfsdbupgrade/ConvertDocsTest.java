@@ -1,9 +1,12 @@
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.base.Functions.identity;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
-import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
+import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
@@ -16,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 import javax.inject.Provider;
 
@@ -29,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DataMetrics;
 import ua.utility.kfsdbupgrade.mdoc.DocBatchFunction;
+import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
@@ -48,43 +54,67 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
-      System.setProperty("mdoc.threads", "2");
       Properties props = new PropertiesProvider().get();
+      int threads = new ThreadsProvider(props).get();
+      ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      List<RowId> ids = getRowIds(props, table, 100, 33);
-      List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, 33);
+      List<RowId> ids = getRowIds(props, table, 127, 10);
+      List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, 10);
+      DataMetrics overall = new DataMetrics();
+      DataMetrics current = new DataMetrics();
+      List<RowUpdateProvider<MaintDoc>> updaters = newArrayList();
       for (RowSelector<MaintDoc> selector : selectors) {
-        info(LOGGER, "-- select --");
-        List<MaintDoc> selected = selector.get();
-        RowUpdater<MaintDoc> updater = getUpdater(selector, selected, 10);
-        info(LOGGER, "-- update --");
-        List<MaintDoc> updated = updater.get();
+        Function<MaintDoc, MaintDoc> converter = identity();
+        RowUpdaterFunction function = new RowUpdaterFunction(10, overall, current);
+        RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
+        updaters.add(updater);
       }
+      List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
+      for (RowUpdateProvider<MaintDoc> updater : updaters) {
+        Callable<ImmutableList<MaintDoc>> callable = fromProvider(updater);
+        callables.add(callable);
+      }
+      getFutures(executor, callables);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
   }
 
-  private static RowUpdater<MaintDoc> getUpdater(RowSelector<MaintDoc> selector, List<MaintDoc> docs, int show) {
-    RowUpdater.Builder<MaintDoc> builder = RowUpdater.builder();
-    builder.withProvider(selector.getProvider());
-    builder.withTable(selector.getTable());
-    builder.withField("DOC_CNTNT");
-    builder.withWeigher(selector.getWeigher());
-    builder.withBatch(DocBatchFunction.INSTANCE);
-    builder.withWhere("ROWID");
-    builder.withEntitities(docs);
-    builder.withShow(show);
-    builder.withBatchSize(3);
-    return builder.build();
+  private static class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, RowUpdater<MaintDoc>> {
+
+    public RowUpdaterFunction(int show, DataMetrics overall, DataMetrics current) {
+      this.show = show;
+      this.overall = checkNotNull(overall);
+      this.current = checkNotNull(current);
+    }
+
+    private final int show;
+    private final DataMetrics overall;
+    private final DataMetrics current;
+
+    public RowUpdater<MaintDoc> apply(SelectContext<MaintDoc> input) {
+      RowSelector<MaintDoc> selector = input.getSelector();
+      RowUpdater.Builder<MaintDoc> builder = RowUpdater.builder();
+      builder.withProvider(selector.getProvider());
+      builder.withTable(selector.getTable());
+      builder.withField("DOC_CNTNT");
+      builder.withWeigher(selector.getWeigher());
+      builder.withBatch(DocBatchFunction.INSTANCE);
+      builder.withWhere("ROWID");
+      builder.withEntitities(input.getSelected());
+      builder.withShow(show);
+      builder.withBatchSize(3);
+      builder.withOverall(overall);
+      builder.withCurrent(current);
+      return builder.build();
+    }
   }
 
   // setup selectors that extract maintenance documents
-  private static ImmutableList<RowSelector<MaintDoc>> getSelectors(Properties props, List<RowId> ids, int show) {
+  private static ImmutableList<RowSelector<MaintDoc>> getSelectors(Properties props, List<RowId> ids, int threads, int show) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(ids, converter.reverse()));
-    int threads = new ThreadsProvider(props).get();
     DataMetrics overall = new DataMetrics();
     DataMetrics current = new DataMetrics();
     Stopwatch timer = createUnstarted();

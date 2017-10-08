@@ -74,7 +74,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      show(overall, current, timer, last, "done");
+      show("u", overall, current, timer, last, "done");
       closeQuietly(stmt);
       closeQuietly(pstmt);
       closeQuietly(conn);
@@ -109,7 +109,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
         this.overall.increment(count, weight, micros);
         this.current.increment(count, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
-          show(overall, current, timer, last);
+          show("u", overall, current, timer, last);
           this.current.reset();
           this.last.reset().start();
         }
