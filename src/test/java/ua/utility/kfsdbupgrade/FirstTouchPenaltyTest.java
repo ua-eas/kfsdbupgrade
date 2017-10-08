@@ -100,7 +100,7 @@ public class FirstTouchPenaltyTest {
     }
   }
 
-  private void addDocumentContentIndex(Properties props) throws IOException {
+  protected void addDocumentContentIndex(Properties props) throws IOException {
     Connection conn = null;
     Statement stmt = null;
     try {
