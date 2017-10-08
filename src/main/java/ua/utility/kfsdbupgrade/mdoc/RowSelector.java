@@ -162,7 +162,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.current = builder.current;
     this.last = builder.last;
     this.closeConnection = builder.closeConnection;
-    this.showFinal = (show.isPresent() && ((rowIds.size() % show.get() != 0) || rowIds.size() == 0));
+    this.showFinal = builder.showFinal;
   }
 
   public static <T> Builder<T> builder() {
@@ -187,6 +187,12 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private Function<T, Long> weigher;
     private boolean discard;
     private boolean closeConnection;
+    private boolean showFinal;
+
+    public Builder<T> withShowFinal(boolean showFinal) {
+      this.showFinal = showFinal;
+      return this;
+    }
 
     public Builder<T> withCloseConnection(boolean closeConnection) {
       this.closeConnection = closeConnection;

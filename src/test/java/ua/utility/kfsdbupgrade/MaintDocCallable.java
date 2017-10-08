@@ -73,6 +73,7 @@ public final class MaintDocCallable implements Callable<Long> {
     builder.withProvider(provider);
     builder.withFields(asList("ROWID", "DOC_CNTNT"));
     builder.withCloseConnection(false);
+    builder.withShowFinal(false);
     return builder.build();
   }
 

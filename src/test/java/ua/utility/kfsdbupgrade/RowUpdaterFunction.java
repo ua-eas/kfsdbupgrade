@@ -44,6 +44,7 @@ public class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, Row
     builder.withTimer(timer);
     builder.withLast(last);
     builder.withCloseConnection(false);
+    builder.withShowFinal(false);
     return builder.build();
   }
 
