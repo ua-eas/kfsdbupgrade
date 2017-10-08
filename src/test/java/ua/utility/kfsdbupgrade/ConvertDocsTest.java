@@ -41,22 +41,25 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
+      System.setProperty("mdoc.content", "convert");
+      System.setProperty("mdoc.threads", "1");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
       int batchSize = 75;
-      int max = 50000;
-      List<RowId> ids = getRowIds(props, table, max, 50000);
-      int show = 1000;
+      int max = 1;
+      List<RowId> ids = getRowIds(props, table, max, 1);
+      int show = 1;
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
       Stopwatch timer = createUnstarted();
       Stopwatch last = createUnstarted();
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
-      EncryptionService encryptor = new EncryptionService(props.getProperty("encryption-key"));
+      String encryptionKey = props.getProperty("encryption-key");
+      EncryptionService encryptor = new EncryptionService(encryptionKey);
       RowUpdaterFunction function = new RowUpdaterFunction(show, new DataMetrics(), new DataMetrics(), createUnstarted(), createUnstarted());
       Function<MaintDoc, MaintDoc> converter = getConverter(props, service, encryptor);
       List<MaintDocCallable> callables = newArrayList();

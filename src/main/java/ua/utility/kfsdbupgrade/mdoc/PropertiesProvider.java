@@ -7,9 +7,11 @@ import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Files.asByteSource;
 import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 import javax.inject.Provider;
@@ -20,6 +22,7 @@ import com.google.common.io.ByteSource;
 public final class PropertiesProvider implements Provider<Properties> {
 
   private static final String DEFAULT_PROPS = "kfsdbupgrade.properties";
+  private static final String EXTERNAL_CONFIG = "db.config";
 
   public PropertiesProvider() {
     this(Optional.<File>absent());
@@ -44,6 +47,9 @@ public final class PropertiesProvider implements Provider<Properties> {
       // get the default set of properties
       Properties props = load(wrap(asByteSource(getResource(DEFAULT_PROPS)).read()));
 
+      Properties ec = getExternalConfig();
+      props.putAll(ec);
+
       // override default properties with properties from the file (if supplied)
       if (external.isPresent()) {
         props.putAll(load(wrap(asByteSource(external.get()).read())));
@@ -57,9 +63,21 @@ public final class PropertiesProvider implements Provider<Properties> {
     }
   }
 
+  private Properties getExternalConfig() throws IOException {
+    String external = System.getProperty(EXTERNAL_CONFIG);
+    if (external == null) {
+      return new Properties();
+    }
+    File file = new File(external);
+    if (file.exists()) {
+      return load(asByteSource(file));
+    }
+    return load(asByteSource(getResource(external)));
+  }
+
   private Properties load(ByteSource bytes) throws IOException {
     Properties props = new Properties();
-    props.load(bytes.openBufferedStream());
+    props.load(new InputStreamReader(bytes.openBufferedStream(), UTF_8));
     return props;
   }
 
