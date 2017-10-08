@@ -125,10 +125,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       sw = increment(weight, sw);
     }
     if (updater.isPresent()) {
-      Function<SelectContext<T>, RowUpdater<T>> function = updater.get();
       SelectContext<T> context = new SelectContext<T>(list, this);
-      RowUpdater<T> ru = function.apply(context);
-      return ru.get();
+      return updater.get().apply(context).get();
     } else {
       return newList(list);
     }
