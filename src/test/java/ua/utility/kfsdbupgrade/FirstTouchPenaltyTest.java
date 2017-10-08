@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -74,7 +75,7 @@ public class FirstTouchPenaltyTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
+      touch(props, table, DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000, Optional.of(50000));
       computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
@@ -100,24 +101,12 @@ public class FirstTouchPenaltyTest {
     }
   }
 
-  protected void addDocumentContentIndex(Properties props) throws IOException {
-    Connection conn = null;
-    Statement stmt = null;
-    try {
-      info(LOGGER, "adding clob index for krns_maint_doc_t.doc_cntnt");
-      conn = new ConnectionProvider(props, true).get();
-      stmt = conn.createStatement();
-      stmt.execute("ALTER TABLE KRNS_MAINT_DOC_T MODIFY LOB (DOC_CNTNT) (CACHE)");
-    } catch (Throwable e) {
-      throw new IOException(e);
-    } finally {
-      closeQuietly(stmt);
-      closeQuietly(conn);
-    }
-
+  private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
+    touch(props, table, field, iterable, function, weigher, show, Optional.<Integer>absent());
   }
 
-  private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
+  private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show,
+      Optional<Integer> max) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
@@ -142,6 +131,7 @@ public class FirstTouchPenaltyTest {
       builder.withCurrent(current);
       builder.withTimer(timer);
       builder.withLast(last);
+      builder.withMax(max);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
@@ -167,6 +157,23 @@ public class FirstTouchPenaltyTest {
     RowSelector<String> selector = builder.build();
     List<String> strings = selector.get();
     return transform(strings, converter);
+  }
+
+  protected void addDocumentContentIndex(Properties props) throws IOException {
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      info(LOGGER, "adding clob index for krns_maint_doc_t.doc_cntnt");
+      conn = new ConnectionProvider(props, true).get();
+      stmt = conn.createStatement();
+      stmt.execute("ALTER TABLE KRNS_MAINT_DOC_T MODIFY LOB (DOC_CNTNT) (CACHE)");
+    } catch (Throwable e) {
+      throw new IOException(e);
+    } finally {
+      closeQuietly(stmt);
+      closeQuietly(conn);
+    }
+
   }
 
 }
