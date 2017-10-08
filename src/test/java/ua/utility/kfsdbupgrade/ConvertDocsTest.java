@@ -53,14 +53,16 @@ public class ConvertDocsTest {
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      List<RowId> ids = getRowIds(props, table, 127, 10);
-      List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, 10);
+      int max = 1000;
+      int show = max / 10;
+      List<RowId> ids = getRowIds(props, table, max, show);
+      List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, show);
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
       List<RowUpdateProvider<MaintDoc>> updaters = newArrayList();
       Function<MaintDoc, MaintDoc> converter = identity();
       for (RowSelector<MaintDoc> selector : selectors) {
-        RowUpdaterFunction function = new RowUpdaterFunction(10, overall, current);
+        RowUpdaterFunction function = new RowUpdaterFunction(show, overall, current);
         RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
         updaters.add(updater);
       }
