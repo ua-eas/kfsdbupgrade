@@ -27,6 +27,7 @@ import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 import ua.utility.kfsdbupgrade.mdoc.RowUpdateProvider;
+import ua.utility.kfsdbupgrade.mdoc.RowUpdaterFunction;
 
 public final class MaintDocCallable implements Callable<Long> {
 

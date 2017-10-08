@@ -1,16 +1,9 @@
-package ua.utility.kfsdbupgrade;
+package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
-
-import ua.utility.kfsdbupgrade.mdoc.DataMetrics;
-import ua.utility.kfsdbupgrade.mdoc.DocBatchFunction;
-import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
-import ua.utility.kfsdbupgrade.mdoc.RowSelector;
-import ua.utility.kfsdbupgrade.mdoc.RowUpdater;
-import ua.utility.kfsdbupgrade.mdoc.SelectContext;
 
 public class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, RowUpdater<MaintDoc>> {
 
