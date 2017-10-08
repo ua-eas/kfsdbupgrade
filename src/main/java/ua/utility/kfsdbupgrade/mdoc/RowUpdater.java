@@ -2,7 +2,6 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -12,17 +11,13 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
-import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
@@ -34,11 +29,13 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-public final class RowUpdater<T> implements Provider<Long> {
+public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
 
   private final Provider<Connection> provider;
   private final int batchSize;
-  private final ImmutableList<T> instances;
+  private final Function<BatchContext<T>, Long> batch;
+  private final String where;
+  private final ImmutableList<T> entities;
   private final DataMetrics overall;
   private final DataMetrics current;
   private final Stopwatch timer;
@@ -46,15 +43,11 @@ public final class RowUpdater<T> implements Provider<Long> {
   private final Optional<String> schema;
   private final String table;
   private final ImmutableList<String> fields;
-  private final String where;
-  private final Function<ResultSet, T> function;
   private final Function<T, Long> weigher;
   private final Optional<Integer> show;
-  private final Optional<Integer> max;
-  private final Function<BatchContext<T>, Long> batch;
 
   @Override
-  public Long get() {
+  public ImmutableList<T> get() {
     synchronizedStart(timer, last);
     Connection conn = null;
     Statement stmt = null;
@@ -66,13 +59,20 @@ public final class RowUpdater<T> implements Provider<Long> {
       String update = schema.isPresent() ? schema.get() + "." + table : table;
       String set = asSetClause(fields);
       pstmt = conn.prepareStatement(format("UPDATE %s SET %s WHERE %s = ?", update, set, where));
-      for (List<T> partition : partition(instances, batchSize)) {
+      for (List<T> partition : partition(entities, batchSize)) {
         for (T instance : partition) {
+          Stopwatch sw = createStarted();
           batch.apply(new BatchContext<T>(instance, pstmt));
+          long weight = weigher.apply(instance);
+          sw = increment(1, weight, sw);
         }
+        Stopwatch sw = createStarted();
         pstmt.executeBatch();
+        increment(sw);
       }
+      Stopwatch sw = createStarted();
       conn.commit();
+      increment(sw);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
@@ -82,7 +82,7 @@ public final class RowUpdater<T> implements Provider<Long> {
       closeQuietly(pstmt);
       closeQuietly(conn);
     }
-    return 0L;
+    return entities;
   }
 
   private String asSetClause(Iterable<String> fields) {
@@ -94,58 +94,16 @@ public final class RowUpdater<T> implements Provider<Long> {
     return sb.toString();
   }
 
-  private ImmutableList<T> doSelect(Statement stmt, String select, String from) throws IOException {
-    ResultSet rs = null;
-    try {
-      String where = max.isPresent() ? "WHERE ROWNUM <= " + max.get() : "";
-      String sql = format("SELECT %s FROM %s %s", select, from, where).trim();
-      rs = stmt.executeQuery(sql);
-      return doResultSet(rs);
-    } catch (Throwable e) {
-      throw new IOException(e);
-    } finally {
-      closeQuietly(rs);
-    }
+  private Stopwatch increment(Stopwatch sw) {
+    return increment(0, 0, sw);
   }
 
-  private ImmutableList<T> doRowIds(Statement stmt, String select, String from) throws IOException {
-    List<T> list = newArrayList();
-    ResultSet rs = null;
-    try {
-      for (List<String> partition : partition(rowIds, batchSize)) {
-        String sql = format("SELECT %s FROM %s WHERE ROWID IN (%s)", select, from, asInClause(partition));
-        rs = stmt.executeQuery(sql);
-        List<T> batch = doResultSet(rs);
-        list.addAll(batch);
-      }
-    } catch (Throwable e) {
-      throw new IOException(e);
-    } finally {
-      closeQuietly(rs);
-    }
-    return newList(list);
-  }
-
-  private ImmutableList<T> doResultSet(ResultSet rs) throws SQLException {
-    Stopwatch sw = createStarted();
-    List<T> list = newArrayList();
-    while (rs.next()) {
-      T instance = function.apply(rs);
-      long weight = weigher.apply(instance);
-      if (!discard) {
-        list.add(instance);
-      }
-      sw = increment(weight, sw);
-    }
-    return newList(list);
-  }
-
-  private Stopwatch increment(long weight, Stopwatch sw) {
+  private Stopwatch increment(long count, long weight, Stopwatch sw) {
     long micros = sw.elapsed(MICROSECONDS);
     synchronized (overall) {
       synchronized (current) {
-        this.overall.increment(1, weight, micros);
-        this.current.increment(1, weight, micros);
+        this.overall.increment(count, weight, micros);
+        this.current.increment(count, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
           show(overall, current, timer, last);
           this.current.reset();
@@ -159,19 +117,18 @@ public final class RowUpdater<T> implements Provider<Long> {
   private RowUpdater(Builder<T> builder) {
     this.provider = builder.provider;
     this.batchSize = builder.batchSize;
-    this.rowIds = copyOf(builder.rowIds);
     this.overall = builder.overall;
     this.timer = builder.timer;
     this.schema = builder.schema;
     this.table = builder.table;
     this.show = builder.show;
     this.fields = copyOf(builder.fields);
-    this.function = builder.function;
     this.weigher = builder.weigher;
-    this.max = builder.max;
-    this.discard = builder.discard;
     this.current = builder.current;
+    this.batch = builder.batch;
     this.last = builder.last;
+    this.where = builder.where;
+    this.entities = copyOf(builder.entities);
   }
 
   public static <T> Builder<T> builder() {
@@ -182,19 +139,33 @@ public final class RowUpdater<T> implements Provider<Long> {
 
     private Provider<Connection> provider;
     private int batchSize = 75;
-    private List<String> rowIds = newArrayList();
     private DataMetrics overall = new DataMetrics();
     private DataMetrics current = new DataMetrics();
     private Stopwatch timer = createUnstarted();
     private Optional<String> schema = absent();
     private String table;
     private List<String> fields = newArrayList("ROWID");
-    private Optional<Integer> max = absent();
     private Optional<Integer> show = absent();
-    private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
-    private boolean discard;
     private Stopwatch last = createUnstarted();
+    private Function<BatchContext<T>, Long> batch;
+    private String where;
+    private List<T> entities;
+
+    public Builder<T> withWhere(String where) {
+      this.where = where;
+      return this;
+    }
+
+    public Builder<T> withBatch(Function<BatchContext<T>, Long> batch) {
+      this.batch = batch;
+      return this;
+    }
+
+    public Builder<T> withEntitities(List<T> entities) {
+      this.entities = entities;
+      return this;
+    }
 
     public Builder<T> withLast(Stopwatch last) {
       this.last = last;
@@ -206,27 +177,8 @@ public final class RowUpdater<T> implements Provider<Long> {
       return this;
     }
 
-    public Builder<T> withDiscard(boolean discard) {
-      this.discard = discard;
-      return this;
-    }
-
-    public Builder<T> withMax(Optional<Integer> max) {
-      this.max = max;
-      return this;
-    }
-
-    public Builder<T> withMax(int max) {
-      return withMax(of(max));
-    }
-
     public Builder<T> withWeigher(Function<T, Long> weigher) {
       this.weigher = weigher;
-      return this;
-    }
-
-    public Builder<T> withFunction(Function<ResultSet, T> function) {
-      this.function = function;
       return this;
     }
 
@@ -237,11 +189,6 @@ public final class RowUpdater<T> implements Provider<Long> {
 
     public Builder<T> withBatchSize(int batchSize) {
       this.batchSize = batchSize;
-      return this;
-    }
-
-    public Builder<T> withRowIds(List<String> rowIds) {
-      this.rowIds = rowIds;
       return this;
     }
 
@@ -289,9 +236,6 @@ public final class RowUpdater<T> implements Provider<Long> {
 
     private static <T> RowUpdater<T> validate(RowUpdater<T> instance) {
       checkNoBlanks(instance);
-      if (instance.rowIds.size() > 0) {
-        checkArgument(!instance.max.isPresent(), "max is ignored when row ids are supplied");
-      }
       return instance;
     }
 
