@@ -8,7 +8,6 @@ import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 
@@ -49,7 +48,7 @@ public class ConvertDocsTest {
       String table = "KRNS_MAINT_DOC_T";
       int batchSize = 75;
       int max = 50000;
-      List<RowId> ids = shuffle(getRowIds(props, table, max, 50000));
+      List<RowId> ids = getRowIds(props, table, max, 50000);
       int show = 1000;
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
