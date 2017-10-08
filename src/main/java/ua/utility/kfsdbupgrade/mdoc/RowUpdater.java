@@ -20,24 +20,25 @@ import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Provider;
 
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
+public final class RowUpdater<T> implements Provider<Long> {
 
   private final Provider<Connection> provider;
   private final int batchSize;
-  private final ImmutableList<String> rowIds;
+  private final ImmutableList<T> instances;
   private final DataMetrics overall;
   private final DataMetrics current;
   private final Stopwatch timer;
@@ -45,36 +46,52 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
   private final Optional<String> schema;
   private final String table;
   private final ImmutableList<String> fields;
+  private final String where;
   private final Function<ResultSet, T> function;
   private final Function<T, Long> weigher;
   private final Optional<Integer> show;
   private final Optional<Integer> max;
-  private final boolean discard;
+  private final Function<BatchContext<T>, Long> batch;
 
   @Override
-  public ImmutableList<T> get() {
+  public Long get() {
     synchronizedStart(timer, last);
     Connection conn = null;
     Statement stmt = null;
+    PreparedStatement pstmt = null;
     ResultSet rs = null;
     try {
       conn = provider.get();
       stmt = conn.createStatement();
-      String select = Joiner.on(',').join(fields);
-      String from = schema.isPresent() ? schema.get() + "." + table : table;
-      if (rowIds.size() > 0) {
-        return doRowIds(stmt, select, from);
-      } else {
-        return doSelect(stmt, select, from);
+      String update = schema.isPresent() ? schema.get() + "." + table : table;
+      String set = asSetClause(fields);
+      pstmt = conn.prepareStatement(format("UPDATE %s SET %s WHERE %s = ?", update, set, where));
+      for (List<T> partition : partition(instances, batchSize)) {
+        for (T instance : partition) {
+          batch.apply(new BatchContext<T>(instance, pstmt));
+        }
+        pstmt.executeBatch();
       }
+      conn.commit();
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
       show(overall, current, timer, last, "done");
       closeQuietly(rs);
       closeQuietly(stmt);
+      closeQuietly(pstmt);
       closeQuietly(conn);
     }
+    return 0L;
+  }
+
+  private String asSetClause(Iterable<String> fields) {
+    Iterator<String> itr = fields.iterator();
+    StringBuilder sb = new StringBuilder();
+    while (itr.hasNext()) {
+      sb.append(itr.next() + " = ?" + (itr.hasNext() ? "," : ""));
+    }
+    return sb.toString();
   }
 
   private ImmutableList<T> doSelect(Statement stmt, String select, String from) throws IOException {
