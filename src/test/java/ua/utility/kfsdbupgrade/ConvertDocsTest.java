@@ -53,7 +53,7 @@ public class ConvertDocsTest {
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int max = 1000;
+      int max = 10000;
       int show = max / 10;
       List<RowId> ids = getRowIds(props, table, max, show);
       List<RowSelector<MaintDoc>> selectors = getSelectors(props, ids, threads, show);
