@@ -1,11 +1,9 @@
-package ua.utility.kfsdbupgrade;
+package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 
 import com.google.common.collect.ImmutableList;
-
-import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 
 public final class SelectContext<T> {
 

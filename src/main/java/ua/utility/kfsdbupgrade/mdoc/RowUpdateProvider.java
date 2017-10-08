@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade;
+package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
@@ -9,9 +9,6 @@ import javax.inject.Provider;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-
-import ua.utility.kfsdbupgrade.mdoc.RowSelector;
-import ua.utility.kfsdbupgrade.mdoc.RowUpdater;
 
 public final class RowUpdateProvider<T> implements Provider<ImmutableList<T>> {
 
