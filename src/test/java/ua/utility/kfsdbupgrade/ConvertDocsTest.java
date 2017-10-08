@@ -35,13 +35,12 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
-      System.setProperty("mdoc.threads", "2");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int max = 13422;
+      int max = 1000000;
       int show = 1000;
       int batchSize = 75;
       List<RowId> ids = getRowIds(props, table, max, show);
