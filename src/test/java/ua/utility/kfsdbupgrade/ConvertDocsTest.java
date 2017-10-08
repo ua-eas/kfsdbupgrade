@@ -113,9 +113,9 @@ public class ConvertDocsTest {
       builder.withWhere("ROWID");
       builder.withEntitities(input.getSelected());
       builder.withShow(show);
-      builder.withBatchSize(3);
       builder.withOverall(overall);
       builder.withCurrent(current);
+      builder.withCloseConnection(false);
       return builder.build();
     }
   }
