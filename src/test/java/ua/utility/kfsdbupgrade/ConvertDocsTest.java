@@ -41,17 +41,15 @@ public class ConvertDocsTest {
   @Test
   public void test() {
     try {
-      System.setProperty("mdoc.content", "convert");
-      System.setProperty("mdoc.threads", "1");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
       int batchSize = 75;
-      int max = 1;
-      List<RowId> ids = getRowIds(props, table, max, 1);
-      int show = 1;
+      int max = 1000000;
+      List<RowId> ids = getRowIds(props, table, max, 50000);
+      int show = 1000;
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
       Stopwatch timer = createUnstarted();
