@@ -55,9 +55,9 @@ import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
-public class FirstTouchPenaltyTest {
+public class MDocWarmupTest {
 
-  private static final Logger LOGGER = Logger.getLogger(FirstTouchPenaltyTest.class);
+  private static final Logger LOGGER = Logger.getLogger(MDocWarmupTest.class);
 
   private final RowIdConverter converter = RowIdConverter.getInstance();
 

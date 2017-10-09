@@ -36,7 +36,7 @@ import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
-public class ConvertDocsTest {
+public class MDocConvertTest {
 
   @Test
   public void test() {
