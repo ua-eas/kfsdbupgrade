@@ -6,6 +6,7 @@ import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.primitives.Ints.checkedCast;
+import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -74,7 +75,7 @@ public class MDocWarmupTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      int max = Math.min(rowIds.size(), 50000);
+      int max = min(rowIds.size(), 50000);
       touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       computeStats(props, table);
     } catch (Throwable e) {
