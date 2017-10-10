@@ -870,6 +870,10 @@ public class App {
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
+        
+        LOGGER.info("Enabling parallel DML for this session...");
+        PreparedStatement prepStmt = retval.prepareStatement("ALTER SESSION ENABLE PARALLEL DML");
+        prepStmt.executeQuery();
 
 		LOGGER.info("connected to database " + properties.getProperty("database-name"));
 		LOGGER.info("");
