@@ -67,7 +67,7 @@ public class MDocWarmupTest {
     try {
       Properties props = new PropertiesProvider().get();
       String table = "KRNS_MAINT_DOC_T";
-      List<RowId> rowIds = getRowIds(props, table, 25000);
+      List<RowId> rowIds = getRowIds(props, table, 50000);
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       double select = ((blocks.size() * 1d) / rowIds.size() * 100);
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
@@ -75,7 +75,7 @@ public class MDocWarmupTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      int max = min(rowIds.size(), 50000);
+      int max = min(rowIds.size(), 25000);
       touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       computeStats(props, table);
     } catch (Throwable e) {
