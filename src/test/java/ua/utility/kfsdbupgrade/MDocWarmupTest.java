@@ -75,7 +75,7 @@ public class MDocWarmupTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      int max = min(rowIds.size(), 25000);
+      int max = min(rowIds.size(), 30000);
       touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       computeStats(props, table);
     } catch (Throwable e) {
