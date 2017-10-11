@@ -6,7 +6,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
+import static java.lang.Runtime.getRuntime;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
@@ -15,6 +18,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -38,6 +42,8 @@ import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class MDocConvertTest {
 
+  private static final Logger LOGGER = Logger.getLogger(MDocConvertTest.class);
+
   @Test
   public void test() {
     try {
@@ -49,6 +55,7 @@ public class MDocConvertTest {
       int batchSize = 75;
       int max = 1000000;
       List<RowId> ids = getRowIds(props, table, max, 50000);
+      info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), threads, getRuntime().availableProcessors());
       int show = 1000;
       DataMetrics overall = new DataMetrics();
       DataMetrics current = new DataMetrics();
