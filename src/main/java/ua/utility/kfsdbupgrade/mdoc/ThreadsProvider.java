@@ -8,12 +8,18 @@ import static java.lang.Runtime.getRuntime;
 import static java.math.RoundingMode.HALF_UP;
 import static java.util.Locale.ENGLISH;
 import static org.apache.commons.lang.StringUtils.removeEnd;
+import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 
 import java.util.Properties;
 
 import javax.inject.Provider;
 
+import org.apache.log4j.Logger;
+
 public final class ThreadsProvider implements Provider<Integer> {
+
+  private static final Logger LOGGER = getLogger(ThreadsProvider.class);
 
   private static final String KEY = "mdoc.threads";
 
@@ -30,14 +36,17 @@ public final class ThreadsProvider implements Provider<Integer> {
   @Override
   public Integer get() {
     String value = getValue(properties).toUpperCase(ENGLISH);
+    int threads = -1;
     if (value.endsWith("C")) {
       String trimmed = removeEnd(value, "C");
       double multiplier = parseDouble(trimmed);
       int processors = getRuntime().availableProcessors();
-      return roundToInt(multiplier * processors, HALF_UP);
+      threads = roundToInt(multiplier * processors, HALF_UP);
     } else {
-      return parseInt(value);
+      threads = parseInt(value);
     }
+    info(LOGGER, "%s threads (%s cores)", threads, getRuntime().availableProcessors());
+    return threads;
   }
 
   private String getValue(Properties props) {
