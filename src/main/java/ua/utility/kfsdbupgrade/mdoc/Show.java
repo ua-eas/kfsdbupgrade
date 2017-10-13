@@ -2,7 +2,6 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.primitives.Ints.checkedCast;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
@@ -34,15 +33,17 @@ public final class Show {
         args.add(prefix);
         args.addAll(getArgs(overall, total));
         args.addAll(getArgs(current, last));
+        args.add(getTime(total));
         args.add(label);
-        info(LOGGER, "%s[%s, %s, %s, %s, %s] [%s, %s, %s, %s, %s] %s", args.toArray());
+        info(LOGGER, "%s[%s, %s, %s, %s, %s] [%s, %s, %s, %s, %s] %s %s", args.toArray());
       }
     }
   }
 
   private static ImmutableList<Object> getArgs(DataMetrics metrics, Stopwatch wallTime) {
     List<Object> args = newArrayList();
-    long millis = wallTime.elapsed(MILLISECONDS);
+    // long millis = wallTime.elapsed(MILLISECONDS);
+    long millis = metrics.getMicroseconds() / 1000;
     args.add(getCount(checkedCast(metrics.getCount())));
     args.add(getSize(metrics.getBytes()));
     args.add(getThroughputInSeconds(millis, metrics.getCount(), "rows/sec"));
