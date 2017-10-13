@@ -11,6 +11,7 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 
@@ -54,7 +55,7 @@ public class MDocConvertTest {
       String table = "KRNS_MAINT_DOC_T";
       int batchSize = 75;
       int max = 1000000;
-      List<RowId> ids = getRowIds(props, table, max, 50000);
+      List<RowId> ids = shuffle(getRowIds(props, table, max, 50000));
       info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), threads, getRuntime().availableProcessors());
       int show = 1000;
       DataMetrics overall = new DataMetrics();
