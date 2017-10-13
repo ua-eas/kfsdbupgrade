@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -97,7 +98,18 @@ public class MDocConvertTest {
     if ("convert".equals(type)) {
       return new MaintDocConverterFunction(encryptor, service);
     }
+    if ("reverse".equals(type)) {
+      return ReverseFunction.INSTANCE;
+    }
     return identity();
+  }
+
+  private enum ReverseFunction implements Function<MaintDoc, MaintDoc> {
+    INSTANCE;
+
+    public MaintDoc apply(MaintDoc input) {
+      return MaintDoc.build(input.getId(), StringUtils.reverse(input.getContent()));
+    }
   }
 
   private ImmutableList<RowId> getRowIds(Properties props, String table, int max, int show) {
