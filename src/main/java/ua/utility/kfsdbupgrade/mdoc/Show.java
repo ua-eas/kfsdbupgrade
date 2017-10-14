@@ -24,7 +24,7 @@ public final class Show {
     args.add(getTime(snapshot.getOverallWallTimeMicros() / 1000));
     args.addAll(getArgs(snapshot.getCurrent(), snapshot.getCurrentWallTimeMicros()));
     args.add(getTime(snapshot.getCurrentWallTimeMicros() / 1000));
-    info(LOGGER, "[r%s/%s/%s|c%s/%s/%s|w%s/%s/%s|%s] [r%s/%s/%s|c%s/%s/%s|w%s/%s/%s|%s]", args.toArray());
+    info(LOGGER, "r%s/%s/%s|c%s/%s/%s|w%s/%s/%s|%s-r%s/%s/%s|c%s/%s/%s|w%s/%s/%s|%s", args.toArray());
   }
 
   public static ImmutableList<Object> getArgs(MDocMetric metric, long micros) {

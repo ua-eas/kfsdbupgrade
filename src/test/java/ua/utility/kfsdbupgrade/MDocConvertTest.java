@@ -51,7 +51,7 @@ public class MDocConvertTest {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int threads = new ThreadsProvider(props).get();
-      ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
+      ExecutorService executor = new ExecutorProvider("m", threads).get();
       String table = "KRNS_MAINT_DOC_T";
       int selectSize = 75;
       int max = 1000000;
