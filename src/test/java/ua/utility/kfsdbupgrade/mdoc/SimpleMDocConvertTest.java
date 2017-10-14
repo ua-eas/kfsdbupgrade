@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static com.google.common.io.ByteSource.wrap;
@@ -51,6 +52,7 @@ public class SimpleMDocConvertTest {
   private int selected = 0;
   private int converted = 0;
   private int updated = 0;
+  private final Stopwatch overall = createUnstarted();
 
   @Test
   public void test() {
@@ -72,6 +74,7 @@ public class SimpleMDocConvertTest {
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
       Stopwatch sw = createStarted();
+      overall.start();
       info(LOGGER, "ec2 cores -> %s", ec2Cores);
       info(LOGGER, "rd2 cores -> %s", rdsCores);
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
@@ -128,9 +131,10 @@ public class SimpleMDocConvertTest {
       callables.add(fromProvider(mdu));
     }
     getFutures(rds, callables);
-    String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
+    String tp1 = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.updated += docs.size();
-    info(LOGGER, "updated ---> %s (%s docs [%s] %s)", getCount(updated), getCount(docs.size()), getTime(sw), tp);
+    String tp2 = getThroughputInSeconds(overall.elapsed(MILLISECONDS), updated, "docs/sec");
+    info(LOGGER, "updated ---> %s (%s docs [%s] %s [%s])", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
   }
 
   private ImmutableList<RowId> getRowIds(Connection conn, int max) {
