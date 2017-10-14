@@ -58,6 +58,7 @@ public class SimpleMDocConvertTest {
 
   @Test
   public void test() {
+    List<Connection> conns = newArrayList();
     try {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
@@ -72,7 +73,7 @@ public class SimpleMDocConvertTest {
       EncryptionService encryptor = new EncryptionService(encryptionKey);
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       Function<MaintDoc, MaintDoc> converter = getConverter(props, encryptor, service);
-      List<Connection> conns = openConnections(provider, rdsCores);
+      conns = openConnections(provider, rdsCores);
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
       Stopwatch sw = createStarted();
@@ -85,12 +86,13 @@ public class SimpleMDocConvertTest {
         List<MaintDoc> converted = convert(ec2, originals, converter);
         store(rds, conns, converted, batchSize, rdsCores);
       }
-      closeQuietly(conns);
       String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
       info(LOGGER, "converted -> %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
+    } finally {
+      closeQuietly(conns);
     }
   }
 
