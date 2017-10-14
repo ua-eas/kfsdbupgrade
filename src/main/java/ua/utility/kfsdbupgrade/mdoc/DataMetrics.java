@@ -7,18 +7,14 @@ import com.google.common.base.Stopwatch;
 public final class DataMetrics {
 
   public DataMetrics() {
-    reset();
-  }
-
-  private Counter count;
-  private Counter bytes;
-  private Counter elapsed;
-
-  public synchronized void reset() {
     this.count = new Counter();
     this.bytes = new Counter();
     this.elapsed = new Counter();
   }
+
+  private final Counter count;
+  private final Counter bytes;
+  private final Counter elapsed;
 
   public synchronized long getCount() {
     return count.getValue();

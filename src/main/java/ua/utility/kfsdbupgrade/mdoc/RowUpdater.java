@@ -114,7 +114,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
         this.current.increment(count, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
           // show("u", overall, current, timer, last);
-          this.current.reset();
+          // this.current.reset();
           this.last.reset().start();
         }
       }
