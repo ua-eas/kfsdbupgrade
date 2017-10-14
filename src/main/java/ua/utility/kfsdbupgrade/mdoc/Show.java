@@ -20,7 +20,7 @@ public final class Show {
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
-    double millis = metric.getMicroseconds() / 1000D;
+    double millis = microseconds / 1000D;
     double seconds = millis / 1000;
     double iops = metric.getCount() / seconds;
     return getCountFormatter().format(iops);
