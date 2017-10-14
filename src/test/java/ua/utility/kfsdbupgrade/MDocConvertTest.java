@@ -73,6 +73,7 @@ public class MDocConvertTest {
         builder.withConverter(converter);
         builder.withProvider(provider);
         builder.withRowIds(distribution);
+        builder.withMetrics(metrics);
         callables.add(builder.build());
       }
       metrics.start();
@@ -120,6 +121,7 @@ public class MDocConvertTest {
     builder.withShow(show);
     builder.withTable(table);
     builder.withProvider(provider);
+    builder.withMetrics(new DatabaseMetrics(show, false));
     RowSelector<String> selector = builder.build();
     List<String> strings = selector.get();
     return transform(strings, RowIdConverter.getInstance());
