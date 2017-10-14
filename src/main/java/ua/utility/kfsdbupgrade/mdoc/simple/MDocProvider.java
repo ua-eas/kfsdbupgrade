@@ -41,8 +41,8 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
     ResultSet rs = null;
     List<MaintDoc> docs = newArrayList();
     try {
+      stmt = conn.createStatement();
       for (List<RowId> partition : partition(rowIds, selectSize)) {
-        stmt = conn.createStatement();
         rs = stmt.executeQuery(format("SELECT ROWID, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (%s)", asInClause(partition)));
         while (rs.next()) {
           String rowId = rs.getString(1);
