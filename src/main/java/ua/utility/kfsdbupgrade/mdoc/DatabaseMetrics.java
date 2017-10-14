@@ -32,7 +32,8 @@ public final class DatabaseMetrics {
   }
 
   public synchronized void start() {
-    checkArgument(!overallTimer.isRunning(), "already started");
+    checkArgument(!overallTimer.isRunning(), "overall timer already started");
+    checkArgument(!currentTimer.isRunning(), "current timer already started");
     this.overallTimer.start();
     this.currentTimer.start();
   }
@@ -43,9 +44,9 @@ public final class DatabaseMetrics {
     this.currentTimer.reset().start();
   }
 
-  private Stopwatch checkStarted() {
-    checkArgument(overallTimer.isRunning(), "not started");
-    return overallTimer;
+  private void checkStarted() {
+    checkArgument(overallTimer.isRunning(), "overall timer not started");
+    checkArgument(currentTimer.isRunning(), "current timer not started");
   }
 
   public synchronized void select(long bytes, long microseconds) {
