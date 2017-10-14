@@ -6,7 +6,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
-import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static java.lang.String.format;
@@ -84,10 +83,6 @@ public class MDocWarmupTest {
       List<Long> first = mm.get(min);
       for (long microseconds : first) {
         min = min(min, min - (microseconds / 1000));
-      }
-      List<Long> last = mm.get(max);
-      for (long microseconds : last) {
-        max = max(max, max + (microseconds / 1000));
       }
       info(LOGGER, "started --> %s", min);
       info(LOGGER, "finished -> %s", max);
