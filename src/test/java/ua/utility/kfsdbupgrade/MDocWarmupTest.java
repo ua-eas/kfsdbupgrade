@@ -95,12 +95,15 @@ public class MDocWarmupTest {
         // the number of microseconds this measurement took
         for (long microseconds : mm.get(millisecond)) {
           // the microsecond at which this measurement began
-          long microsecond = (millisecond * 1000) - microseconds;
-          Integer count = map.get(microsecond);
-          if (count == null) {
-            count = 0;
+          long timestamp = (millisecond * 1000) - microseconds;
+          for (long i = 0; i < timestamp; i++) {
+            long key = timestamp + i;
+            Integer count = map.get(key);
+            if (count == null) {
+              count = 0;
+            }
+            map.put(key, count + 1);
           }
-          map.put(microsecond, count + 1);
         }
       }
       info(LOGGER, "size -----> %s", getCount(map.size()));
