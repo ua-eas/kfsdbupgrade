@@ -8,8 +8,10 @@ import static com.google.common.collect.Lists.partition;
 import static java.lang.Runtime.getRuntime;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.fromFunction;
@@ -21,6 +23,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
 import javax.inject.Provider;
+
+import org.apache.log4j.Logger;
 
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
@@ -34,6 +38,8 @@ import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 
 public final class MDocCallable implements Callable<Long> {
+
+  private static final Logger LOGGER = Logger.getLogger(MDocCallable.class);
 
   private final Provider<Connection> provider;
   private final ImmutableList<RowId> rowIds;
@@ -50,7 +56,11 @@ public final class MDocCallable implements Callable<Long> {
       for (List<RowId> partition : partition(rowIds, selectSize)) {
         RowSelector<MaintDoc> selector = getSelector(of(conn), partition);
         List<MaintDoc> originals = selector.get();
+        Stopwatch conversion = createStarted();
         List<MaintDoc> converted = doConversion(executor, originals);
+        String tp = getThroughputInSeconds(conversion, converted.size(), "docs/sec");
+        info(LOGGER, "converted -> %s", tp);
+
       }
       conn.commit();
       return sw.elapsed(MILLISECONDS);

@@ -40,7 +40,6 @@ import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
-import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class MDocConvertTest {
 
@@ -49,15 +48,16 @@ public class MDocConvertTest {
   @Test
   public void test() {
     try {
+      System.setProperty("mdoc.content", "convert");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
-      int threads = new ThreadsProvider(props).get();
-      ExecutorService executor = new ExecutorProvider("m", threads).get();
+      int selectThreads = 1;// new ThreadsProvider(props).get();
+      ExecutorService executor = new ExecutorProvider("m", selectThreads).get();
       String table = "KRNS_MAINT_DOC_T";
       int selectSize = 150;
       int max = parseInt(props.getProperty("mdoc.max", "1000"));
       List<RowId> ids = shuffle(getRowIds(props, table, max, max / 20));
-      info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), threads, getRuntime().availableProcessors());
+      info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), selectThreads, getRuntime().availableProcessors());
       DatabaseMetrics metrics = new DatabaseMetrics(100, false);
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
@@ -65,7 +65,7 @@ public class MDocConvertTest {
       EncryptionService encryptor = new EncryptionService(encryptionKey);
       Function<MaintDoc, MaintDoc> converter = getConverter(props, metrics, service, encryptor);
       List<MDocCallable> callables = newArrayList();
-      for (List<RowId> distribution : distribute(ids, threads)) {
+      for (List<RowId> distribution : distribute(ids, selectThreads)) {
         MDocCallable.Builder builder = MDocCallable.builder();
         builder.withSelectSize(selectSize);
         builder.withConverter(converter);
