@@ -83,7 +83,7 @@ public class SimpleMDocConvertTest {
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
         List<MaintDoc> converted = convert(ec2, originals, converter);
-        update(rds, conns, converted, batchSize, rdsCores);
+        store(rds, conns, converted, batchSize, rdsCores);
       }
       closeQuietly(conns);
       String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
@@ -131,7 +131,7 @@ public class SimpleMDocConvertTest {
     return converted;
   }
 
-  private void update(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int rdsCores) {
+  private void store(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int rdsCores) {
     Stopwatch sw = createStarted();
     int index = 0;
     List<Callable<Long>> callables = newArrayList();
