@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
@@ -49,7 +50,7 @@ import ua.utility.kfsdbupgrade.mdoc.simple.RowIdProvider;
 public class SimpleMDocConvertTest {
 
   private static final Logger LOGGER = Logger.getLogger(SimpleMDocConvertTest.class);
-  
+
   private int selected = 0;
   private int converted = 0;
   private int updated = 0;
@@ -70,7 +71,7 @@ public class SimpleMDocConvertTest {
       String encryptionKey = props.getProperty("encryption-key");
       EncryptionService encryptor = new EncryptionService(encryptionKey);
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
-      Function<MaintDoc, MaintDoc> converter = new MDocConverter(encryptor, service);
+      Function<MaintDoc, MaintDoc> converter = getConverter(props, encryptor, service);
       List<Connection> conns = openConnections(provider, rdsCores);
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
@@ -91,6 +92,13 @@ public class SimpleMDocConvertTest {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
+  }
+
+  private Function<MaintDoc, MaintDoc> getConverter(Properties props, EncryptionService encryptor, MaintainableXmlConversionService service) {
+    if ("convert".equals(props.getProperty("mdoc.content"))) {
+      return new MDocConverter(encryptor, service);
+    }
+    return identity();
   }
 
   private ImmutableList<MaintDoc> select(ExecutorService rds, List<Connection> conns, List<RowId> chunk, int selectSize, int databaseCores) {
