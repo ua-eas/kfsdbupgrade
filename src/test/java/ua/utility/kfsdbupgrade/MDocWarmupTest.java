@@ -78,15 +78,15 @@ public class MDocWarmupTest {
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
       DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       ListMultimap<Long, Long> mm = metrics.getSelects();
-      long min = min(mm.keySet());
-      long max = max(mm.keySet());
+      long min = min(mm.keySet()) * 1000;
+      long max = max(mm.keySet()) * 1000;
       List<Long> first = mm.get(min);
       for (long microseconds : first) {
-        min = min(min, min - (microseconds / 1000));
+        min = min(min, min - microseconds);
       }
       info(LOGGER, "finished -> %s", max);
       info(LOGGER, "started --> %s", min);
-      info(LOGGER, "elapsed --> %s", getTime(max - min));
+      info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
       // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
