@@ -42,7 +42,7 @@ public final class DatabaseMetrics {
     this.currentTimer.reset().start();
   }
 
-  private void checkStarted() {
+  private synchronized void checkStarted() {
     checkArgument(overallTimer.isRunning(), "overall timer not started");
     checkArgument(currentTimer.isRunning(), "current timer not started");
   }
