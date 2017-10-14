@@ -47,9 +47,9 @@ import ua.utility.kfsdbupgrade.mdoc.simple.MDocProvider;
 import ua.utility.kfsdbupgrade.mdoc.simple.MDocUpdater;
 import ua.utility.kfsdbupgrade.mdoc.simple.RowIdProvider;
 
-public class SimpleMDocConvertTest {
+public class MDocTest {
 
-  private static final Logger LOGGER = Logger.getLogger(SimpleMDocConvertTest.class);
+  private static final Logger LOGGER = Logger.getLogger(MDocTest.class);
 
   private int selected = 0;
   private int converted = 0;
