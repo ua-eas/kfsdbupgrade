@@ -32,14 +32,15 @@ public final class DataMetrics {
     return elapsed.getValue();
   }
 
-  public synchronized void increment(long count, long bytes, Stopwatch sw) {
-    increment(count, bytes, sw.elapsed(MICROSECONDS));
+  public synchronized long increment(long count, long bytes, Stopwatch sw) {
+    return increment(count, bytes, sw.elapsed(MICROSECONDS));
   }
 
-  public synchronized void increment(long count, long bytes, long microseconds) {
+  public synchronized long increment(long count, long bytes, long microseconds) {
     this.elapsed.increment(microseconds);
-    this.count.increment(count);
     this.bytes.increment(bytes);
+    this.count.increment(count);
+    return this.count.getValue();
   }
 
 }

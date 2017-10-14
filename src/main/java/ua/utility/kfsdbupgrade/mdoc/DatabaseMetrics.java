@@ -1,7 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 
@@ -51,25 +50,22 @@ public final class DatabaseMetrics {
     return stopwatch;
   }
 
-  public synchronized Stopwatch select(long count, long bytes, long microseconds) {
+  public synchronized long select(long count, long bytes, long microseconds) {
     checkStarted();
     this.current.select(count, bytes, microseconds);
-    this.overall.select(count, bytes, microseconds);
-    return createStarted();
+    return this.overall.select(count, bytes, microseconds);
   }
 
-  public synchronized Stopwatch update(long count, long bytes, long microseconds) {
+  public synchronized long update(long count, long bytes, long microseconds) {
     checkStarted();
     this.current.update(count, bytes, microseconds);
-    this.overall.update(count, bytes, microseconds);
-    return createStarted();
+    return this.overall.update(count, bytes, microseconds);
   }
 
-  public synchronized Stopwatch convert(long count, long bytes, long microseconds) {
+  public synchronized long convert(long count, long bytes, long microseconds) {
     checkStarted();
     this.current.convert(count, bytes, microseconds);
-    this.overall.convert(count, bytes, microseconds);
-    return createStarted();
+    return this.overall.convert(count, bytes, microseconds);
   }
 
   public synchronized DatabaseMetric getSnapshot() {

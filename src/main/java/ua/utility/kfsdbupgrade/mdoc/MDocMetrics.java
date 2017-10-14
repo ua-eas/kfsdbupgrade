@@ -24,16 +24,16 @@ public final class MDocMetrics {
     this.convert.reset();
   }
 
-  public synchronized void select(long count, long bytes, long microseconds) {
-    this.select.increment(count, bytes, microseconds);
+  public synchronized long select(long count, long bytes, long microseconds) {
+    return this.select.increment(count, bytes, microseconds);
   }
 
-  public synchronized void update(long count, long bytes, long microseconds) {
-    this.update.increment(count, bytes, microseconds);
+  public synchronized long update(long count, long bytes, long microseconds) {
+    return this.update.increment(count, bytes, microseconds);
   }
 
-  public synchronized void convert(long count, long bytes, long microseconds) {
-    this.convert.increment(count, bytes, microseconds);
+  public synchronized long convert(long count, long bytes, long microseconds) {
+    return this.convert.increment(count, bytes, microseconds);
   }
 
   public synchronized DataMetric getSelect() {

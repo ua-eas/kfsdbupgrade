@@ -124,16 +124,22 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   }
 
   private Stopwatch increment(long weight, Stopwatch sw) {
-    long micros = sw.elapsed(MICROSECONDS);
-    synchronized (metrics) {
-      this.metrics.select(1, weight, micros);
-      DatabaseMetric snapshot = metrics.getSnapshot();
-      if (show.isPresent() && snapshot.getOverall().getSelect().getCount() % show.get() == 0) {
-        show(snapshot);
-        this.metrics.resetCurrentSelect();
-      }
+    Optional<DatabaseMetric> snapshot = increment(weight, sw.elapsed(MICROSECONDS));
+    if (snapshot.isPresent()) {
+      show(snapshot.get());
     }
     return createStarted();
+  }
+
+  private Optional<DatabaseMetric> increment(long weight, long micros) {
+    synchronized (metrics) {
+      long reads = this.metrics.select(1, weight, micros);
+      if (show.isPresent() && (reads % show.get()) == 0) {
+        this.metrics.resetCurrentSelect();
+        return of(metrics.getSnapshot());
+      }
+    }
+    return absent();
   }
 
   private RowSelector(Builder<T> builder) {

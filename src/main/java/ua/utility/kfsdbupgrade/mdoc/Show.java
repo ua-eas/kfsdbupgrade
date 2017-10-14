@@ -1,22 +1,34 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCountFormatter;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 public final class Show {
 
   private static final Logger LOGGER = getLogger(Show.class);
 
   public static void show(DatabaseMetric snapshot) {
-    String read = getIops(snapshot.getOverall().getSelect(), snapshot.getWallTimeMicros());
-    String convert = getIops(snapshot.getOverall().getConvert(), snapshot.getWallTimeMicros());
-    String write = getIops(snapshot.getOverall().getUpdate(), snapshot.getWallTimeMicros());
-    String elapsed = getTime(snapshot.getWallTimeMicros() / 1000);
-    info(LOGGER, "iops [read %s | convert %s | write %s] %s", read, convert, write, elapsed);
+    List<Object> args = newArrayList();
+    args.addAll(getArgs(snapshot.getOverall(), snapshot.getWallTimeMicros()));
+    args.addAll(getArgs(snapshot.getCurrent(), snapshot.getWallTimeMicros()));
+    args.add(getTime(snapshot.getWallTimeMicros() / 1000));
+    info(LOGGER, "iops o[r %s | c %s | w %s] c[r %s | c %s | w %s] %s", args.toArray());
+  }
+
+  public static ImmutableList<Object> getArgs(MDocMetric metric, long micros) {
+    String read = getIops(metric.getSelect(), micros);
+    String convert = getIops(metric.getConvert(), micros);
+    String write = getIops(metric.getUpdate(), micros);
+    return ImmutableList.<Object>of(read, convert, write);
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
