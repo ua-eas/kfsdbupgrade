@@ -6,6 +6,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.Integer.parseInt;
 import static java.lang.Runtime.getRuntime;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Provider;
 
@@ -64,7 +64,7 @@ public class SimpleMDocConvertTest {
         update(rds, conns, converted, batchSize, rdsCores);
       }
       closeQuietly(conns);
-      String tp = getThroughputInSeconds(sw.elapsed(TimeUnit.MILLISECONDS), rowIds.size(), "docs/sec");
+      String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
       info(LOGGER, "converted %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
     } catch (Throwable e) {
       e.printStackTrace();
