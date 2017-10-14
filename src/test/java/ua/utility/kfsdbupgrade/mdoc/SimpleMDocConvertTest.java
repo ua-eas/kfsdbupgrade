@@ -1,6 +1,5 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
-import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
@@ -41,6 +40,7 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
+import ua.utility.kfsdbupgrade.mdoc.simple.MDocConverter;
 import ua.utility.kfsdbupgrade.mdoc.simple.MDocProvider;
 import ua.utility.kfsdbupgrade.mdoc.simple.MDocUpdater;
 import ua.utility.kfsdbupgrade.mdoc.simple.RowIdProvider;
@@ -55,15 +55,16 @@ public class SimpleMDocConvertTest {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       int max = parseInt(props.getProperty("mdoc.max", "100000"));
-      int chunkSize = parseInt(props.getProperty("mdoc.chunk", "5000"));
+      int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
       int rdsCores = parseInt(props.getProperty("rds.cores", "8"));
       int ec2Cores = parseInt(props.getProperty("ec2.cores", getRuntime().availableProcessors() + ""));
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
-      MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       String encryptionKey = props.getProperty("encryption-key");
       EncryptionService encryptor = new EncryptionService(encryptionKey);
+      MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
+      Function<MaintDoc, MaintDoc> converter = new MDocConverter(encryptor, service);
       List<Connection> conns = openConnections(provider, rdsCores);
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
@@ -73,7 +74,7 @@ public class SimpleMDocConvertTest {
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
-        List<MaintDoc> converted = convert(ec2, originals);
+        List<MaintDoc> converted = convert(ec2, originals, converter);
         update(rds, conns, converted, batchSize, rdsCores);
       }
       closeQuietly(conns);
@@ -97,8 +98,7 @@ public class SimpleMDocConvertTest {
     info(LOGGER, "updated ---> %s docs [%s]", getCount(docs.size()), getTime(sw));
   }
 
-  private ImmutableList<MaintDoc> convert(ExecutorService ec2, List<MaintDoc> docs) {
-    Function<MaintDoc, MaintDoc> function = identity();
+  private ImmutableList<MaintDoc> convert(ExecutorService ec2, List<MaintDoc> docs, Function<MaintDoc, MaintDoc> function) {
     List<Callable<MaintDoc>> callables = newArrayList();
     for (MaintDoc doc : docs) {
       Provider<MaintDoc> provider = fromFunction(doc, function);
