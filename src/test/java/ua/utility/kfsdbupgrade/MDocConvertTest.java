@@ -57,7 +57,7 @@ public class MDocConvertTest {
       int max = 1000000;
       List<RowId> ids = shuffle(getRowIds(props, table, max, 50000));
       info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), threads, getRuntime().availableProcessors());
-      int show = 1000;
+      int show = 3000;
       DatabaseMetrics metrics = new DatabaseMetrics(show, false);
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
