@@ -16,7 +16,7 @@ public final class Show {
     String convert = getIops(snapshot.getOverall().getConvert(), snapshot.getWallTimeMicros());
     String write = getIops(snapshot.getOverall().getUpdate(), snapshot.getWallTimeMicros());
     String elapsed = getTime(snapshot.getWallTimeMicros() / 1000);
-    info(LOGGER, "iops [r:%s, c:%s, w:%s] %s", read, convert, write, elapsed);
+    info(LOGGER, "iops [read:%s convert:%s, write:%s] %s", read, convert, write, elapsed);
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
