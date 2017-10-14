@@ -54,7 +54,7 @@ public class MDocConvertTest {
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int batchSize = 75;
+      int selectSize = 75;
       int max = 1000000;
       List<RowId> ids = shuffle(getRowIds(props, table, max, 50000));
       info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), threads, getRuntime().availableProcessors());
@@ -72,7 +72,7 @@ public class MDocConvertTest {
       List<MaintDocCallable> callables = newArrayList();
       for (List<RowId> distribution : distribute(ids, threads)) {
         MaintDocCallable.Builder builder = MaintDocCallable.builder();
-        builder.withBatchSize(batchSize);
+        builder.withSelectSize(selectSize);
         builder.withCurrent(current);
         builder.withFunction(function);
         builder.withLast(last);

@@ -40,24 +40,25 @@ public final class DocConverter implements Provider<Long> {
     try {
       conn = provider.get();
       pstmt = conn.prepareStatement(format("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE %s = ?", field));
-      sw = metrics.getUpdate().elapsed(sw);
+      sw = metrics.update(0, 0, sw);
       for (List<String> partition : partition(headerIds, selectSize)) {
         List<MaintDoc> original = new MaintDocSelector(conn, partition, metrics, field).get();
         if (update) {
           sw = createStarted();
           List<MaintDoc> converted = transform(original, function);
-          sw = metrics.getConvert().increment(converted.size(), sum(original) + sum(converted), sw);
+          sw = metrics.convert(converted.size(), sum(original) + sum(converted), sw);
           int batched = 0;
           for (MaintDoc doc : converted) {
             pstmt.setString(1, doc.getContent());
             pstmt.setString(2, doc.getId());
             pstmt.addBatch();
             synchronized (metrics) {
-              sw = metrics.getUpdate().increment(doc.getContent().length(), sw);
-              if (metrics.getUpdate().getCount() % 1000 == 0) {
+              sw = metrics.update(1, doc.getContent().length(), sw);
+              long count = metrics.getUpdate().getCount();
+              if (count % 1000 == 0) {
                 new ProgressProvider(metrics).get();
               }
-              if (metrics.getUpdate().getCount() % 10000 == 0) {
+              if (count % 10000 == 0) {
                 Logging.java();
               }
             }
@@ -65,20 +66,20 @@ public final class DocConverter implements Provider<Long> {
             if (batched % batchSize == 0) {
               sw = createStarted();
               pstmt.executeBatch();
-              metrics.getUpdate().elapsed(sw);
+              metrics.update(0, 0, sw);
             }
           }
           if (batched % batchSize != 0) {
             sw = createStarted();
             pstmt.executeBatch();
-            metrics.getUpdate().elapsed(sw);
+            metrics.update(0, 0, sw);
           }
         }
       }
       if (update) {
         sw = createStarted();
         conn.commit();
-        metrics.getUpdate().elapsed(sw);
+        metrics.update(0, 0, sw);
         new ProgressProvider(metrics, "commit").get();
       }
     } catch (Throwable e) {

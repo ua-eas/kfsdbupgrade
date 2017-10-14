@@ -30,11 +30,11 @@ import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 import ua.utility.kfsdbupgrade.mdoc.RowUpdateProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowUpdaterFunction;
 
-public final class MaintDocCallable implements Callable<Long> {
+public final class MaintDocCallable2 implements Callable<Long> {
 
   private final Provider<Connection> provider;
   private final ImmutableList<RowId> rowIds;
-  private final int selectSize;
+  private final int batchSize;
   private final int show;
   private final RowUpdaterFunction function;
   private final Function<MaintDoc, MaintDoc> converter;
@@ -49,7 +49,7 @@ public final class MaintDocCallable implements Callable<Long> {
     try {
       Stopwatch sw = createStarted();
       Connection conn = provider.get();
-      for (List<RowId> partition : partition(rowIds, selectSize)) {
+      for (List<RowId> partition : partition(rowIds, batchSize)) {
         RowSelector<MaintDoc> selector = getSelector(of(conn), partition);
         List<MaintDoc> docs = selector.get();
         RowUpdateProvider<MaintDoc> updater = new RowUpdateProvider<>(selector, converter, function);
@@ -88,10 +88,10 @@ public final class MaintDocCallable implements Callable<Long> {
     return builder.build();
   }
 
-  private MaintDocCallable(Builder builder) {
+  private MaintDocCallable2(Builder builder) {
     this.provider = builder.provider;
     this.rowIds = copyOf(builder.rowIds);
-    this.selectSize = builder.selectSize;
+    this.batchSize = builder.batchSize;
     this.show = builder.show;
     this.function = builder.function;
     this.converter = builder.converter;
@@ -111,7 +111,7 @@ public final class MaintDocCallable implements Callable<Long> {
 
     private Provider<Connection> provider;
     private List<RowId> rowIds;
-    private int selectSize;
+    private int batchSize;
     private int updateThreads;
     private int show;
     private RowUpdaterFunction function;
@@ -137,8 +137,8 @@ public final class MaintDocCallable implements Callable<Long> {
       return this;
     }
 
-    public Builder withSelectSize(int selectSize) {
-      this.selectSize = selectSize;
+    public Builder withBatchSize(int batchSize) {
+      this.batchSize = batchSize;
       return this;
     }
 
@@ -182,8 +182,8 @@ public final class MaintDocCallable implements Callable<Long> {
       return this;
     }
 
-    public MaintDocCallable build() {
-      return checkNoBlanks(new MaintDocCallable(this));
+    public MaintDocCallable2 build() {
+      return checkNoBlanks(new MaintDocCallable2(this));
     }
 
   }

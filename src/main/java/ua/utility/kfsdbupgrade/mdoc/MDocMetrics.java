@@ -1,8 +1,9 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 
 import com.google.common.base.Stopwatch;
 
@@ -20,26 +21,41 @@ public final class MDocMetrics {
   private final DataMetrics convert;
   private final Stopwatch stopwatch;
 
-  public synchronized DataMetrics getSelect() {
-    return select;
-  }
-
-  public synchronized DataMetrics getUpdate() {
-    return update;
-  }
-
-  public synchronized DataMetrics getConvert() {
-    return convert;
-  }
-
-  public synchronized long elapsed() {
-    checkArgument(stopwatch.isRunning(), "not running");
-    return stopwatch.elapsed(MILLISECONDS);
-  }
-
   public synchronized void start() {
     checkArgument(!stopwatch.isRunning(), "already running");
     stopwatch.start();
+  }
+
+  public synchronized long getMicroseconds() {
+    checkArgument(stopwatch.isRunning(), "not running");
+    return stopwatch.elapsed(MICROSECONDS);
+  }
+
+  public synchronized Stopwatch select(long count, long bytes, Stopwatch sw) {
+    this.select.increment(count, bytes, sw);
+    return createStarted();
+  }
+
+  public synchronized Stopwatch update(long count, long bytes, Stopwatch sw) {
+    this.update.increment(count, bytes, sw);
+    return createStarted();
+  }
+
+  public synchronized Stopwatch convert(long count, long bytes, Stopwatch sw) {
+    this.convert.increment(count, bytes, sw);
+    return createStarted();
+  }
+
+  public synchronized DataMetric getSelect() {
+    return new DataMetric(select.getCount(), select.getBytes(), select.getMicroseconds());
+  }
+
+  public synchronized DataMetric getUpdate() {
+    return new DataMetric(update.getCount(), update.getBytes(), update.getMicroseconds());
+  }
+
+  public synchronized DataMetric getConvert() {
+    return new DataMetric(convert.getCount(), convert.getBytes(), convert.getMicroseconds());
   }
 
 }
