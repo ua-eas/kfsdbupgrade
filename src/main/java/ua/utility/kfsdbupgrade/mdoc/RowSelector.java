@@ -135,8 +135,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     synchronized (metrics) {
       long reads = this.metrics.select(1, weight, micros);
       if (show.isPresent() && (reads % show.get()) == 0) {
+        DatabaseMetric snapshot = metrics.getSnapshot();
         this.metrics.resetCurrentSelect();
-        return of(metrics.getSnapshot());
+        return of(snapshot);
       }
     }
     return absent();
