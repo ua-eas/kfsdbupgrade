@@ -65,7 +65,7 @@ public class MDocWarmupTest {
     try {
       Properties props = new PropertiesProvider().get();
       String table = "KRNS_MAINT_DOC_T";
-      List<RowId> rowIds = shuffle(getRowIds(props, table, 10000, 3000));
+      List<RowId> rowIds = shuffle(getRowIds(props, table, 100000, 3000));
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       double select = ((blocks.size() * 1d) / rowIds.size() * 100);
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
