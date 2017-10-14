@@ -89,8 +89,8 @@ public class MDocWarmupTest {
       for (long microseconds : last) {
         max = max(max, max + (microseconds / 1000));
       }
-      info(LOGGER, "started --> %s", getTime(min));
-      info(LOGGER, "finished -> %s", getTime(max));
+      info(LOGGER, "started --> %s", min);
+      info(LOGGER, "finished -> %s", max);
       info(LOGGER, "elapsed --> %s", getTime(max - min));
       // computeStats(props, table);
     } catch (Throwable e) {
