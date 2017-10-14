@@ -40,7 +40,7 @@ public final class Show {
     args.addAll(getArgs(overall));
     args.addAll(getArgs(current));
     args.add(getTime(millis));
-    info(LOGGER, prefix + "%s[%s %s %s %s %s] [%s %s %s %s %s] %s", args.toArray());
+    info(LOGGER, "%s[%s %s %s %s %s] [%s %s %s %s %s] %s", args.toArray());
   }
 
   private static ImmutableList<Object> getArgs(DataMetric metric) {
