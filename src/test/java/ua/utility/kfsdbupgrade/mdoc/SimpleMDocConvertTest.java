@@ -76,7 +76,7 @@ public class SimpleMDocConvertTest {
       Stopwatch sw = createStarted();
       overall.start();
       info(LOGGER, "ec2 cores -> %s", ec2Cores);
-      info(LOGGER, "rd2 cores -> %s", rdsCores);
+      info(LOGGER, "rds cores -> %s", rdsCores);
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
@@ -134,7 +134,7 @@ public class SimpleMDocConvertTest {
     String tp1 = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.updated += docs.size();
     String tp2 = getThroughputInSeconds(overall.elapsed(MILLISECONDS), updated, "docs/sec");
-    info(LOGGER, "updated ---> %s (%s docs [%s] %s [%s])", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
+    info(LOGGER, "updated ---> %s (%s docs [%s] %s) [%s]", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
   }
 
   private ImmutableList<RowId> getRowIds(Connection conn, int max) {
