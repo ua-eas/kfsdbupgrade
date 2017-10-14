@@ -89,7 +89,7 @@ public final class DataPumper implements Provider<Long> {
       ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
       int cores = getRuntime().availableProcessors();
       info("pumping data using %s connections, batch:%s, select:%s, cores:%s update:%s", getCount(threads), getCount(batchSize), getCount(selectSize), cores, update);
-      metrics.start();
+      // metrics.start();
       getFutures(executor, callables);
       new ProgressProvider(metrics, "finished").get();
       info("select --> %s", getSize(metrics.getSelect().getBytes()));

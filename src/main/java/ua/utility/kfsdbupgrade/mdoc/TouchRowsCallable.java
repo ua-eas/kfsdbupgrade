@@ -51,7 +51,7 @@ public final class TouchRowsCallable implements Callable<Long> {
         while (rs.next()) {
           int length = rs.getString(1).length();
           synchronized (metrics) {
-            timer = metrics.increment(1, length, timer);
+            timer = null;// metrics.increment(1, length, timer);
             if (show.isPresent() && metrics.getCount() % show.get() == 0) {
               // show(metrics, sw, "");
             }

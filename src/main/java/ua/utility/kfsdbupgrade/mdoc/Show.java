@@ -15,39 +15,41 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 public final class Show {
 
   private static final Logger LOGGER = getLogger(Show.class);
 
-  public static void show(String prefix, DataMetrics overall, DataMetrics current, Stopwatch total, Stopwatch last) {
-    show(prefix, overall, current, total, last, "");
+  public static void showSelect(DatabaseMetric ss) {
+    show("s", ss.getOverall().getSelect(), ss.getCurrent().getSelect(), ss.getWallTimeMicros());
   }
 
-  public static void show(String prefix, DataMetrics overall, DataMetrics current, Stopwatch total, Stopwatch last, String label) {
-    synchronized (overall) {
-      synchronized (current) {
-        List<Object> args = newArrayList();
-        args.add(prefix);
-        args.addAll(getArgs(overall, total));
-        args.addAll(getArgs(current, last));
-        args.add(getTime(total));
-        args.add(label);
-        info(LOGGER, "%s[%s, %s, %s, %s, %s] [%s, %s, %s, %s, %s] %s %s", args.toArray());
-      }
-    }
+  public static void showUpdate(DatabaseMetric ss) {
+    show("u", ss.getOverall().getUpdate(), ss.getCurrent().getUpdate(), ss.getWallTimeMicros());
   }
 
-  private static ImmutableList<Object> getArgs(DataMetrics metrics, Stopwatch wallTime) {
+  public static void showConvert(DatabaseMetric ss) {
+    show("c", ss.getOverall().getConvert(), ss.getCurrent().getConvert(), ss.getWallTimeMicros());
+  }
+
+  public static void show(String prefix, DataMetric overall, DataMetric current, long microseconds) {
+    long millis = microseconds / 1000;
     List<Object> args = newArrayList();
-    // long millis = wallTime.elapsed(MILLISECONDS);
-    long millis = metrics.getMicroseconds() / 1000;
-    args.add(getCount(checkedCast(metrics.getCount())));
-    args.add(getSize(metrics.getBytes()));
-    args.add(getThroughputInSeconds(millis, metrics.getCount(), "rows/sec"));
-    args.add(getRate(millis, metrics.getBytes()));
+    args.add(prefix);
+    args.addAll(getArgs(overall));
+    args.addAll(getArgs(current));
+    args.add(getTime(millis));
+    info(LOGGER, prefix + "%s[%s %s %s %s %s] [%s %s %s %s %s] %s", args.toArray());
+  }
+
+  private static ImmutableList<Object> getArgs(DataMetric metric) {
+    List<Object> args = newArrayList();
+    long millis = metric.getMicroseconds() / 1000;
+    args.add(getCount(checkedCast(metric.getCount())));
+    args.add(getSize(metric.getBytes()));
+    args.add(getThroughputInSeconds(millis, metric.getCount(), "rows/sec"));
+    args.add(getRate(millis, metric.getBytes()));
     args.add(getTime(millis));
     return newList(args);
   }

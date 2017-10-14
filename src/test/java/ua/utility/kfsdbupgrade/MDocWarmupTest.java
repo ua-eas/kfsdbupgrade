@@ -1,7 +1,6 @@
 package ua.utility.kfsdbupgrade;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
@@ -45,7 +44,8 @@ import com.google.common.collect.ImmutableMap;
 
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
-import ua.utility.kfsdbupgrade.mdoc.DataMetrics;
+import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
+import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
@@ -103,16 +103,14 @@ public class MDocWarmupTest {
     }
   }
 
-  private static <T> void touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher, int show) {
+  private static <T> DatabaseMetric touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher,
+      int show) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
-    DataMetrics overall = new DataMetrics();
-    DataMetrics current = new DataMetrics();
-    Stopwatch timer = createUnstarted();
-    Stopwatch last = createUnstarted();
+    DatabaseMetrics metrics = new DatabaseMetrics();
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
       RowSelector.Builder<T> builder = RowSelector.builder();
@@ -124,14 +122,13 @@ public class MDocWarmupTest {
       builder.withProvider(provider);
       builder.withField(field);
       builder.withDiscard(true);
-      builder.withOverall(overall);
-      builder.withCurrent(current);
-      builder.withTimer(timer);
-      builder.withLast(last);
+      builder.withMetrics(metrics);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
+    metrics.start();
     getFutures(executor, callables);
+    return metrics.getSnapshot();
   }
 
   private ImmutableMap<BlockId, RowId> getBlocks(Iterable<RowId> rowIds) {

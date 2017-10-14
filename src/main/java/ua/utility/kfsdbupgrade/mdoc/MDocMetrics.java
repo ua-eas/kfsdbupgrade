@@ -1,49 +1,33 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Stopwatch.createStarted;
-import static com.google.common.base.Stopwatch.createUnstarted;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-
-import com.google.common.base.Stopwatch;
-
 public final class MDocMetrics {
 
   public MDocMetrics() {
     this.select = new DataMetrics();
     this.update = new DataMetrics();
     this.convert = new DataMetrics();
-    this.stopwatch = createUnstarted();
   }
 
   private final DataMetrics select;
   private final DataMetrics update;
   private final DataMetrics convert;
-  private final Stopwatch stopwatch;
 
-  public synchronized void start() {
-    checkArgument(!stopwatch.isRunning(), "already running");
-    stopwatch.start();
+  public synchronized void reset() {
+    this.select.reset();
+    this.update.reset();
+    this.convert.reset();
   }
 
-  public synchronized long getMicroseconds() {
-    checkArgument(stopwatch.isRunning(), "not running");
-    return stopwatch.elapsed(MICROSECONDS);
+  public synchronized void select(long count, long bytes, long microseconds) {
+    this.select.increment(count, bytes, microseconds);
   }
 
-  public synchronized Stopwatch select(long count, long bytes, Stopwatch sw) {
-    this.select.increment(count, bytes, sw);
-    return createStarted();
+  public synchronized void update(long count, long bytes, long microseconds) {
+    this.update.increment(count, bytes, microseconds);
   }
 
-  public synchronized Stopwatch update(long count, long bytes, Stopwatch sw) {
-    this.update.increment(count, bytes, sw);
-    return createStarted();
-  }
-
-  public synchronized Stopwatch convert(long count, long bytes, Stopwatch sw) {
-    this.convert.increment(count, bytes, sw);
-    return createStarted();
+  public synchronized void convert(long count, long bytes, long microseconds) {
+    this.convert.increment(count, bytes, microseconds);
   }
 
   public synchronized DataMetric getSelect() {

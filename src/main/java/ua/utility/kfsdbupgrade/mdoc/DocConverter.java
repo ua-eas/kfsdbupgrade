@@ -40,20 +40,20 @@ public final class DocConverter implements Provider<Long> {
     try {
       conn = provider.get();
       pstmt = conn.prepareStatement(format("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE %s = ?", field));
-      sw = metrics.update(0, 0, sw);
+      sw = null; // metrics.update(0, 0, sw);
       for (List<String> partition : partition(headerIds, selectSize)) {
         List<MaintDoc> original = new MaintDocSelector(conn, partition, metrics, field).get();
         if (update) {
           sw = createStarted();
           List<MaintDoc> converted = transform(original, function);
-          sw = metrics.convert(converted.size(), sum(original) + sum(converted), sw);
+          sw = null; // metrics.convert(converted.size(), sum(original) + sum(converted), sw);
           int batched = 0;
           for (MaintDoc doc : converted) {
             pstmt.setString(1, doc.getContent());
             pstmt.setString(2, doc.getId());
             pstmt.addBatch();
             synchronized (metrics) {
-              sw = metrics.update(1, doc.getContent().length(), sw);
+              sw = null; // metrics.update(1, doc.getContent().length(), sw);
               long count = metrics.getUpdate().getCount();
               if (count % 1000 == 0) {
                 new ProgressProvider(metrics).get();
@@ -66,20 +66,20 @@ public final class DocConverter implements Provider<Long> {
             if (batched % batchSize == 0) {
               sw = createStarted();
               pstmt.executeBatch();
-              metrics.update(0, 0, sw);
+              // metrics.update(0, 0, sw);
             }
           }
           if (batched % batchSize != 0) {
             sw = createStarted();
             pstmt.executeBatch();
-            metrics.update(0, 0, sw);
+            // metrics.update(0, 0, sw);
           }
         }
       }
       if (update) {
         sw = createStarted();
         conn.commit();
-        metrics.update(0, 0, sw);
+        // metrics.update(0, 0, sw);
         new ProgressProvider(metrics, "commit").get();
       }
     } catch (Throwable e) {

@@ -36,7 +36,7 @@ public final class ProgressProvider implements Provider<Long> {
 
   public Long get() {
     int count = checkedCast(metrics.getUpdate().getCount());
-    long milliseconds = metrics.getMicroseconds() / 1000;
+    long milliseconds = 0L; // metrics.getMicroseconds() / 1000;
     String dps = getThroughputInSeconds(milliseconds, count, "docs/second");
     String select = getTime(metrics.getSelect().getMicroseconds() / 1000);
     String update = getTime(metrics.getUpdate().getMicroseconds() / 1000);

@@ -10,7 +10,6 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
@@ -76,7 +75,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
       throw new IllegalStateException(e);
     } finally {
       if (showFinal) {
-        show("u", overall, current, timer, last, "");
+        // show("u", overall, current, timer, last, "");
       }
       closeQuietly(stmt);
       closeQuietly(pstmt);
@@ -114,7 +113,7 @@ public final class RowUpdater<T> implements Provider<ImmutableList<T>> {
         this.overall.increment(count, weight, micros);
         this.current.increment(count, weight, micros);
         if (show.isPresent() && overall.getCount() % show.get() == 0) {
-          show("u", overall, current, timer, last);
+          // show("u", overall, current, timer, last);
           this.current.reset();
           this.last.reset().start();
         }

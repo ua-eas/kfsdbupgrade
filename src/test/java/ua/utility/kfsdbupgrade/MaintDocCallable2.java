@@ -74,10 +74,6 @@ public final class MaintDocCallable2 implements Callable<Long> {
     RowSelector.Builder<MaintDoc> builder = RowSelector.builder();
     builder.withFunction(MaintDocFunction.INSTANCE);
     builder.withWeigher(MaintDocWeigher.INSTANCE);
-    builder.withOverall(overall);
-    builder.withCurrent(current);
-    builder.withTimer(timer);
-    builder.withLast(last);
     builder.withRowIds(rowIds);
     builder.withShow(show);
     builder.withTable("KRNS_MAINT_DOC_T");

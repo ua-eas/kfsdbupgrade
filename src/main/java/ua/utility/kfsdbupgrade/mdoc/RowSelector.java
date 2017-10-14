@@ -4,7 +4,6 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Stopwatch.createStarted;
-import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
@@ -14,8 +13,7 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
-import static ua.utility.kfsdbupgrade.mdoc.Show.show;
-import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
+import static ua.utility.kfsdbupgrade.mdoc.Show.showSelect;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.io.IOException;
@@ -38,10 +36,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Provider<Connection> provider;
   private final int batchSize;
   private final ImmutableList<String> rowIds;
-  private final DataMetrics overall;
-  private final DataMetrics current;
-  private final Stopwatch timer;
-  private final Stopwatch last;
+  private final DatabaseMetrics metrics;
   private final Optional<String> schema;
   private final String table;
   private final ImmutableList<String> fields;
@@ -55,7 +50,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   @Override
   public ImmutableList<T> get() {
-    synchronizedStart(timer, last);
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -73,7 +67,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       throw new IllegalStateException(e);
     } finally {
       if (showFinal) {
-        show("s", overall, current, timer, last, "");
+        showSelect(metrics.getSnapshot());
       }
       closeQuietly(rs);
       closeQuietly(stmt);
@@ -131,15 +125,12 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   private Stopwatch increment(long weight, Stopwatch sw) {
     long micros = sw.elapsed(MICROSECONDS);
-    synchronized (overall) {
-      synchronized (current) {
-        this.overall.increment(1, weight, micros);
-        this.current.increment(1, weight, micros);
-        if (show.isPresent() && overall.getCount() % show.get() == 0) {
-          show("s", overall, current, timer, last);
-          this.current.reset();
-          this.last.reset().start();
-        }
+    synchronized (metrics) {
+      this.metrics.select(1, weight, micros);
+      DatabaseMetric snapshot = metrics.getSnapshot();
+      if (show.isPresent() && snapshot.getOverall().getSelect().getCount() % show.get() == 0) {
+        showSelect(snapshot);
+        this.metrics.resetCurrent();
       }
     }
     return createStarted();
@@ -149,8 +140,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.provider = builder.provider;
     this.batchSize = builder.batchSize;
     this.rowIds = copyOf(builder.rowIds);
-    this.overall = builder.overall;
-    this.timer = builder.timer;
     this.schema = builder.schema;
     this.table = builder.table;
     this.show = builder.show;
@@ -159,10 +148,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.weigher = builder.weigher;
     this.max = builder.max;
     this.discard = builder.discard;
-    this.current = builder.current;
-    this.last = builder.last;
     this.closeConnection = builder.closeConnection;
     this.showFinal = builder.showFinal;
+    this.metrics = builder.metrics;
   }
 
   public static <T> Builder<T> builder() {
@@ -172,12 +160,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   public static class Builder<T> {
 
     private Provider<Connection> provider;
+    private DatabaseMetrics metrics;
     private int batchSize = 75;
     private List<String> rowIds = newArrayList();
-    private DataMetrics overall = new DataMetrics();
-    private DataMetrics current = new DataMetrics();
-    private Stopwatch timer = createUnstarted();
-    private Stopwatch last = createUnstarted();
     private Optional<String> schema = absent();
     private String table;
     private List<String> fields = newArrayList("ROWID");
@@ -189,6 +174,11 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private boolean closeConnection;
     private boolean showFinal = true;
 
+    public Builder<T> withMetrics(DatabaseMetrics metrics) {
+      this.metrics = metrics;
+      return this;
+    }
+
     public Builder<T> withShowFinal(boolean showFinal) {
       this.showFinal = showFinal;
       return this;
@@ -196,16 +186,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
     public Builder<T> withCloseConnection(boolean closeConnection) {
       this.closeConnection = closeConnection;
-      return this;
-    }
-
-    public Builder<T> withLast(Stopwatch last) {
-      this.last = last;
-      return this;
-    }
-
-    public Builder<T> withCurrent(DataMetrics current) {
-      this.current = current;
       return this;
     }
 
@@ -250,16 +230,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
     public Builder<T> withRowIds(List<String> rowIds) {
       this.rowIds = rowIds;
-      return this;
-    }
-
-    public Builder<T> withOverall(DataMetrics overall) {
-      this.overall = overall;
-      return this;
-    }
-
-    public Builder<T> withTimer(Stopwatch timer) {
-      this.timer = timer;
       return this;
     }
 
@@ -315,22 +285,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   public ImmutableList<String> getRowIds() {
     return rowIds;
-  }
-
-  public DataMetrics getOverall() {
-    return overall;
-  }
-
-  public DataMetrics getCurrent() {
-    return current;
-  }
-
-  public Stopwatch getTimer() {
-    return timer;
-  }
-
-  public Stopwatch getLast() {
-    return last;
   }
 
   public Optional<String> getSchema() {

@@ -13,7 +13,6 @@ import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
-import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 
 import java.util.List;
 import java.util.Properties;
@@ -85,8 +84,8 @@ public class MDocConvertTest {
         callables.add(builder.build());
       }
       getFutures(executor, callables);
-      show("s", overall, current, timer, last);
-      show("u", function.getOverall(), function.getCurrent(), function.getTimer(), function.getLast());
+      // show("s", overall, current, timer, last);
+      // show("u", function.getOverall(), function.getCurrent(), function.getTimer(), function.getLast());
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);

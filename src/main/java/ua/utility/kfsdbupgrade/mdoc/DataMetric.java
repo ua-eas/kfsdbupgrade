@@ -1,8 +1,15 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+
+import com.google.common.base.Stopwatch;
 
 public final class DataMetric {
+
+  public DataMetric(long count, long bytes, Stopwatch sw) {
+    this(count, bytes, sw.elapsed(MICROSECONDS));
+  }
 
   public DataMetric(long count, long bytes, long microseconds) {
     checkArgument(count >= 0, "count must be zero or greater");
