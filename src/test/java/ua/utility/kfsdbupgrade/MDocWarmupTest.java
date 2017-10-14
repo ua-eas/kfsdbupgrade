@@ -74,7 +74,7 @@ public class MDocWarmupTest {
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
-      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
+      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10000);
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
       touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 5000);
     } catch (Throwable e) {
