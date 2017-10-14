@@ -1,8 +1,10 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.primitives.Ints.checkedCast;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCountFormatter;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
@@ -22,14 +24,15 @@ public final class Show {
     args.add(getTime(snapshot.getOverallWallTimeMicros() / 1000));
     args.addAll(getArgs(snapshot.getCurrent(), snapshot.getCurrentWallTimeMicros()));
     args.add(getTime(snapshot.getCurrentWallTimeMicros() / 1000));
-    info(LOGGER, "[r%s|c%s|w%s|%s] [r%s|c%s|w%s|%s]", args.toArray());
+    info(LOGGER, "[%s r%s|c%s|w%s|%s] [r%s|c%s|w%s|%s]", args.toArray());
   }
 
   public static ImmutableList<Object> getArgs(MDocMetric metric, long micros) {
+    String count = getCount(checkedCast(metric.getSelect().getCount()));
     String read = getIops(metric.getSelect(), micros);
     String convert = getIops(metric.getConvert(), micros);
     String write = getIops(metric.getUpdate(), micros);
-    return ImmutableList.<Object>of(read, convert, write);
+    return ImmutableList.<Object>of(count, read, convert, write);
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
