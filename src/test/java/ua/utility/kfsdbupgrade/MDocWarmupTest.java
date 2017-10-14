@@ -89,26 +89,27 @@ public class MDocWarmupTest {
       info(LOGGER, "finished -> %s", max);
       info(LOGGER, "started --> %s", min);
       info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
-      Map<Long, Integer> map = newHashMap();
+      Map<Long, Double> map = newHashMap();
       // the microsecond when this metric was taken
       for (long microsecond : mm.keySet()) {
         // the metric(s) associated with this microsecond
         for (DataMetric metric : mm.get(microsecond)) {
           // iterate over all of the microseconds in this metric
+          double bytesPerMicrosecond = (metric.getBytes() * 1D) / metric.getMicroseconds();
           for (long i = 0; i < metric.getMicroseconds(); i++) {
             // this is one of the microseconds that participated in the metric
             long timestamp = (microsecond - metric.getMicroseconds()) + i;
             // check the map to see if this microsecond participated in the metric
-            Integer frequency = map.get(timestamp);
-            if (frequency == null) {
-              frequency = 0;
+            Double rate = map.get(timestamp);
+            if (rate == null) {
+              rate = 0D;
             }
-            map.put(timestamp, frequency + 1);
+            map.put(timestamp, rate + bytesPerMicrosecond);
           }
         }
       }
       info(LOGGER, "size -----> %s", getCount(map.size()));
-      info(LOGGER, "max ------> %s", getCount(max(map.values())));
+      info(LOGGER, "rate -----> %s", max(map.values()));
       // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
