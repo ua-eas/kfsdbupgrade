@@ -3,23 +3,14 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Function;
-import com.google.common.base.Stopwatch;
 
 public class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, RowUpdater<MaintDoc>> {
 
-  public RowUpdaterFunction(int show, DataMetrics overall, DataMetrics current, Stopwatch timer, Stopwatch last) {
-    this.show = show;
-    this.overall = checkNotNull(overall);
-    this.current = checkNotNull(current);
-    this.timer = checkNotNull(timer);
-    this.last = checkNotNull(last);
+  public RowUpdaterFunction(DatabaseMetrics metrics) {
+    this.metrics = checkNotNull(metrics);
   }
 
-  private final int show;
-  private final DataMetrics overall;
-  private final DataMetrics current;
-  private final Stopwatch timer;
-  private final Stopwatch last;
+  private final DatabaseMetrics metrics;
 
   public RowUpdater<MaintDoc> apply(SelectContext<MaintDoc> input) {
     RowSelector<MaintDoc> selector = input.getSelector();
@@ -31,33 +22,9 @@ public class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, Row
     builder.withBatch(DocBatchFunction.INSTANCE);
     builder.withWhere("ROWID");
     builder.withEntitities(input.getSelected());
-    builder.withShow(show);
-    builder.withOverall(overall);
-    builder.withCurrent(current);
-    builder.withTimer(timer);
-    builder.withLast(last);
     builder.withCloseConnection(false);
-    builder.withShowFinal(false);
+    builder.withMetrics(metrics);
     return builder.build();
   }
 
-  public int getShow() {
-    return show;
-  }
-
-  public DataMetrics getOverall() {
-    return overall;
-  }
-
-  public DataMetrics getCurrent() {
-    return current;
-  }
-
-  public Stopwatch getTimer() {
-    return timer;
-  }
-
-  public Stopwatch getLast() {
-    return last;
-  }
 }

@@ -58,6 +58,12 @@ public final class DatabaseMetrics {
     }
   }
 
+  public synchronized void update(long microseconds) {
+    checkStarted();
+    this.current.update(0, 0, microseconds);
+    this.overall.update(0, 0, microseconds);
+  }
+
   public synchronized void update(long bytes, long microseconds) {
     checkStarted();
     this.current.update(1, bytes, microseconds);
