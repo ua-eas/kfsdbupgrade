@@ -152,8 +152,7 @@ public class MDocWarmupTest {
     builder.withTable(table);
     builder.withProvider(provider);
     RowSelector<String> selector = builder.build();
-    List<String> strings = selector.get();
-    return transform(strings, converter);
+    return transform(selector.get(), converter);
   }
 
   protected void addDocumentContentIndex(Properties props) throws IOException {
