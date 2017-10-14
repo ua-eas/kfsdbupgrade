@@ -3,15 +3,12 @@ package ua.utility.kfsdbupgrade;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static java.lang.String.format;
-import static java.util.Collections.max;
-import static java.util.Collections.min;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
@@ -43,11 +40,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ListMultimap;
 
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
-import ua.utility.kfsdbupgrade.mdoc.DataMetric;
+import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
@@ -78,38 +74,7 @@ public class MDocWarmupTest {
       // touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
-      DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
-      ListMultimap<Long, DataMetric> mm = metrics.getSelects();
-      long min = min(mm.keySet());
-      long max = max(mm.keySet());
-      List<DataMetric> first = mm.get(min);
-      for (DataMetric metric : first) {
-        min = min(min, min - metric.getMicroseconds());
-      }
-      info(LOGGER, "finished -> %s", max);
-      info(LOGGER, "started --> %s", min);
-      info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
-      Map<Long, Double> map = newHashMap();
-      // the microsecond when this metric was taken
-      for (long microsecond : mm.keySet()) {
-        // the metric(s) associated with this microsecond
-        for (DataMetric metric : mm.get(microsecond)) {
-          // iterate over all of the microseconds in this metric
-          double bytesPerMicrosecond = (metric.getBytes() * 1D) / metric.getMicroseconds();
-          for (long i = 0; i < metric.getMicroseconds(); i++) {
-            // this is one of the microseconds that participated in the metric
-            long timestamp = (microsecond - metric.getMicroseconds()) + i;
-            // check the map to see if this microsecond participated in the metric
-            Double rate = map.get(timestamp);
-            if (rate == null) {
-              rate = 0D;
-            }
-            map.put(timestamp, rate + bytesPerMicrosecond);
-          }
-        }
-      }
-      info(LOGGER, "size -----> %s", getCount(map.size()));
-      info(LOGGER, "rate -----> %s", max(map.values()));
+      touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
@@ -135,7 +100,7 @@ public class MDocWarmupTest {
     }
   }
 
-  private static <T> DatabaseMetrics touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher,
+  private static <T> DatabaseMetric touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher,
       int show) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
@@ -160,7 +125,7 @@ public class MDocWarmupTest {
     }
     metrics.start();
     getFutures(executor, callables);
-    return metrics;
+    return metrics.getSnapshot();
   }
 
   private ImmutableMap<BlockId, RowId> getBlocks(Iterable<RowId> rowIds) {

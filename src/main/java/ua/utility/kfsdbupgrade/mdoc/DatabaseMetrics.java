@@ -3,13 +3,9 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
-import static java.lang.System.nanoTime;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
 
 public final class DatabaseMetrics {
 
@@ -17,11 +13,11 @@ public final class DatabaseMetrics {
   private final MDocMetrics current;
   private final Stopwatch stopwatch;
 
-  public DatabaseMetrics(boolean startTimer) {
+  public DatabaseMetrics(boolean startImmediately) {
     this.overall = new MDocMetrics();
     this.current = new MDocMetrics();
     this.stopwatch = createUnstarted();
-    if (startTimer) {
+    if (startImmediately) {
       start();
     }
   }
@@ -35,9 +31,19 @@ public final class DatabaseMetrics {
     this.stopwatch.start();
   }
 
-  public synchronized void resetCurrent() {
+  public synchronized void resetCurrentSelect() {
     checkStarted();
-    this.current.reset();
+    this.current.resetSelect();
+  }
+
+  public synchronized void resetCurrentUpdate() {
+    checkStarted();
+    this.current.resetUpdate();
+  }
+
+  public synchronized void resetCurrentConvert() {
+    checkStarted();
+    this.current.resetConvert();
   }
 
   private Stopwatch checkStarted() {
@@ -45,11 +51,8 @@ public final class DatabaseMetrics {
     return stopwatch;
   }
 
-  private final ListMultimap<Long, DataMetric> selects = ArrayListMultimap.create();
-
   public synchronized Stopwatch select(long count, long bytes, long microseconds) {
     checkStarted();
-    selects.put(nanoTime() / 1000, new DataMetric(count, bytes, microseconds));
     this.current.select(count, bytes, microseconds);
     this.overall.select(count, bytes, microseconds);
     return createStarted();
@@ -74,10 +77,6 @@ public final class DatabaseMetrics {
     MDocMetric o = new MDocMetric(overall.getSelect(), overall.getUpdate(), overall.getConvert());
     MDocMetric c = new MDocMetric(current.getSelect(), current.getUpdate(), current.getConvert());
     return new DatabaseMetric(o, c, stopwatch.elapsed(MICROSECONDS));
-  }
-
-  public synchronized ImmutableListMultimap<Long, DataMetric> getSelects() {
-    return ImmutableListMultimap.copyOf(selects);
   }
 
 }

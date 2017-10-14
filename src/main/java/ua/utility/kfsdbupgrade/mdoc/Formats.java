@@ -101,7 +101,7 @@ public final class Formats {
     }
   }
 
-  private static NumberFormat getCountFormatter() {
+  public static NumberFormat getCountFormatter() {
     NumberFormat nf = NumberFormat.getInstance();
     nf.setGroupingUsed(true);
     nf.setMaximumFractionDigits(0);
@@ -109,7 +109,7 @@ public final class Formats {
     return nf;
   }
 
-  private static NumberFormat getTimeFormatter() {
+  public static NumberFormat getTimeFormatter() {
     NumberFormat nf = NumberFormat.getInstance();
     nf.setGroupingUsed(false);
     nf.setMaximumFractionDigits(3);
@@ -117,7 +117,7 @@ public final class Formats {
     return nf;
   }
 
-  private static NumberFormat getSizeFormatter() {
+  public static NumberFormat getSizeFormatter() {
     NumberFormat nf = NumberFormat.getInstance();
     nf.setGroupingUsed(false);
     nf.setMaximumFractionDigits(3);
@@ -125,7 +125,7 @@ public final class Formats {
     return nf;
   }
 
-  private static NumberFormat getRateFormatter() {
+  public static NumberFormat getRateFormatter() {
     NumberFormat nf = NumberFormat.getInstance();
     nf.setGroupingUsed(false);
     nf.setMaximumFractionDigits(3);

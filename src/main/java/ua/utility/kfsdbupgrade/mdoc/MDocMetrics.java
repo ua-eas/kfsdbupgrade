@@ -12,9 +12,15 @@ public final class MDocMetrics {
   private final DataMetrics update;
   private final DataMetrics convert;
 
-  public synchronized void reset() {
+  public synchronized void resetSelect() {
     this.select.reset();
+  }
+
+  public synchronized void resetUpdate() {
     this.update.reset();
+  }
+
+  public synchronized void resetConvert() {
     this.convert.reset();
   }
 

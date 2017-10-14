@@ -13,7 +13,7 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
-import static ua.utility.kfsdbupgrade.mdoc.Show.showSelect;
+import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.io.IOException;
@@ -67,7 +67,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       throw new IllegalStateException(e);
     } finally {
       if (showFinal) {
-        showSelect(metrics.getSnapshot());
+        show(metrics.getSnapshot());
       }
       closeQuietly(rs);
       closeQuietly(stmt);
@@ -129,8 +129,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       this.metrics.select(1, weight, micros);
       DatabaseMetric snapshot = metrics.getSnapshot();
       if (show.isPresent() && snapshot.getOverall().getSelect().getCount() % show.get() == 0) {
-        showSelect(snapshot);
-        this.metrics.resetCurrent();
+        show(snapshot);
+        this.metrics.resetCurrentSelect();
       }
     }
     return createStarted();

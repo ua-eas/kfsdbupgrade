@@ -6,7 +6,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class DatabaseMetric {
 
   public DatabaseMetric(MDocMetric overall, MDocMetric current, long wallTimeMicros) {
-    checkArgument(wallTimeMicros >= 0, "wallTimeMicros must be zero or greater");
+    checkArgument(wallTimeMicros >= 0, "wallTimeMicros cannot be negative");
     this.overall = checkNotNull(overall);
     this.current = checkNotNull(current);
     this.wallTimeMicros = wallTimeMicros;
