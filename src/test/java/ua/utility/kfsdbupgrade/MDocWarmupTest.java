@@ -41,10 +41,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
-import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
@@ -77,8 +77,12 @@ public class MDocWarmupTest {
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
       int max = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
-      touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
-      computeStats(props, table);
+      DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
+      ListMultimap<Long, Long> mm = metrics.getSelects();
+      for (Long timestamp : mm.keySet()) {
+        System.out.println(mm.get(timestamp).size());
+      }
+      // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -103,7 +107,7 @@ public class MDocWarmupTest {
     }
   }
 
-  private static <T> DatabaseMetric touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher,
+  private static <T> DatabaseMetrics touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher,
       int show) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
@@ -128,7 +132,7 @@ public class MDocWarmupTest {
     }
     metrics.start();
     getFutures(executor, callables);
-    return metrics.getSnapshot();
+    return metrics;
   }
 
   private ImmutableMap<BlockId, RowId> getBlocks(Iterable<RowId> rowIds) {
