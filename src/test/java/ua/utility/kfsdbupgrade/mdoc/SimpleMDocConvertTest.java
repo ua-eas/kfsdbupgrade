@@ -48,13 +48,16 @@ import ua.utility.kfsdbupgrade.mdoc.simple.RowIdProvider;
 public class SimpleMDocConvertTest {
 
   private static final Logger LOGGER = Logger.getLogger(SimpleMDocConvertTest.class);
+  private int selected = 0;
+  private int converted = 0;
+  private int updated = 0;
 
   @Test
   public void test() {
     try {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
-      int max = parseInt(props.getProperty("mdoc.max", "100000"));
+      int max = parseInt(props.getProperty("mdoc.max", "1000000"));
       int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
@@ -86,16 +89,19 @@ public class SimpleMDocConvertTest {
     }
   }
 
-  private void update(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int rdsCores) {
+  private ImmutableList<MaintDoc> select(ExecutorService rds, List<Connection> conns, List<RowId> chunk, int selectSize, int databaseCores) {
     Stopwatch sw = createStarted();
+    List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
-    List<Callable<Long>> callables = newArrayList();
-    for (List<MaintDoc> distribution : distribute(docs, rdsCores)) {
-      MDocUpdater mdu = new MDocUpdater(conns.get(index++), distribution, batchSize);
-      callables.add(fromProvider(mdu));
+    for (List<RowId> distribution : distribute(chunk, databaseCores)) {
+      MDocProvider mdp = new MDocProvider(conns.get(index++), distribution, selectSize);
+      callables.add(fromProvider(mdp));
     }
-    getFutures(rds, callables);
-    info(LOGGER, "updated ---> %s docs [%s]", getCount(docs.size()), getTime(sw));
+    ImmutableList<MaintDoc> docs = concat(getFutures(rds, callables));
+    String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
+    this.selected += docs.size();
+    info(LOGGER, "selected --> %s %s docs [%s] %s", getCount(selected), getCount(docs.size()), getTime(sw), tp);
+    return docs;
   }
 
   private ImmutableList<MaintDoc> convert(ExecutorService ec2, List<MaintDoc> docs, Function<MaintDoc, MaintDoc> function) {
@@ -107,21 +113,22 @@ public class SimpleMDocConvertTest {
     }
     Stopwatch sw = createStarted();
     ImmutableList<MaintDoc> converted = Callables.getFutures(ec2, callables);
-    info(LOGGER, "converted -> %s docs [%s]", getCount(docs.size()), getTime(sw));
+    this.converted += docs.size();
+    info(LOGGER, "converted -> %s %s docs [%s]", getCount(this.converted), getCount(docs.size()), getTime(sw));
     return converted;
   }
 
-  private ImmutableList<MaintDoc> select(ExecutorService rds, List<Connection> conns, List<RowId> chunk, int selectSize, int databaseCores) {
+  private void update(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int rdsCores) {
     Stopwatch sw = createStarted();
-    List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
-    for (List<RowId> distribution : distribute(chunk, databaseCores)) {
-      MDocProvider mdp = new MDocProvider(conns.get(index++), distribution, selectSize);
-      callables.add(fromProvider(mdp));
+    List<Callable<Long>> callables = newArrayList();
+    for (List<MaintDoc> distribution : distribute(docs, rdsCores)) {
+      MDocUpdater mdu = new MDocUpdater(conns.get(index++), distribution, batchSize);
+      callables.add(fromProvider(mdu));
     }
-    ImmutableList<MaintDoc> docs = concat(getFutures(rds, callables));
-    info(LOGGER, "selected --> %s docs [%s]", getCount(docs.size()), getTime(sw));
-    return docs;
+    getFutures(rds, callables);
+    this.updated += docs.size();
+    info(LOGGER, "updated ---> %s %s docs [%s]", getCount(updated), getCount(docs.size()), getTime(sw));
   }
 
   private ImmutableList<RowId> getRowIds(Connection conn, int max) {
