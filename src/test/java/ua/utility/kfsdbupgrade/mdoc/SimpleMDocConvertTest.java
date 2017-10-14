@@ -69,6 +69,7 @@ public class SimpleMDocConvertTest {
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
       Stopwatch sw = createStarted();
+      info(LOGGER, "ec2 cores %s, rds cores %s", ec2Cores, rdsCores);
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
         List<MaintDoc> converted = convert(ec2, originals);
