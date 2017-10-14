@@ -22,7 +22,6 @@ import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
-import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 
 import java.io.IOException;
@@ -50,12 +49,10 @@ import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
-import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
-import ua.utility.kfsdbupgrade.mdoc.SingleIntegerFunction;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
@@ -71,13 +68,13 @@ public class MDocWarmupTest {
     try {
       Properties props = new PropertiesProvider().get();
       String table = "KRNS_MAINT_DOC_T";
-      List<RowId> rowIds = shuffle(getRowIds(props, table, 50000));
+      List<RowId> rowIds = shuffle(getRowIds(props, table, 10000, 3000));
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       double select = ((blocks.size() * 1d) / rowIds.size() * 100);
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
-      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
+      // touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
       DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
@@ -156,11 +153,12 @@ public class MDocWarmupTest {
     return copyOf(map);
   }
 
-  private ImmutableList<RowId> getRowIds(Properties props, String table, int show) {
+  private ImmutableList<RowId> getRowIds(Properties props, String table, int max, int show) {
     ConnectionProvider provider = new ConnectionProvider(props, false);
     RowSelector.Builder<String> builder = RowSelector.builder();
     builder.withFunction(SingleStringFunction.INSTANCE);
     builder.withWeigher(StringWeigher.INSTANCE);
+    builder.withMax(max);
     builder.withShow(show);
     builder.withTable(table);
     builder.withProvider(provider);
