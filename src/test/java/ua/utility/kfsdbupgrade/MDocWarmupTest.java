@@ -94,15 +94,16 @@ public class MDocWarmupTest {
       for (long millisecond : mm.keySet()) {
         // the number of microseconds this measurement took
         for (long microseconds : mm.get(millisecond)) {
-          // the microsecond at which this measurement began
-          long timestamp = ((millisecond * 1000) - microseconds) / 1000;
-          for (long i = 0; i < timestamp; i++) {
-            long key = timestamp + i;
-            Integer count = map.get(key);
-            if (count == null) {
-              count = 0;
+          // iterate over all of the microseconds in this measurement
+          for (long i = microseconds; i > 0; i--) {
+            // this is one of the microseconds that participated in the measurement
+            long timestamp = (millisecond * 1000) - i;
+            // check the map to see if this microsecond participated in the measurement
+            Integer frequency = map.get(timestamp);
+            if (frequency == null) {
+              frequency = 0;
             }
-            map.put(key, count + 1);
+            map.put(timestamp, frequency + 1);
           }
         }
       }
