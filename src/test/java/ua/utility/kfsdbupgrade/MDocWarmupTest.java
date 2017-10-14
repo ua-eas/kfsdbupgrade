@@ -107,7 +107,7 @@ public class MDocWarmupTest {
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
-    DatabaseMetrics metrics = new DatabaseMetrics();
+    DatabaseMetrics metrics = new DatabaseMetrics(1000, false);
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
       RowSelector.Builder<T> builder = RowSelector.builder();
@@ -138,14 +138,17 @@ public class MDocWarmupTest {
 
   private ImmutableList<RowId> getRowIds(Properties props, String table, int max, int show) {
     ConnectionProvider provider = new ConnectionProvider(props, false);
+    DatabaseMetrics metrics = new DatabaseMetrics(50000, false);
     RowSelector.Builder<String> builder = RowSelector.builder();
     builder.withFunction(SingleStringFunction.INSTANCE);
     builder.withWeigher(StringWeigher.INSTANCE);
+    builder.withMetrics(metrics);
     builder.withMax(max);
     builder.withShow(show);
     builder.withTable(table);
     builder.withProvider(provider);
     RowSelector<String> selector = builder.build();
+    metrics.start();
     return transform(selector.get(), converter);
   }
 

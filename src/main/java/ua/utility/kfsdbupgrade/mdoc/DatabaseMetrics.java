@@ -12,24 +12,21 @@ public final class DatabaseMetrics {
   private final MDocMetrics overall;
   private final Stopwatch overallTimer;
   private final Stopwatch currentTimer;
-  private final long show = 1000;
+  private final long show;
 
   private MDocMetrics current;
   private long count;
 
-  public DatabaseMetrics(boolean startImmediately) {
+  public DatabaseMetrics(long show, boolean startImmediately) {
     this.overall = new MDocMetrics();
     this.current = new MDocMetrics();
     this.overallTimer = createUnstarted();
     this.currentTimer = createUnstarted();
+    this.show = show;
     this.count = 0;
     if (startImmediately) {
       start();
     }
-  }
-
-  public DatabaseMetrics() {
-    this(false);
   }
 
   public synchronized void start() {

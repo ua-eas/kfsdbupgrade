@@ -152,7 +152,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   public static class Builder<T> {
 
     private Provider<Connection> provider;
-    private DatabaseMetrics metrics = new DatabaseMetrics(true);
+    private DatabaseMetrics metrics = new DatabaseMetrics(1000, true);
     private int batchSize = 75;
     private List<String> rowIds = newArrayList();
     private Optional<String> schema = absent();
