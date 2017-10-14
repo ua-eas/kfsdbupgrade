@@ -45,11 +45,11 @@ public final class DatabaseMetrics {
     return stopwatch;
   }
 
-  private final ListMultimap<Long, Long> selects = ArrayListMultimap.create();
+  private final ListMultimap<Long, DataMetric> selects = ArrayListMultimap.create();
 
   public synchronized Stopwatch select(long count, long bytes, long microseconds) {
     checkStarted();
-    selects.put(nanoTime() / 1000, microseconds);
+    selects.put(nanoTime() / 1000, new DataMetric(count, bytes, microseconds));
     this.current.select(count, bytes, microseconds);
     this.overall.select(count, bytes, microseconds);
     return createStarted();
@@ -76,7 +76,7 @@ public final class DatabaseMetrics {
     return new DatabaseMetric(o, c, stopwatch.elapsed(MICROSECONDS));
   }
 
-  public synchronized ImmutableListMultimap<Long, Long> getSelects() {
+  public synchronized ImmutableListMultimap<Long, DataMetric> getSelects() {
     return ImmutableListMultimap.copyOf(selects);
   }
 

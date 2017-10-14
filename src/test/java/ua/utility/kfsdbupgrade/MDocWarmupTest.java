@@ -47,6 +47,7 @@ import com.google.common.collect.ListMultimap;
 
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
+import ua.utility.kfsdbupgrade.mdoc.DataMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
@@ -78,26 +79,26 @@ public class MDocWarmupTest {
       // addDocumentContentIndex(props);
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
       DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
-      ListMultimap<Long, Long> mm = metrics.getSelects();
+      ListMultimap<Long, DataMetric> mm = metrics.getSelects();
       long min = min(mm.keySet());
       long max = max(mm.keySet());
-      List<Long> first = mm.get(min);
-      for (long microseconds : first) {
-        min = min(min, min - microseconds);
+      List<DataMetric> first = mm.get(min);
+      for (DataMetric metric : first) {
+        min = min(min, min - metric.getMicroseconds());
       }
       info(LOGGER, "finished -> %s", max);
       info(LOGGER, "started --> %s", min);
       info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
       Map<Long, Integer> map = newHashMap();
-      // the microsecond when this measurement was taken
+      // the microsecond when this metric was taken
       for (long microsecond : mm.keySet()) {
-        // the number of microseconds this measurement took
-        for (long microseconds : mm.get(microsecond)) {
-          // iterate over all of the microseconds in this measurement
-          for (long i = 0; i < microseconds; i++) {
-            // this is one of the microseconds that participated in the measurement
-            long timestamp = microsecond - i;
-            // check the map to see if this microsecond participated in the measurement
+        // the metric(s) associated with this microsecond
+        for (DataMetric metric : mm.get(microsecond)) {
+          // iterate over all of the microseconds in this metric
+          for (long i = 0; i < metric.getMicroseconds(); i++) {
+            // this is one of the microseconds that participated in the metric
+            long timestamp = (microsecond - metric.getMicroseconds()) + i;
+            // check the map to see if this microsecond participated in the metric
             Integer frequency = map.get(timestamp);
             if (frequency == null) {
               frequency = 0;
