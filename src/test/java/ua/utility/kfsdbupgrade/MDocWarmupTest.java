@@ -3,6 +3,7 @@ package ua.utility.kfsdbupgrade;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
@@ -87,6 +88,22 @@ public class MDocWarmupTest {
       info(LOGGER, "finished -> %s", max);
       info(LOGGER, "started --> %s", min);
       info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
+      Map<Long, Integer> map = newHashMap();
+
+      // the moment in time this measurement was taken
+      for (long millisecond : mm.keySet()) {
+        // the number of microseconds this measurement took
+        for (long microseconds : mm.get(millisecond)) {
+          // the microsecond at which this measurement began
+          long microsecond = (millisecond * 1000) - microseconds;
+          Integer count = map.get(microsecond);
+          if (count == null) {
+            count = 0;
+          }
+          map.put(microsecond, count + 1);
+        }
+      }
+      info(LOGGER, "size -----> %s", getCount(map.size()));
       // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
