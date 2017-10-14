@@ -2,6 +2,7 @@ package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 
 import java.sql.Connection;
@@ -11,12 +12,17 @@ import java.util.List;
 
 import javax.inject.Provider;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 
+import ua.utility.kfsdbupgrade.log.Logging;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 
 public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
+
+  private static final Logger LOGGER = Logger.getLogger(RowIdProvider.class);
 
   public RowIdProvider(Connection conn, int max) {
     this.conn = conn;
@@ -41,6 +47,9 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
         RowId element = converter.convert(rowId);
         list.add(element);
         count++;
+        if (count % 50000 == 0) {
+          Logging.info(LOGGER, "%s", getCount(count));
+        }
         if (count == max) {
           break;
         }
