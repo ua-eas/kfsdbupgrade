@@ -4,6 +4,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 
@@ -46,8 +47,11 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
         while (rs.next()) {
           String rowId = rs.getString(1);
           String content = rs.getString(2);
-          MaintDoc doc = MaintDoc.build(rowId, content);
-          docs.add(doc);
+          // if it's blank for some reason, just ignore it
+          if (isNotBlank(content)) {
+            MaintDoc doc = MaintDoc.build(rowId, content);
+            docs.add(doc);
+          }
         }
       }
     } catch (Throwable e) {
