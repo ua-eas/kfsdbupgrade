@@ -58,7 +58,7 @@ public class SimpleMDocConvertTest {
       int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
-      int rdsCores = parseInt(props.getProperty("rds.cores", "4"));
+      int rdsCores = parseInt(props.getProperty("rds.cores", "8"));
       int ec2Cores = parseInt(props.getProperty("ec2.cores", getRuntime().availableProcessors() + ""));
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
