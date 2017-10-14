@@ -19,6 +19,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
+import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 
 import java.io.IOException;
@@ -46,10 +47,12 @@ import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
+import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
+import ua.utility.kfsdbupgrade.mdoc.SingleIntegerFunction;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
@@ -71,11 +74,9 @@ public class MDocWarmupTest {
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
-      // touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
-      // addDocumentContentIndex(props);
+      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
-      touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
-      // computeStats(props, table);
+      touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 5000);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -107,7 +108,7 @@ public class MDocWarmupTest {
     int threads = new ThreadsProvider(props).get();
     ExecutorService executor = new ExecutorProvider("touch", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
-    DatabaseMetrics metrics = new DatabaseMetrics(1000, false);
+    DatabaseMetrics metrics = new DatabaseMetrics(show, false);
     for (List<String> distribution : distribute(rowIds, threads)) {
       Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
       RowSelector.Builder<T> builder = RowSelector.builder();
