@@ -18,9 +18,9 @@ public final class Show {
 
   public static void show(DatabaseMetric snapshot) {
     List<Object> args = newArrayList();
-    args.addAll(getArgs(snapshot.getOverall(), snapshot.getWallTimeMicros()));
-    args.addAll(getArgs(snapshot.getCurrent(), snapshot.getWallTimeMicros()));
-    args.add(getTime(snapshot.getWallTimeMicros() / 1000));
+    args.addAll(getArgs(snapshot.getOverall(), snapshot.getOverallWallTimeMicros()));
+    args.addAll(getArgs(snapshot.getCurrent(), snapshot.getCurrentWallTimeMicros()));
+    args.add(getTime(snapshot.getOverallWallTimeMicros() / 1000));
     info(LOGGER, "iops o[r %s | c %s | w %s] c[r %s | c %s | w %s] %s", args.toArray());
   }
 
