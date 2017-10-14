@@ -18,27 +18,39 @@ public final class Show {
 
   private static final Logger LOGGER = getLogger(Show.class);
 
+  public static void showSelect(DatabaseMetric snapshot) {
+    List<Object> args = newArrayList();
+    args.add("select-->");
+    args.addAll(getArgs(snapshot.getOverall().getSelect(), snapshot.getOverallWallTimeMicros()));
+    args.addAll(getArgs(snapshot.getCurrent().getSelect(), snapshot.getCurrentSelectWallTimeMicros()));
+    doLogging(args);
+  }
+
+  public static void showConvert(DatabaseMetric snapshot) {
+    List<Object> args = newArrayList();
+    args.add("convert->");
+    args.addAll(getArgs(snapshot.getOverall().getConvert(), snapshot.getOverallWallTimeMicros()));
+    args.addAll(getArgs(snapshot.getCurrent().getConvert(), snapshot.getCurrentConvertWallTimeMicros()));
+    doLogging(args);
+  }
+
+  public static void showUpdate(DatabaseMetric snapshot) {
+    List<Object> args = newArrayList();
+    args.add("update-->");
+    args.addAll(getArgs(snapshot.getOverall().getUpdate(), snapshot.getOverallWallTimeMicros()));
+    args.addAll(getArgs(snapshot.getCurrent().getUpdate(), snapshot.getCurrentUpdateWallTimeMicros()));
+    doLogging(args);
+  }
+
   public static void show(DatabaseMetric snapshot) {
     if (snapshot.getOverall().getSelect().getCount() > 0) {
-      List<Object> args = newArrayList();
-      args.add("read---->");
-      args.addAll(getArgs(snapshot.getOverall().getSelect(), snapshot.getOverallWallTimeMicros()));
-      args.addAll(getArgs(snapshot.getCurrent().getSelect(), snapshot.getCurrentWallTimeMicros()));
-      doLogging(args);
+      showSelect(snapshot);
     }
     if (snapshot.getOverall().getConvert().getCount() > 0) {
-      List<Object> args = newArrayList();
-      args.add("convert->");
-      args.addAll(getArgs(snapshot.getOverall().getConvert(), snapshot.getOverallWallTimeMicros()));
-      args.addAll(getArgs(snapshot.getCurrent().getConvert(), snapshot.getCurrentWallTimeMicros()));
-      doLogging(args);
+      showConvert(snapshot);
     }
     if (snapshot.getOverall().getUpdate().getCount() > 0) {
-      List<Object> args = newArrayList();
-      args.add("write--->");
-      args.addAll(getArgs(snapshot.getOverall().getUpdate(), snapshot.getOverallWallTimeMicros()));
-      args.addAll(getArgs(snapshot.getCurrent().getUpdate(), snapshot.getCurrentWallTimeMicros()));
-      doLogging(args);
+      showUpdate(snapshot);
     }
   }
 
@@ -54,7 +66,7 @@ public final class Show {
     return ImmutableList.<Object>of(count, iops, time, wtime);
   }
 
-  private static String getIops(DataMetric metric, long microseconds) {
+  public static String getIops(DataMetric metric, long microseconds) {
     double millis = microseconds / 1000D;
     double seconds = millis / 1000;
     double iops = metric.getCount() / seconds;

@@ -4,13 +4,25 @@ public final class MDocMetrics {
 
   public MDocMetrics() {
     this.select = new DataMetrics();
-    this.update = new DataMetrics();
     this.convert = new DataMetrics();
+    this.update = new DataMetrics();
   }
 
   private final DataMetrics select;
-  private final DataMetrics update;
   private final DataMetrics convert;
+  private final DataMetrics update;
+
+  public synchronized void resetSelect() {
+    this.select.reset();
+  }
+
+  public synchronized void resetConvert() {
+    this.convert.reset();
+  }
+
+  public synchronized void resetUpdate() {
+    this.update.reset();
+  }
 
   public synchronized long select(long count, long bytes, long microseconds) {
     return this.select.increment(count, bytes, microseconds);
