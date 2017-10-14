@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
@@ -16,7 +17,6 @@ import org.apache.log4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.log.Logging;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 
@@ -48,7 +48,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
         list.add(element);
         count++;
         if (count % 100000 == 0) {
-          Logging.info(LOGGER, "%s", getCount(count));
+          info(LOGGER, "%s", getCount(count));
         }
         if (count == max) {
           break;
