@@ -47,12 +47,12 @@ public final class ConnectionProvider implements Provider<Connection> {
       } else {
         url = props.getProperty("db.url");
       }
-      info("connecting to --> %s as '%s'", url, username);
+      info("%s as '%s'", url, username);
       Class.forName(checkedValue(props, "database-driver"));
       Stopwatch sw = createStarted();
       connection = getConnection(url, username, password);
       connection.setAutoCommit(autoCommit);
-      info("connected to ---> %s as '%s' [%s]", url, username, getTime(sw));
+      info("%s as '%s' [%s]", url, username, getTime(sw));
       return connection;
     } catch (Throwable e) {
       closeQuietly(connection);
