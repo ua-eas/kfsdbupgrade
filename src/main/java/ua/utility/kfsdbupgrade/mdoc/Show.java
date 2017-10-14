@@ -24,15 +24,17 @@ public final class Show {
     args.add(getTime(snapshot.getOverallWallTimeMicros() / 1000));
     args.addAll(getArgs(snapshot.getCurrent(), snapshot.getCurrentWallTimeMicros()));
     args.add(getTime(snapshot.getCurrentWallTimeMicros() / 1000));
-    info(LOGGER, "[%s r%s|c%s|w%s|%s] [r%s|c%s|w%s|%s]", args.toArray());
+    info(LOGGER, "[r%s/%s|c%s/%s|w%s/%s|%s] [r%s/%s|c%s/%s|w%s/%s|%s]", args.toArray());
   }
 
   public static ImmutableList<Object> getArgs(MDocMetric metric, long micros) {
-    String count = getCount(checkedCast(metric.getSelect().getCount()));
+    String rcount = getCount(checkedCast(metric.getSelect().getCount()));
     String read = getIops(metric.getSelect(), micros);
+    String ccount = getCount(checkedCast(metric.getConvert().getCount()));
     String convert = getIops(metric.getConvert(), micros);
+    String wcount = getCount(checkedCast(metric.getUpdate().getCount()));
     String write = getIops(metric.getUpdate(), micros);
-    return ImmutableList.<Object>of(count, read, convert, write);
+    return ImmutableList.<Object>of(rcount, read, ccount, convert, wcount, write);
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
