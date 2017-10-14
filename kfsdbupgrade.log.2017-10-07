@@ -1,0 +1,5 @@
+2017-10-07 19:21:15,408 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: [0, 0b, 0 rows/sec, 0.000 bytes/s, 1ms] [0, 0b, 0 rows/sec, 0.000 bytes/s, 5ms] done
+2017-10-07 19:21:47,334 DB [INFO] ua.utility.kfsdbupgrade.mdoc.ConnectionProvider: connecting to --> jdbc:oracle:thin:@kfs35535.cryfdp9i1uh4.us-west-2.rds.amazonaws.com:1521:KFS35535 as '${ua.kfs.dbupgrade.target.db.user}'
+2017-10-07 19:21:49,584 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: [0, 0b, 0 rows/sec, 0.000 bytes/s, 2.246s] [0, 0b, 0 rows/sec, 0.000 bytes/s, 2.249s] done
+2017-10-07 19:24:04,872 DB [INFO] ua.utility.kfsdbupgrade.mdoc.ConnectionProvider: connecting to --> jdbc:oracle:thin:@kfs3tiny.cryfdp9i1uh4.us-west-2.rds.amazonaws.com:1521:KFS3TINY as 'kulowner'
+2017-10-07 19:24:08,095 DB [INFO] ua.utility.kfsdbupgrade.log.Logging: [0, 0b, 0 rows/sec, 0.000 bytes/s, 3.220s] [0, 0b, 0 rows/sec, 0.000 bytes/s, 3.222s] done
