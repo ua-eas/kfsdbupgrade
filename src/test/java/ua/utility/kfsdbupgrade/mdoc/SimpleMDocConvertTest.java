@@ -44,20 +44,21 @@ public class SimpleMDocConvertTest {
   public void test() {
     try {
       Properties props = new PropertiesProvider().get();
+      ConnectionProvider provider = new ConnectionProvider(props, false);
       int max = parseInt(props.getProperty("mdoc.max", "113"));
       int chunkSize = parseInt(props.getProperty("mdoc.chunk", "10"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "3"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "3"));
-      ConnectionProvider provider = new ConnectionProvider(props, false);
-      int databaseCores = parseInt(props.getProperty("db.cores", "4"));
-      List<Connection> conns = openConnections(provider, databaseCores);
+      int rdsCores = parseInt(props.getProperty("rds.cores", "4"));
+      int ec2Cores = parseInt(props.getProperty("ec2.cores", getRuntime().availableProcessors() + ""));
+      List<Connection> conns = openConnections(provider, rdsCores);
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
-      ExecutorService rds = new ExecutorProvider("rds", databaseCores).get();
-      ExecutorService ec2 = new ExecutorProvider("ec2", getRuntime().availableProcessors()).get();
+      ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
+      ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
-        List<MaintDoc> originals = select(rds, conns, chunk, selectSize, databaseCores);
+        List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
         List<MaintDoc> converted = convert(ec2, originals);
-        update(rds, conns, converted, batchSize, databaseCores);
+        update(rds, conns, converted, batchSize, rdsCores);
       }
       closeQuietly(conns);
     } catch (Throwable e) {
@@ -66,11 +67,11 @@ public class SimpleMDocConvertTest {
     }
   }
 
-  private void update(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int databaseCores) {
+  private void update(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int rdsCores) {
     Stopwatch sw = createStarted();
-    List<Callable<Long>> callables = newArrayList();
     int index = 0;
-    for (List<MaintDoc> distribution : distribute(docs, databaseCores)) {
+    List<Callable<Long>> callables = newArrayList();
+    for (List<MaintDoc> distribution : distribute(docs, rdsCores)) {
       MDocUpdater mdu = new MDocUpdater(conns.get(index++), distribution, batchSize);
       callables.add(fromProvider(mdu));
     }
@@ -109,7 +110,7 @@ public class SimpleMDocConvertTest {
     Stopwatch sw = createStarted();
     RowIdProvider provider = new RowIdProvider(conn, max);
     ImmutableList<RowId> rowIds = provider.get();
-    info(LOGGER, "acquired -> %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
+    info(LOGGER, "acquired --> %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
     return rowIds;
   }
 
