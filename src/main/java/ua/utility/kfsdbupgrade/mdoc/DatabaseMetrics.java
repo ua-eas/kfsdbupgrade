@@ -9,12 +9,13 @@ import com.google.common.base.Stopwatch;
 
 public final class DatabaseMetrics {
 
-  private MDocMetrics overall;
-  private MDocMetrics current;
-  private long count;
+  private final MDocMetrics overall;
   private final Stopwatch overallTimer;
   private final Stopwatch currentTimer;
   private final long show = 1000;
+
+  private MDocMetrics current;
+  private long count;
 
   public DatabaseMetrics(boolean startImmediately) {
     this.overall = new MDocMetrics();
