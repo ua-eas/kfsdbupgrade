@@ -135,7 +135,7 @@ public class SimpleMDocConvertTest {
     String tp1 = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.updated += docs.size();
     String tp2 = getThroughputInSeconds(overall.elapsed(MILLISECONDS), updated, "docs/sec");
-    info(LOGGER, "updated ---> %s (%s docs [%s] %s) [%s]", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
+    info(LOGGER, "saved -----> %s (%s docs [%s] %s) [%s]", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
   }
 
   private ImmutableList<RowId> getRowIds(Connection conn, int max) {
