@@ -89,7 +89,6 @@ public class MDocWarmupTest {
       info(LOGGER, "started --> %s", min);
       info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
       Map<Long, Integer> map = newHashMap();
-
       // the moment in time this measurement was taken
       for (long millisecond : mm.keySet()) {
         // the number of microseconds this measurement took
@@ -108,6 +107,7 @@ public class MDocWarmupTest {
         }
       }
       info(LOGGER, "size -----> %s", getCount(map.size()));
+      info(LOGGER, "max ------> %s", getCount(max(map.values())));
       // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
