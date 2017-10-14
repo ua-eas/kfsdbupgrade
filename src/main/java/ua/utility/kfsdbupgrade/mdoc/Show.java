@@ -3,6 +3,7 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCountFormatter;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
 import org.apache.log4j.Logger;
 
@@ -14,7 +15,7 @@ public final class Show {
     String read = getIops(snapshot.getOverall().getSelect(), snapshot.getWallTimeMicros());
     String convert = getIops(snapshot.getOverall().getConvert(), snapshot.getWallTimeMicros());
     String write = getIops(snapshot.getOverall().getUpdate(), snapshot.getWallTimeMicros());
-    info(LOGGER, "iops [r:%s, c:%s, w:%s]", read, convert, write);
+    info(LOGGER, "iops [r:%s, c:%s, w:%s] %s", read, convert, write, getTime(snapshot.getWallTimeMicros() / 1000));
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
