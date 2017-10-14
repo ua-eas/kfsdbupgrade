@@ -54,8 +54,8 @@ public class SimpleMDocConvertTest {
     try {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
-      int max = parseInt(props.getProperty("mdoc.max", "10987"));
-      int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
+      int max = parseInt(props.getProperty("mdoc.max", "100000"));
+      int chunkSize = parseInt(props.getProperty("mdoc.chunk", "5000"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
       int rdsCores = parseInt(props.getProperty("rds.cores", "8"));
