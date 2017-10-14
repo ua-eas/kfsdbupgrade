@@ -5,7 +5,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
-import static java.lang.Integer.parseInt;
 import static java.lang.Runtime.getRuntime;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.commons.lang3.StringUtils.reverse;
@@ -15,7 +14,6 @@ import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
-import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 
 import java.util.List;
 import java.util.Properties;
@@ -38,13 +36,14 @@ import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
+import ua.utility.kfsdbupgrade.mdoc.RowUpdaterFunction;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
-public class MDocConvertTest {
+public class OldMDocConvertTest {
 
-  private static final Logger LOGGER = Logger.getLogger(MDocConvertTest.class);
+  private static final Logger LOGGER = Logger.getLogger(OldMDocConvertTest.class);
 
   @Test
   public void test() {
@@ -54,20 +53,23 @@ public class MDocConvertTest {
       int threads = new ThreadsProvider(props).get();
       ExecutorService executor = new ExecutorProvider("m", threads).get();
       String table = "KRNS_MAINT_DOC_T";
-      int selectSize = 150;
-      int max = parseInt(props.getProperty("mdoc.max", "1000"));
-      List<RowId> ids = shuffle(getRowIds(props, table, max, max / 20));
+      int selectSize = 75;
+      int max = 1000000;
+      List<RowId> ids = shuffle(getRowIds(props, table, max, 50000));
       info(LOGGER, "converting %s maintanence documents using %s threads (%s cores)", getCount(ids.size()), threads, getRuntime().availableProcessors());
-      DatabaseMetrics metrics = new DatabaseMetrics(100, false);
+      int show = 3000;
+      DatabaseMetrics metrics = new DatabaseMetrics(show, false);
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       String encryptionKey = props.getProperty("encryption-key");
       EncryptionService encryptor = new EncryptionService(encryptionKey);
+      RowUpdaterFunction function = new RowUpdaterFunction(metrics);
       Function<MaintDoc, MaintDoc> converter = getConverter(props, metrics, service, encryptor);
-      List<MDocCallable> callables = newArrayList();
+      List<MaintDocCallable> callables = newArrayList();
       for (List<RowId> distribution : distribute(ids, threads)) {
-        MDocCallable.Builder builder = MDocCallable.builder();
+        MaintDocCallable.Builder builder = MaintDocCallable.builder();
         builder.withSelectSize(selectSize);
+        builder.withFunction(function);
         builder.withConverter(converter);
         builder.withProvider(provider);
         builder.withRowIds(distribution);
@@ -76,8 +78,6 @@ public class MDocConvertTest {
       }
       metrics.start();
       getFutures(executor, callables);
-      info(LOGGER, "-- summary -- ");
-      show(metrics.getSnapshot());
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);

@@ -42,7 +42,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final ImmutableList<String> fields;
   private final Function<ResultSet, T> function;
   private final Function<T, Long> weigher;
-  private final Optional<Integer> show;
   private final Optional<Integer> max;
   private final boolean discard;
   private final boolean closeConnection;
@@ -134,7 +133,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.rowIds = copyOf(builder.rowIds);
     this.schema = builder.schema;
     this.table = builder.table;
-    this.show = builder.show;
     this.fields = copyOf(builder.fields);
     this.function = builder.function;
     this.weigher = builder.weigher;
@@ -159,7 +157,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private String table;
     private List<String> fields = newArrayList("ROWID");
     private Optional<Integer> max = absent();
-    private Optional<Integer> show = absent();
     private Function<ResultSet, T> function;
     private Function<T, Long> weigher;
     private boolean discard;
@@ -244,15 +241,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       return this;
     }
 
-    public Builder<T> withShow(Optional<Integer> show) {
-      this.show = show;
-      return this;
-    }
-
-    public Builder<T> withShow(int show) {
-      return withShow(of(show));
-    }
-
     public RowSelector<T> build() {
       return validate(new RowSelector<T>(this));
     }
@@ -297,10 +285,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   public Function<T, Long> getWeigher() {
     return weigher;
-  }
-
-  public Optional<Integer> getShow() {
-    return show;
   }
 
   public Optional<Integer> getMax() {

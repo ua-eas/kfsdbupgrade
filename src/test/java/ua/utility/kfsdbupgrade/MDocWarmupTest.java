@@ -115,7 +115,6 @@ public class MDocWarmupTest {
       builder.withFunction(function);
       builder.withWeigher(weigher);
       builder.withRowIds(distribution);
-      builder.withShow(show);
       builder.withTable(table);
       builder.withProvider(provider);
       builder.withField(field);
