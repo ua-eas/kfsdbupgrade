@@ -24,7 +24,7 @@ public final class Show {
     args.add(getTime(snapshot.getOverallWallTimeMicros() / 1000));
     args.addAll(getArgs(snapshot.getCurrent(), snapshot.getCurrentWallTimeMicros()));
     args.add(getTime(snapshot.getCurrentWallTimeMicros() / 1000));
-    info(LOGGER, "[r%s/%s/%s|c%s/%s|w%s/%s|%s] [r%s/%s|c%s/%s|w%s/%s|%s]", args.toArray());
+    info(LOGGER, "[r%s/%s/%s|c%s/%s/%s|w%s/%s/%s|%s] [r%s/%s/%s|c%s/%s/%s|w%s/%s/%s|%s]", args.toArray());
   }
 
   public static ImmutableList<Object> getArgs(MDocMetric metric, long micros) {
@@ -33,9 +33,11 @@ public final class Show {
     String rtime = getTime(metric.getSelect().getMicroseconds() / 1000);
     String ccount = getCount(checkedCast(metric.getConvert().getCount()));
     String convert = getIops(metric.getConvert(), micros);
+    String ctime = getTime(metric.getConvert().getMicroseconds() / 1000);
     String wcount = getCount(checkedCast(metric.getUpdate().getCount()));
     String write = getIops(metric.getUpdate(), micros);
-    return ImmutableList.<Object>of(rcount, read, rtime, ccount, convert, wcount, write);
+    String wtime = getTime(metric.getUpdate().getMicroseconds() / 1000);
+    return ImmutableList.<Object>of(rcount, read, rtime, ccount, convert, ctime, wcount, write, wtime);
   }
 
   private static String getIops(DataMetric metric, long microseconds) {
