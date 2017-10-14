@@ -65,11 +65,12 @@ public class SimpleMDocConvertTest {
       String encryptionKey = props.getProperty("encryption-key");
       EncryptionService encryptor = new EncryptionService(encryptionKey);
       List<Connection> conns = openConnections(provider, rdsCores);
-      List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
       Stopwatch sw = createStarted();
-      info(LOGGER, "ec2 cores %s, rds cores %s", ec2Cores, rdsCores);
+      info(LOGGER, "ec2 cores -> %s", ec2Cores);
+      info(LOGGER, "rd2 cores -> %s", rdsCores);
+      List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
         List<MaintDoc> converted = convert(ec2, originals);
@@ -77,7 +78,7 @@ public class SimpleMDocConvertTest {
       }
       closeQuietly(conns);
       String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
-      info(LOGGER, "converted %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
+      info(LOGGER, "converted -> %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
