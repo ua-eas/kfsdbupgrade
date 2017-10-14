@@ -9,6 +9,8 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static java.lang.String.format;
+import static java.util.Collections.max;
+import static java.util.Collections.min;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
@@ -43,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import ua.utility.kfsdbupgrade.log.Logging;
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
@@ -76,11 +79,14 @@ public class MDocWarmupTest {
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
       touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 5000);
       // addDocumentContentIndex(props);
-      int max = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
-      DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, max), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
+      int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
+      DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       ListMultimap<Long, Long> mm = metrics.getSelects();
+      long min = min(mm.keySet());
+      long max = max(mm.keySet());
+      Logging.info(LOGGER, "elapsed -> %s", getTime(max - min));
       for (Long timestamp : mm.keySet()) {
-        System.out.println(mm.get(timestamp).size());
+        // System.out.println(mm.get(timestamp).size());
       }
       // computeStats(props, table);
     } catch (Throwable e) {
