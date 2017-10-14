@@ -79,8 +79,8 @@ public class MDocWarmupTest {
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
       DatabaseMetrics metrics = touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
       ListMultimap<Long, Long> mm = metrics.getSelects();
-      long min = min(mm.keySet()) * 1000;
-      long max = max(mm.keySet()) * 1000;
+      long min = min(mm.keySet());
+      long max = max(mm.keySet());
       List<Long> first = mm.get(min);
       for (long microseconds : first) {
         min = min(min, min - microseconds);
@@ -90,13 +90,13 @@ public class MDocWarmupTest {
       info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
       Map<Long, Integer> map = newHashMap();
       // the moment in time this measurement was taken
-      for (long millisecond : mm.keySet()) {
+      for (long microsecond : mm.keySet()) {
         // the number of microseconds this measurement took
-        for (long microseconds : mm.get(millisecond)) {
+        for (long microseconds : mm.get(microsecond)) {
           // iterate over all of the microseconds in this measurement
           for (long i = microseconds; i > 0; i--) {
             // this is one of the microseconds that participated in the measurement
-            long timestamp = (millisecond * 1000) - i;
+            long timestamp = microsecond - i;
             // check the map to see if this microsecond participated in the measurement
             Integer frequency = map.get(timestamp);
             if (frequency == null) {

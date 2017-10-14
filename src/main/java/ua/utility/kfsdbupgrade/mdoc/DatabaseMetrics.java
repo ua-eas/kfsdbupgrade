@@ -3,7 +3,7 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
-import static java.lang.System.currentTimeMillis;
+import static java.lang.System.nanoTime;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 
 import com.google.common.base.Stopwatch;
@@ -49,7 +49,7 @@ public final class DatabaseMetrics {
 
   public synchronized Stopwatch select(long count, long bytes, long microseconds) {
     checkStarted();
-    selects.put(currentTimeMillis(), microseconds);
+    selects.put(nanoTime() / 1000, microseconds);
     this.current.select(count, bytes, microseconds);
     this.overall.select(count, bytes, microseconds);
     return createStarted();
