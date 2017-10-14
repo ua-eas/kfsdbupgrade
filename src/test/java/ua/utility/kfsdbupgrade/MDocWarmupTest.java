@@ -106,7 +106,7 @@ public class MDocWarmupTest {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
     int threads = new ThreadsProvider(props).get();
-    ExecutorService executor = new ExecutorProvider("touch", threads).get();
+    ExecutorService executor = new ExecutorProvider("t", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
     DatabaseMetrics metrics = new DatabaseMetrics(show, false);
     for (List<String> distribution : distribute(rowIds, threads)) {
