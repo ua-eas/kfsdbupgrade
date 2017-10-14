@@ -23,19 +23,19 @@ public final class Show {
       List<Object> args = newArrayList();
       args.addAll(getArgs(snapshot.getOverall().getSelect(), snapshot.getOverallWallTimeMicros()));
       args.addAll(getArgs(snapshot.getCurrent().getSelect(), snapshot.getCurrentWallTimeMicros()));
-      info(LOGGER, "read---->[%s/%s/%s|%s] [%s/%s/%s|%s]", args.toArray());
+      info(LOGGER, "read---->[%s %s docs/sec cpu %s|%s] [%s %s docs/sec cpu %s|%s]", args.toArray());
     }
     if (snapshot.getOverall().getConvert().getCount() > 0) {
       List<Object> args = newArrayList();
       args.addAll(getArgs(snapshot.getOverall().getConvert(), snapshot.getOverallWallTimeMicros()));
       args.addAll(getArgs(snapshot.getCurrent().getConvert(), snapshot.getCurrentWallTimeMicros()));
-      info(LOGGER, "convert->[%s/%s/%s|%s] [%s/%s/%s|%s]", args.toArray());
+      info(LOGGER, "convert->[%s %s docs/sec cpu %s|%s] [%s %s docs/sec cpu %s|%s]", args.toArray());
     }
     if (snapshot.getOverall().getUpdate().getCount() > 0) {
       List<Object> args = newArrayList();
       args.addAll(getArgs(snapshot.getOverall().getUpdate(), snapshot.getOverallWallTimeMicros()));
       args.addAll(getArgs(snapshot.getCurrent().getUpdate(), snapshot.getCurrentWallTimeMicros()));
-      info(LOGGER, "write--->[%s/%s/%s|%s] [%s/%s/%s|%s]", args.toArray());
+      info(LOGGER, "write--->[%s %s docs/sec cpu %s|%s] [%s %s docs/sec cpu %s|%s]", args.toArray());
     }
   }
 
