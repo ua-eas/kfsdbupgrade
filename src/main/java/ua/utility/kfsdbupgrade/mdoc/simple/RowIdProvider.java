@@ -47,7 +47,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
         RowId element = converter.convert(rowId);
         list.add(element);
         count++;
-        if (count % 50000 == 0) {
+        if (count % 100000 == 0) {
           Logging.info(LOGGER, "%s", getCount(count));
         }
         if (count == max) {
