@@ -11,6 +11,7 @@ import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.concat;
 import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Provider;
 
@@ -45,22 +47,25 @@ public class SimpleMDocConvertTest {
     try {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
-      int max = parseInt(props.getProperty("mdoc.max", "113"));
-      int chunkSize = parseInt(props.getProperty("mdoc.chunk", "10"));
-      int selectSize = parseInt(props.getProperty("mdoc.select", "3"));
-      int batchSize = parseInt(props.getProperty("mdoc.batch", "3"));
+      int max = parseInt(props.getProperty("mdoc.max", "1000"));
+      int chunkSize = parseInt(props.getProperty("mdoc.chunk", "300"));
+      int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
+      int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
       int rdsCores = parseInt(props.getProperty("rds.cores", "4"));
       int ec2Cores = parseInt(props.getProperty("ec2.cores", getRuntime().availableProcessors() + ""));
       List<Connection> conns = openConnections(provider, rdsCores);
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
       ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
+      Stopwatch sw = createStarted();
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
         List<MaintDoc> converted = convert(ec2, originals);
         update(rds, conns, converted, batchSize, rdsCores);
       }
       closeQuietly(conns);
+      String tp = getThroughputInSeconds(sw.elapsed(TimeUnit.MILLISECONDS), rowIds.size(), "docs/sec");
+      info(LOGGER, "converted %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -108,6 +113,7 @@ public class SimpleMDocConvertTest {
 
   private ImmutableList<RowId> getRowIds(Connection conn, int max) {
     Stopwatch sw = createStarted();
+    info(LOGGER, "acquiring -> row ids (max of %s)", getCount(max));
     RowIdProvider provider = new RowIdProvider(conn, max);
     ImmutableList<RowId> rowIds = provider.get();
     info(LOGGER, "acquired --> %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
