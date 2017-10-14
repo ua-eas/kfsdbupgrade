@@ -21,22 +21,29 @@ public final class Show {
   public static void show(DatabaseMetric snapshot) {
     if (snapshot.getOverall().getSelect().getCount() > 0) {
       List<Object> args = newArrayList();
+      args.add("read---->");
       args.addAll(getArgs(snapshot.getOverall().getSelect(), snapshot.getOverallWallTimeMicros()));
       args.addAll(getArgs(snapshot.getCurrent().getSelect(), snapshot.getCurrentWallTimeMicros()));
-      info(LOGGER, "read---->[%s %s docs/sec cpu %s|%s] [%s %s docs/sec cpu %s|%s]", args.toArray());
+      doLogging(args);
     }
     if (snapshot.getOverall().getConvert().getCount() > 0) {
       List<Object> args = newArrayList();
+      args.add("convert->");
       args.addAll(getArgs(snapshot.getOverall().getConvert(), snapshot.getOverallWallTimeMicros()));
       args.addAll(getArgs(snapshot.getCurrent().getConvert(), snapshot.getCurrentWallTimeMicros()));
-      info(LOGGER, "convert->[%s %s docs/sec cpu %s|%s] [%s %s docs/sec cpu %s|%s]", args.toArray());
+      doLogging(args);
     }
     if (snapshot.getOverall().getUpdate().getCount() > 0) {
       List<Object> args = newArrayList();
+      args.add("write--->");
       args.addAll(getArgs(snapshot.getOverall().getUpdate(), snapshot.getOverallWallTimeMicros()));
       args.addAll(getArgs(snapshot.getCurrent().getUpdate(), snapshot.getCurrentWallTimeMicros()));
-      info(LOGGER, "write--->[%s %s docs/sec cpu %s|%s] [%s %s docs/sec cpu %s|%s]", args.toArray());
+      doLogging(args);
     }
+  }
+
+  private static void doLogging(List<Object> args) {
+    info(LOGGER, "%s[%s %s docs/sec cpu:%s|%s] [%s %s docs/sec cpu:%s|%s]", args.toArray());
   }
 
   private static ImmutableList<Object> getArgs(DataMetric dm, long wallTimeMicros) {
