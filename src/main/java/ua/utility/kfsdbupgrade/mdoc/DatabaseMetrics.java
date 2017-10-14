@@ -13,10 +13,17 @@ public final class DatabaseMetrics {
   private final MDocMetrics current;
   private final Stopwatch stopwatch;
 
-  public DatabaseMetrics() {
+  public DatabaseMetrics(boolean startTimer) {
     this.overall = new MDocMetrics();
     this.current = new MDocMetrics();
     this.stopwatch = createUnstarted();
+    if (startTimer) {
+      start();
+    }
+  }
+
+  public DatabaseMetrics() {
+    this(false);
   }
 
   public synchronized void start() {
