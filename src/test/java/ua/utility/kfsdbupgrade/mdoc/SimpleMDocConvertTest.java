@@ -100,7 +100,7 @@ public class SimpleMDocConvertTest {
     ImmutableList<MaintDoc> docs = concat(getFutures(rds, callables));
     String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.selected += docs.size();
-    info(LOGGER, "selected --> %s %s docs [%s] %s", getCount(selected), getCount(docs.size()), getTime(sw), tp);
+    info(LOGGER, "selected --> %s (%s docs [%s] %s)", getCount(selected), getCount(docs.size()), getTime(sw), tp);
     return docs;
   }
 
@@ -113,8 +113,9 @@ public class SimpleMDocConvertTest {
     }
     Stopwatch sw = createStarted();
     ImmutableList<MaintDoc> converted = Callables.getFutures(ec2, callables);
+    String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.converted += docs.size();
-    info(LOGGER, "converted -> %s %s docs [%s]", getCount(this.converted), getCount(docs.size()), getTime(sw));
+    info(LOGGER, "converted -> %s (%s docs [%s] %s)", getCount(this.converted), getCount(docs.size()), getTime(sw), tp);
     return converted;
   }
 
@@ -127,8 +128,9 @@ public class SimpleMDocConvertTest {
       callables.add(fromProvider(mdu));
     }
     getFutures(rds, callables);
+    String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.updated += docs.size();
-    info(LOGGER, "updated ---> %s %s docs [%s]", getCount(updated), getCount(docs.size()), getTime(sw));
+    info(LOGGER, "updated ---> %s (%s docs [%s] %s)", getCount(updated), getCount(docs.size()), getTime(sw), tp);
   }
 
   private ImmutableList<RowId> getRowIds(Connection conn, int max) {
