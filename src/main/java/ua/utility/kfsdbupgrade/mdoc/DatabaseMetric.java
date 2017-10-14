@@ -5,16 +5,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class DatabaseMetric {
 
-  public DatabaseMetric(MDocMetric overall, MDocMetric current, long wallTimeMicros) {
-    checkArgument(wallTimeMicros >= 0, "wallTimeMicros cannot be negative");
+  public DatabaseMetric(MDocMetric overall, MDocMetric current, long overallWallTimeMicros, long currentWallTimeMicros) {
+    checkArgument(overallWallTimeMicros >= 0, "overallWallTimeMicros cannot be negative");
+    checkArgument(currentWallTimeMicros >= 0, "currentWallTimeMicros cannot be negative");
     this.overall = checkNotNull(overall);
     this.current = checkNotNull(current);
-    this.wallTimeMicros = wallTimeMicros;
+    this.overallWallTimeMicros = overallWallTimeMicros;
+    this.currentWallTimeMicros = currentWallTimeMicros;
   }
 
   private final MDocMetric overall;
   private final MDocMetric current;
-  private final long wallTimeMicros;
+  private final long overallWallTimeMicros;
+  private final long currentWallTimeMicros;
 
   public MDocMetric getOverall() {
     return overall;
@@ -24,8 +27,12 @@ public final class DatabaseMetric {
     return current;
   }
 
-  public long getWallTimeMicros() {
-    return wallTimeMicros;
+  public long getOverallWallTimeMicros() {
+    return overallWallTimeMicros;
+  }
+
+  public long getCurrentWallTimeMicros() {
+    return currentWallTimeMicros;
   }
 
 }
