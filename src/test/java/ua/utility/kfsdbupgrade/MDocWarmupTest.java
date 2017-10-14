@@ -89,12 +89,12 @@ public class MDocWarmupTest {
       info(LOGGER, "started --> %s", min);
       info(LOGGER, "elapsed --> %s", getCount(checkedCast(max - min)));
       Map<Long, Integer> map = newHashMap();
-      // the moment in time this measurement was taken
+      // the microsecond when this measurement was taken
       for (long microsecond : mm.keySet()) {
         // the number of microseconds this measurement took
         for (long microseconds : mm.get(microsecond)) {
           // iterate over all of the microseconds in this measurement
-          for (long i = microseconds; i > 0; i--) {
+          for (long i = 0; i < microseconds; i++) {
             // this is one of the microseconds that participated in the measurement
             long timestamp = microsecond - i;
             // check the map to see if this microsecond participated in the measurement
