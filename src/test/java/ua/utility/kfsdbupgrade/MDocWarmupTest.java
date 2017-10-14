@@ -6,6 +6,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static java.lang.String.format;
@@ -45,7 +46,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-import ua.utility.kfsdbupgrade.log.Logging;
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
@@ -84,10 +84,17 @@ public class MDocWarmupTest {
       ListMultimap<Long, Long> mm = metrics.getSelects();
       long min = min(mm.keySet());
       long max = max(mm.keySet());
-      Logging.info(LOGGER, "elapsed -> %s", getTime(max - min));
-      for (Long timestamp : mm.keySet()) {
-        // System.out.println(mm.get(timestamp).size());
+      List<Long> first = mm.get(min);
+      for (long microseconds : first) {
+        min = min(min, min - microseconds);
       }
+      List<Long> last = mm.get(max);
+      for (long microseconds : last) {
+        max = max(max, max + microseconds);
+      }
+      info(LOGGER, "started --> %s", getTime(min));
+      info(LOGGER, "finished -> %s", getTime(max));
+      info(LOGGER, "elapsed --> %s", getTime(max - min));
       // computeStats(props, table);
     } catch (Throwable e) {
       e.printStackTrace();
