@@ -4,13 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.lang.String.format;
-import static java.sql.DriverManager.getConnection;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Properties;
 
 import javax.inject.Provider;
@@ -47,10 +47,10 @@ public final class ConnectionProvider implements Provider<Connection> {
       } else {
         url = props.getProperty("db.url");
       }
+      Stopwatch sw = createStarted();
       info("%s as '%s'", url, username);
       Class.forName(checkedValue(props, "database-driver"));
-      Stopwatch sw = createStarted();
-      connection = getConnection(url, username, password);
+      connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(autoCommit);
       info("%s as '%s' [%s]", url, username, getTime(sw));
       return connection;

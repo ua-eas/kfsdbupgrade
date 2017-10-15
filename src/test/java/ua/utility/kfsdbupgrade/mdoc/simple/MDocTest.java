@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createStarted;
@@ -42,6 +42,12 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
+import ua.utility.kfsdbupgrade.mdoc.Callables;
+import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
+import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
+import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
+import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
+import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.simple.MDocConverter;
 import ua.utility.kfsdbupgrade.mdoc.simple.MDocProvider;
 import ua.utility.kfsdbupgrade.mdoc.simple.MDocUpdater;
