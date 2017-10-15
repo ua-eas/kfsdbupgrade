@@ -53,9 +53,13 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
       info(LOGGER, "acquiring %s row ids from %s", max.isPresent() ? "all" : max.get(), from);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
+      RowId rowId = null;
       while (rs.next()) {
         String string = rs.getString(1);
-        RowId rowId = converter.convert(string);
+        if (rowId == null) {
+          rowId = converter.convert(string);
+        }
+        // RowId rowId = converter.convert(string);
         rowIds.add(rowId);
         if (show.isPresent() && rowIds.size() % show.get() == 0) {
           info(LOGGER, "%s", getCount(rowIds.size()));
@@ -65,7 +69,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
         }
       }
       String tp = getThroughputInSeconds(sw.elapsed(TimeUnit.MILLISECONDS), rowIds.size(), "ids/sec");
-      info(LOGGER, "acquired %s row ids from %s [%s] %s", getCount(rowIds.size()), from, getTime(sw), tp);
+      info(LOGGER, "acquired %s row ids from %s in %s [%s]", getCount(rowIds.size()), from, getTime(sw), tp);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
