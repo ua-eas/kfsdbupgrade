@@ -3,17 +3,21 @@ package ua.utility.kfsdbupgrade.mdoc.simple;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Provider;
 
@@ -21,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Converter;
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import ua.utility.kfsdbupgrade.mdoc.RowId;
@@ -43,9 +48,10 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      stmt = conn.createStatement();
+      Stopwatch sw = createStarted();
       String from = schema.isPresent() ? schema.get() + "." + table : table;
       info(LOGGER, "acquiring %s row ids from %s", max.isPresent() ? "all" : max.get(), from);
+      stmt = conn.createStatement();
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
       while (rs.next()) {
         String string = rs.getString(1);
@@ -58,6 +64,8 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
           break;
         }
       }
+      String tp = getThroughputInSeconds(sw.elapsed(TimeUnit.MILLISECONDS), rowIds.size(), "ids/sec");
+      info(LOGGER, "acquired %s row ids from %s [%s] %s", getCount(rowIds.size()), from, getTime(sw), tp);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
