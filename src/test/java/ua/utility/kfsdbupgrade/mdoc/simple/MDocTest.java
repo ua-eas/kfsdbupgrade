@@ -59,11 +59,11 @@ public class MDocTest {
         MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
         MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
         count += chunk.size();
+        String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "").trim();
+        String tp = getThroughputInSeconds(overall.elapsed(MILLISECONDS), count, "").trim();
         String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "").trim();
         String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "").trim();
         String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "").trim();
-        String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "").trim();
-        String tp = getThroughputInSeconds(overall.elapsed(MILLISECONDS), count, "").trim();
         info(LOGGER, "[%s %s docs/sec %s] now[%s docs/sec r%s c%s w%s %s]", getCount(count), tp, getTime(overall), now, r, c, w, getTime(current));
       }
     } catch (Throwable e) {
