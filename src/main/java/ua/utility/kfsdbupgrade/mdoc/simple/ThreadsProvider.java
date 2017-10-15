@@ -15,10 +15,10 @@ import javax.inject.Provider;
 
 public final class ThreadsProvider implements Provider<Integer> {
 
-  public ThreadsProvider(String key, Properties props, int cores) {
+  public ThreadsProvider(Properties props, String key, int cores) {
     checkArgument(cores > 0, "cores must be greater than zero");
-    this.key = checkNotNull(key);
     this.props = checkNotNull(props);
+    this.key = checkNotNull(key);
     this.cores = cores;
   }
 

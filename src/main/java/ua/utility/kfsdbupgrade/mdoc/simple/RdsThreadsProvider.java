@@ -27,7 +27,7 @@ public final class RdsThreadsProvider implements Provider<Integer> {
 
   public Integer get() {
     int cores = getCores(props, conn);
-    int threads = new ThreadsProvider("rds.threads", props, cores).get();
+    int threads = new ThreadsProvider(props, "rds.threads", cores).get();
     info(LOGGER, "rds cores ---> %s", cores);
     info(LOGGER, "rds threads -> %s", threads);
     return threads;
