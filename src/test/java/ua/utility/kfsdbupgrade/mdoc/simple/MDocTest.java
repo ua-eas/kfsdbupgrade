@@ -58,7 +58,7 @@ public class MDocTest {
       ExecutorService ec2 = new ExecutorProvider("ec2", ctx.getEc2Threads()).get();
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
       Stopwatch sw = createStarted();
-      List<RowId> rowIds = getRowIds(conns.iterator().next(), ctx.getMax(), ctx.getMax() / 10);
+      List<RowId> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
       overall.start();
       for (List<RowId> chunk : partition(rowIds, ctx.getChunkSize())) {
         List<MaintDoc> originals = select(rds, conns, chunk, ctx.getSelectSize());
@@ -121,18 +121,14 @@ public class MDocTest {
     info(LOGGER, "stored ----> %s (%s docs [%s] %s) [%s]", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
   }
 
-  private ImmutableList<RowId> getRowIds(Connection conn, int max, int show) {
-    Stopwatch sw = createStarted();
-    info(LOGGER, "acquiring -> row ids (maximum of %s)", getCount(max));
+  private ImmutableList<RowId> getRowIds(MDocContext ctx, Connection conn, int show) {
     RowIdProvider.Builder builder = RowIdProvider.builder();
     builder.withConn(conn);
-    builder.withMax(max);
+    builder.withMax(ctx.getMax());
     builder.withShow(show);
-    builder.withTable("KRNS_MAINT_DOC_T");
+    builder.withTable(ctx.getTable());
     RowIdProvider provider = builder.build();
-    ImmutableList<RowId> rowIds = provider.get();
-    info(LOGGER, "acquiring %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
-    return rowIds;
+    return provider.get();
   }
 
 }

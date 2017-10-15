@@ -15,6 +15,7 @@ public final class MDocContext {
   private final int selectSize;
   private final int batchSize;
   private final Function<MaintDoc, MaintDoc> converter;
+  private final String table;
 
   private MDocContext(Builder builder) {
     this.ec2Threads = builder.ec2Threads;
@@ -24,6 +25,7 @@ public final class MDocContext {
     this.selectSize = builder.selectSize;
     this.batchSize = builder.batchSize;
     this.converter = builder.converter;
+    this.table = builder.table;
   }
 
   public static Builder builder() {
@@ -39,6 +41,12 @@ public final class MDocContext {
     private int selectSize = -1;
     private int batchSize = -1;
     private Function<MaintDoc, MaintDoc> converter = identity();
+    private String table = "KRNS_MAINT_DOC_T";
+
+    public Builder withTable(String table) {
+      this.table = table;
+      return this;
+    }
 
     public Builder withEc2Threads(int ec2Threads) {
       this.ec2Threads = ec2Threads;
@@ -87,6 +95,7 @@ public final class MDocContext {
       checkArgument(instance.selectSize > 0, "selectSize must be greater than zero");
       checkArgument(instance.batchSize > 0, "batchSize must be greater than zero");
       checkNotNull(instance.converter, "converter may not be null");
+      checkNotNull(instance.table, "table may not be null");
       return instance;
     }
   }
@@ -117,6 +126,10 @@ public final class MDocContext {
 
   public Function<MaintDoc, MaintDoc> getConverter() {
     return converter;
+  }
+
+  public String getTable() {
+    return table;
   }
 
 }

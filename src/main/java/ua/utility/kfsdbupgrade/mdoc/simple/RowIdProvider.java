@@ -3,12 +3,12 @@ package ua.utility.kfsdbupgrade.mdoc.simple;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -64,7 +64,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
       closeQuietly(rs);
       closeQuietly(stmt);
     }
-    return newList(rowIds);
+    return copyOf(rowIds);
   }
 
   private RowIdProvider(Builder builder) {
