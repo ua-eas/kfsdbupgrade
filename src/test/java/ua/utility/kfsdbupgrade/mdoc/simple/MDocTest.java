@@ -59,12 +59,15 @@ public class MDocTest {
         MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
         MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
         count += chunk.size();
-        String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "").trim();
+        long elapsed = current.elapsed(MILLISECONDS);
+        long sum = read.getMetric().getMillis() + convert.getMetric().getMillis() + write.getMetric().getMillis();
+        long diff = elapsed - sum;
+        String now = getThroughputInSeconds(elapsed, chunk.size(), "").trim();
         String throughput = getThroughputInSeconds(overall.elapsed(MILLISECONDS), count, "").trim();
         String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "").trim();
         String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "").trim();
         String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "").trim();
-        info(LOGGER, "[%s %sd/s %s] now[%sd/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
+        info(LOGGER, "[%s %s docs/s %s] now[%s docs/s r%s c%s w%s %s] diff %s", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current), diff);
       }
     } catch (Throwable e) {
       e.printStackTrace();
