@@ -22,7 +22,7 @@ import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 public final class MDocFunctionProvider implements Provider<Function<MaintDoc, MaintDoc>> {
 
   public MDocFunctionProvider(Properties props) {
-    this.props = checkNotNull(props, "props");
+    this.props = checkNotNull(props);
   }
 
   private final Properties props;
@@ -43,11 +43,11 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
   private MDocConverter getConverter() {
     try {
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
+      MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       String encryptionKey = props.getProperty("encryption-key");
       checkState(isNotBlank(encryptionKey), "encryption key is blank");
       checkState(!encryptionKey.contains("${"), "unresolved encryption key -> %s", encryptionKey);
-      EncryptionService encryptor = new EncryptionService(encryptionKey);
-      MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
+      EncryptionService encryptor = new EncryptionService(encryptionKey.trim());
       return new MDocConverter(encryptor, service);
     } catch (Exception e) {
       throw new IllegalStateException(e);
