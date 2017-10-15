@@ -30,6 +30,7 @@ import org.junit.Test;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
@@ -56,9 +57,8 @@ public class MDocTest {
       List<ChunkResult> chunks = newArrayList();
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
-        ChunkResult result = doChunk(rds, ec2, conns, chunk, ctx);
-        chunks.add(result);
-        progress(chunks, overall, result, current);
+        chunks.add(doChunk(rds, ec2, conns, chunk, ctx));
+        progress(chunks, overall, current);
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -67,6 +67,12 @@ public class MDocTest {
       closeQuietly(first);
       closeQuietly(conns);
     }
+  }
+
+  private void progress(Iterable<ChunkResult> results, Stopwatch overall, Stopwatch current) {
+    String all = analyze(results, overall);
+    String now = analyze(Iterables.getLast(results), current);
+    info(LOGGER, "all[%s] now[%s]", all, now);
   }
 
   private String analyze(Iterable<ChunkResult> results, Stopwatch overall) {
@@ -94,12 +100,6 @@ public class MDocTest {
     String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
     String w = throughput(result.getWrite());
     return format("%s %sd/s r%s%sw%s - %s", getCount(result.getCount()), now, r, c, w, getTime(current));
-  }
-
-  private void progress(Iterable<ChunkResult> results, Stopwatch overall, ChunkResult result, Stopwatch current) {
-    String all = analyze(results, overall);
-    String now = analyze(result, current);
-    info(LOGGER, "all[%s] now[%s]", all, now);
   }
 
   private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
