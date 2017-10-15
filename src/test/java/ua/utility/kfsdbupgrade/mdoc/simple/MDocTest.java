@@ -57,14 +57,14 @@ public class MDocTest {
       int count = 0;
       for (List<RowId> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
-        MDocResult selected = select(rds, conns, chunk, ctx.getSelectSize());
-        MDocResult converted = convert(ec2, selected.getDocs(), ctx.getConverter());
-        MDocResult stored = store(rds, conns, converted.getDocs(), ctx.getBatchSize());
-        String s = getThroughputInSeconds(selected.getMetric().getMillis(), selected.getMetric().getCount(), "docs/sec");
-        String c = getThroughputInSeconds(converted.getMetric().getMillis(), converted.getMetric().getCount(), "docs/sec");
-        String u = getThroughputInSeconds(stored.getMetric().getMillis(), stored.getMetric().getCount(), "docs/sec");
+        MDocResult read = read(rds, conns, chunk, ctx.getSelectSize());
+        MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
+        MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
+        String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "docs/sec");
+        String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "docs/sec");
+        String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "docs/sec");
         count += chunk.size();
-        info(LOGGER, "%s select %s, convert %s, store %s [%s %s]", getCount(count), s, c, u, getTime(current), getTime(overall));
+        info(LOGGER, "%s [read %s, convert %s, write %s] %s %s", getCount(count), r, c, w, getTime(current), getTime(overall));
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -75,7 +75,7 @@ public class MDocTest {
     }
   }
 
-  private MDocResult select(ExecutorService rds, List<Connection> conns, List<RowId> rows, int selectSize) {
+  private MDocResult read(ExecutorService rds, List<Connection> conns, List<RowId> rows, int selectSize) {
     List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
     for (List<RowId> distribution : distribute(rows, conns.size())) {
@@ -115,7 +115,7 @@ public class MDocTest {
     return new MDocResult(metric, converted);
   }
 
-  private MDocResult store(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize) {
+  private MDocResult write(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize) {
     int index = 0;
     List<Callable<DataMetric>> callables = newArrayList();
     for (List<MaintDoc> distribution : distribute(docs, conns.size())) {
