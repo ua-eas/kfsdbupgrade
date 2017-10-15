@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
+import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
@@ -10,11 +11,10 @@ import java.util.List;
 
 import javax.inject.Provider;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
-
-public final class MDocUpdater implements Provider<Long> {
+public final class MDocUpdater implements Provider<DataMetric> {
 
   public MDocUpdater(Connection conn, Iterable<MaintDoc> docs, int batchSize) {
     this.conn = conn;
@@ -27,15 +27,20 @@ public final class MDocUpdater implements Provider<Long> {
   private final int batchSize;
 
   @Override
-  public Long get() {
+  public DataMetric get() {
+    Stopwatch sw = createStarted();
+    int count = 0;
+    long bytes = 0;
     PreparedStatement pstmt = null;
     try {
       pstmt = conn.prepareStatement("UPDATE KRNS_MAINT_DOC_T SET DOC_CNTNT = ? WHERE ROWID = ?");
       for (List<MaintDoc> partition : partition(docs, batchSize)) {
         for (MaintDoc doc : partition) {
           pstmt.setString(1, doc.getContent());
-          pstmt.setString(2, doc.getId());
+          pstmt.setString(2, doc.getRowId());
           pstmt.addBatch();
+          count++;
+          bytes += doc.getContent().length();
         }
         pstmt.executeBatch();
       }
@@ -45,7 +50,7 @@ public final class MDocUpdater implements Provider<Long> {
     } finally {
       closeQuietly(pstmt);
     }
-    return 0L;
+    return new DataMetric(count, bytes, sw);
   }
 
 }

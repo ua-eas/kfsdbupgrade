@@ -1,6 +1,5 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
-import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
@@ -34,11 +33,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.EncryptionService;
-import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
-import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 
@@ -73,9 +69,9 @@ public class MDocTest {
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max, max / 10);
       overall.start();
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
-        List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsThreads);
+        List<MaintDoc> originals = select(rds, conns, chunk, selectSize);
         List<MaintDoc> converted = convert(ec2, originals, converter);
-        store(rds, conns, converted, batchSize, rdsThreads);
+        store(rds, conns, converted, batchSize);
       }
       String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
       info(LOGGER, "converted -> %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
@@ -88,18 +84,11 @@ public class MDocTest {
     }
   }
 
-  private Function<MaintDoc, MaintDoc> getConverter(Properties props, EncryptionService encryptor, MaintainableXmlConversionService service) {
-    if ("convert".equals(props.getProperty("mdoc.content"))) {
-      return new MDocConverter(encryptor, service);
-    }
-    return identity();
-  }
-
-  private ImmutableList<MaintDoc> select(ExecutorService rds, List<Connection> conns, List<RowId> chunk, int selectSize, int databaseCores) {
+  private ImmutableList<MaintDoc> select(ExecutorService rds, List<Connection> conns, List<RowId> rows, int selectSize) {
     Stopwatch sw = createStarted();
     List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
-    for (List<RowId> distribution : distribute(chunk, databaseCores)) {
+    for (List<RowId> distribution : distribute(rows, conns.size())) {
       MDocProvider mdp = new MDocProvider(conns.get(index++), distribution, selectSize);
       callables.add(fromProvider(mdp));
     }
@@ -125,11 +114,11 @@ public class MDocTest {
     return converted;
   }
 
-  private void store(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize, int rdsCores) {
+  private void store(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize) {
     Stopwatch sw = createStarted();
     int index = 0;
-    List<Callable<Long>> callables = newArrayList();
-    for (List<MaintDoc> distribution : distribute(docs, rdsCores)) {
+    List<Callable<DataMetric>> callables = newArrayList();
+    for (List<MaintDoc> distribution : distribute(docs, conns.size())) {
       MDocUpdater mdu = new MDocUpdater(conns.get(index++), distribution, batchSize);
       callables.add(fromProvider(mdu));
     }
