@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
@@ -30,7 +31,6 @@ import org.junit.Test;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
@@ -71,7 +71,7 @@ public class MDocTest {
 
   private void progress(Iterable<ChunkResult> results, Stopwatch overall, Stopwatch current) {
     String all = analyze(results, overall);
-    String now = analyze(Iterables.getLast(results), current);
+    String now = analyze(getLast(results), current);
     info(LOGGER, "all[%s] now[%s]", all, now);
   }
 
