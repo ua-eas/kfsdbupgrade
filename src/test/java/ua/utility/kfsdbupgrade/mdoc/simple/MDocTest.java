@@ -9,7 +9,6 @@ import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.Integer.parseInt;
-import static java.lang.Runtime.getRuntime;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
@@ -35,7 +34,6 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
@@ -43,7 +41,6 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
-import ua.utility.kfsdbupgrade.mdoc.Callables;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
@@ -62,32 +59,32 @@ public class MDocTest {
   @Test
   public void test() {
     List<Connection> conns = newArrayList();
+    Connection first = null;
     try {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
+      first = provider.get();
       int max = parseInt(props.getProperty("mdoc.max", "1000000"));
       int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
-      int rdsCores = parseInt(props.getProperty("rds.cores", "8"));
-      int ec2Cores = parseInt(props.getProperty("ec2.cores", getRuntime().availableProcessors() + ""));
+      int ec2Threads = new Ec2ThreadsProvider(props).get();
+      int rdsThreads = new RdsThreadsProvider(props, first).get();
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       String encryptionKey = props.getProperty("encryption-key");
       EncryptionService encryptor = new EncryptionService(encryptionKey);
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
       Function<MaintDoc, MaintDoc> converter = getConverter(props, encryptor, service);
-      conns = openConnections(provider, rdsCores);
-      ExecutorService rds = new ExecutorProvider("rds", rdsCores).get();
-      ExecutorService ec2 = new ExecutorProvider("ec2", ec2Cores).get();
+      conns = openConnections(provider, rdsThreads, first);
+      ExecutorService rds = new ExecutorProvider("rds", rdsThreads).get();
+      ExecutorService ec2 = new ExecutorProvider("ec2", ec2Threads).get();
       Stopwatch sw = createStarted();
-      info(LOGGER, "ec2 cores -> %s", ec2Cores);
-      info(LOGGER, "rds cores -> %s", rdsCores);
       List<RowId> rowIds = getRowIds(conns.iterator().next(), max, max / 10);
       overall.start();
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
-        List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
+        List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsThreads);
         List<MaintDoc> converted = convert(ec2, originals, converter);
-        store(rds, conns, converted, batchSize, rdsCores);
+        store(rds, conns, converted, batchSize, rdsThreads);
       }
       String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
       info(LOGGER, "converted -> %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
@@ -95,16 +92,8 @@ public class MDocTest {
       e.printStackTrace();
       throw new IllegalStateException(e);
     } finally {
+      closeQuietly(first);
       closeQuietly(conns);
-    }
-  }
-
-  private int getRdsCores(Properties props, Provider<Connection> provider) {
-    Optional<Integer> oracleValue = new OracleCpusProvider(provider).get();
-    if (oracleValue.isPresent()) {
-      return oracleValue.get();
-    } else {
-      return parseInt(props.getProperty("rds.cores.default", "4"));
     }
   }
 
@@ -138,7 +127,7 @@ public class MDocTest {
       callables.add(callable);
     }
     Stopwatch sw = createStarted();
-    ImmutableList<MaintDoc> converted = Callables.getFutures(ec2, callables);
+    ImmutableList<MaintDoc> converted = getFutures(ec2, callables);
     String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
     this.converted += docs.size();
     info(LOGGER, "converted -> %s (%s docs [%s] %s)", getCount(this.converted), getCount(docs.size()), getTime(sw), tp);
@@ -173,9 +162,14 @@ public class MDocTest {
     return rowIds;
   }
 
-  private ImmutableList<Connection> openConnections(ConnectionProvider provider, int databaseCores) {
+  private ImmutableList<Connection> openConnections(ConnectionProvider provider, int count, Connection... conns) {
     List<Connection> list = newArrayList();
-    for (int i = 0; i < databaseCores; i++) {
+    if (conns != null) {
+      for (Connection conn : conns) {
+        list.add(conn);
+      }
+    }
+    for (int i = list.size(); i < count; i++) {
       list.add(provider.get());
     }
     return newList(list);
