@@ -71,6 +71,7 @@ public class MDocTest {
         String w = throughput(write.getMetric());
         info(LOGGER, "[%s %s docs/s %s] now[%s docs/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
         info(LOGGER, "millisDiff=%s countDiff=%s", millisDiff, countDiff);
+        info(LOGGER, "read=%s convert=%s write=%s", read.getMetric().getCount(), convert.getMetric().getCount(), write.getMetric().getCount());
       }
     } catch (Throwable e) {
       e.printStackTrace();
