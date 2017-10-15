@@ -18,7 +18,6 @@ import javax.inject.Provider;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 
@@ -43,13 +42,14 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
     try {
       stmt = conn.createStatement();
       for (List<RowId> partition : partition(rowIds, selectSize)) {
-        rs = stmt.executeQuery(format("SELECT ROWID, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (%s)", asInClause(partition)));
+        rs = stmt.executeQuery(format("SELECT ROWID, DOC_HDR_ID, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (%s)", asInClause(partition)));
         while (rs.next()) {
           String rowId = rs.getString(1);
-          String content = rs.getString(2);
-          // if it's blank for some reason, just ignore it
+          String docId = rs.getString(2);
+          String content = rs.getString(3);
+          // if the content is blank for some reason, just ignore it
           if (isNotBlank(content)) {
-            MaintDoc doc = MaintDoc.build(rowId, content);
+            MaintDoc doc = MaintDoc.build(rowId, docId, content);
             docs.add(doc);
           }
         }
