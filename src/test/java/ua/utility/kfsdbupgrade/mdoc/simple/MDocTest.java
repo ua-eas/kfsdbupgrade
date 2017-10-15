@@ -53,11 +53,13 @@ public class MDocTest {
       List<String> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
       Stopwatch overall = createStarted();
       int count = 0;
+      List<ChunkResult> results = newArrayList();
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
         ChunkResult result = doChunk(rds, ec2, conns, chunk, ctx);
         count += result.getCount();
         showChunk(result, overall, current, count);
+        results.add(result);
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -74,7 +76,7 @@ public class MDocTest {
     String r = throughput(result.getRead());
     String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
     String w = throughput(result.getWrite());
-    info(LOGGER, "[%s %sd/s %s] now[o%s r%s%sw%s - %s]", getCount(result.getCount()), throughput, getTime(overall), now, r, c, w, getTime(current));
+    info(LOGGER, "[%s %sd/s %s] now[a%s r%s%sw%s - %s]", getCount(result.getCount()), throughput, getTime(overall), now, r, c, w, getTime(current));
   }
 
   private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
