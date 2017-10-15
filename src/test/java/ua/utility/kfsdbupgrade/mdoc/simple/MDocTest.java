@@ -150,6 +150,7 @@ public class MDocTest {
         list.add(conn);
       }
     }
+    info(LOGGER, "establishing %s connections (%s existing, %s new)", count, list.size(), count - list.size());
     for (int i = list.size(); i < count; i++) {
       list.add(provider.get());
     }
