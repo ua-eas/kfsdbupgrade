@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 
-public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
+public final class RowIdProvider implements Provider<ImmutableList<String>> {
 
   private static final Logger LOGGER = Logger.getLogger(RowIdProvider.class);
 
@@ -43,8 +43,8 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
   private final Converter<String, RowId> converter;
 
   @Override
-  public ImmutableList<RowId> get() {
-    List<RowId> rowIds = newArrayList();
+  public ImmutableList<String> get() {
+    List<String> rowIds = newArrayList();
     Statement stmt = null;
     ResultSet rs = null;
     try {
@@ -55,9 +55,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
       stmt = conn.createStatement();
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
       while (rs.next()) {
-        String string = rs.getString(1);
-        RowId rowId = converter.convert(string);
-        rowIds.add(rowId);
+        rowIds.add(rs.getString(1));
         if (show.isPresent() && rowIds.size() % show.get() == 0) {
           info(LOGGER, "%s", getCount(rowIds.size()));
         }

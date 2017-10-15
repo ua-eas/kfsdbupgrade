@@ -14,24 +14,19 @@ import java.util.List;
 
 import javax.inject.Provider;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-
-import ua.utility.kfsdbupgrade.mdoc.RowId;
-import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 
 public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
 
-  public MDocProvider(Connection conn, Iterable<RowId> rowIds, int selectSize) {
+  public MDocProvider(Connection conn, Iterable<String> rowIds, int selectSize) {
     this.conn = conn;
     this.rowIds = copyOf(rowIds);
     this.selectSize = selectSize;
   }
 
   private final Connection conn;
-  private final ImmutableList<RowId> rowIds;
+  private final ImmutableList<String> rowIds;
   private final int selectSize;
-  private final RowIdConverter converter = RowIdConverter.getInstance();
 
   @Override
   public ImmutableList<MaintDoc> get() {
@@ -40,7 +35,7 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
     List<MaintDoc> docs = newArrayList();
     try {
       stmt = conn.createStatement();
-      for (List<RowId> partition : partition(rowIds, selectSize)) {
+      for (List<String> partition : partition(rowIds, selectSize)) {
         rs = stmt.executeQuery(format("SELECT ROWID, DOC_HDR_ID, DOC_CNTNT FROM KRNS_MAINT_DOC_T WHERE ROWID IN (%s)", asInClause(partition)));
         while (rs.next()) {
           String rowId = rs.getString(1);
@@ -62,12 +57,14 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
     return copyOf(docs);
   }
 
-  private String asInClause(Iterable<RowId> rowIds) {
-    List<String> list = newArrayList();
-    for (RowId rowId : rowIds) {
-      list.add("'" + converter.reverse().convert(rowId) + "'");
+  private String asInClause(Iterable<String> rowIds) {
+    StringBuilder sb = new StringBuilder();
+    for (String rowId : rowIds) {
+      sb.append("'");
+      sb.append(rowId);
+      sb.append("'");
     }
-    return Joiner.on(',').join(list);
+    return sb.toString();
   }
 
 }

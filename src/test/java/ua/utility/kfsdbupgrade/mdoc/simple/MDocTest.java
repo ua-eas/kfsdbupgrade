@@ -33,7 +33,6 @@ import com.google.common.collect.ImmutableList;
 import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
-import ua.utility.kfsdbupgrade.mdoc.RowId;
 
 public class MDocTest {
 
@@ -51,10 +50,10 @@ public class MDocTest {
       ExecutorService rds = new ExecutorProvider("rds", ctx.getRdsThreads()).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ctx.getEc2Threads()).get();
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
-      List<RowId> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
+      List<String> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
       Stopwatch overall = createStarted();
       int count = 0;
-      for (List<RowId> chunk : partition(rowIds, ctx.getChunkSize())) {
+      for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
         MDocResult read = read(rds, conns, chunk, ctx.getSelectSize());
         MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
@@ -76,10 +75,10 @@ public class MDocTest {
     }
   }
 
-  private MDocResult read(ExecutorService rds, List<Connection> conns, List<RowId> rows, int selectSize) {
+  private MDocResult read(ExecutorService rds, List<Connection> conns, List<String> rows, int selectSize) {
     List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
-    for (List<RowId> distribution : distribute(rows, conns.size())) {
+    for (List<String> distribution : distribute(rows, conns.size())) {
       MDocProvider mdp = new MDocProvider(conns.get(index++), distribution, selectSize);
       callables.add(fromProvider(mdp));
     }
@@ -130,7 +129,7 @@ public class MDocTest {
     return new MDocResult(metric, docs);
   }
 
-  private ImmutableList<RowId> getRowIds(MDocContext ctx, Connection conn, int show) {
+  private ImmutableList<String> getRowIds(MDocContext ctx, Connection conn, int show) {
     RowIdProvider.Builder builder = RowIdProvider.builder();
     builder.withConn(conn);
     builder.withMax(ctx.getMax());
