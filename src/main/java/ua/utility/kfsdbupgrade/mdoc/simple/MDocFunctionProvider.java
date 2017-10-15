@@ -7,6 +7,7 @@ import static com.google.common.io.ByteSource.wrap;
 import static com.google.common.io.Resources.asByteSource;
 import static com.google.common.io.Resources.getResource;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.reverse;
 
 import java.util.Properties;
 
@@ -34,6 +35,8 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
     }
     if (function.equalsIgnoreCase("identity")) {
       return identity();
+    } else if (function.equalsIgnoreCase("reverse")) {
+      return ReverseFunction.INSTANCE;
     } else {
       throw new IllegalStateException("'" + function + "' is an unknown conversion function");
     }
@@ -51,6 +54,15 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
       return new MDocConverter(encryptor, service);
     } catch (Exception e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  private enum ReverseFunction implements Function<MaintDoc, MaintDoc> {
+    INSTANCE;
+
+    public MaintDoc apply(MaintDoc input) {
+      String reversed = reverse(input.getContent());
+      return MaintDoc.build(input.getRowId(), input.getHeaderId(), input.getContent());
     }
   }
 
