@@ -47,7 +47,7 @@ public final class OracleCpusProvider implements Provider<Optional<Integer>> {
       conn = provider.get();
       stmt = conn.createStatement();
       // pull the cpu count from the V$OSSTAT table
-      rs = stmt.executeQuery("SELECT VALUE FROM V$OSSTAT WHERE STAT_NAME ='NUM_CPUS'");
+      rs = stmt.executeQuery("SELECT VALUE FROM V$OSSTAT WHERE STAT_NAME = 'NUM_CPUS'");
       // move to the first and only row
       rs.next();
       // extract the cpu count
@@ -56,7 +56,7 @@ public final class OracleCpusProvider implements Provider<Optional<Integer>> {
       return of(cpus);
     } catch (Throwable e) {
       // if anything goes wrong at any point, log it, and return absent
-      LOGGER.error("unexpected error determining Oracle CPU count", e);
+      LOGGER.error("unexpected error determining Oracle cpu count", e);
       return absent();
     } finally {
       // cleanup
