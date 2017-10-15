@@ -3,6 +3,7 @@ package ua.utility.kfsdbupgrade.mdoc.simple;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
@@ -52,14 +53,12 @@ public class MDocTest {
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
       List<String> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
       Stopwatch overall = createStarted();
-      int count = 0;
-      List<ChunkResult> results = newArrayList();
+      List<ChunkResult> chunks = newArrayList();
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
         ChunkResult result = doChunk(rds, ec2, conns, chunk, ctx);
-        count += result.getCount();
-        showChunk(result, overall, current, count);
-        results.add(result);
+        progress(chunks, overall, result, current);
+        chunks.add(result);
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -70,13 +69,37 @@ public class MDocTest {
     }
   }
 
-  private void showChunk(ChunkResult result, Stopwatch overall, Stopwatch current, int overallCount) {
+  private String analyze(Iterable<ChunkResult> results, Stopwatch overall) {
+    long overallElapsed = overall.elapsed(MILLISECONDS);
+    long readMillis = 0;
+    long convertMillis = 0;
+    long writeMillis = 0;
+    int overallCount = 0;
+    for (ChunkResult result : results) {
+      overallCount += result.getCount();
+      readMillis += result.getRead().getMillis();
+      convertMillis += result.getConvert().getMillis();
+      writeMillis += result.getWrite().getMillis();
+    }
+    String throughput = throughput(overallElapsed, overallCount);
+    String r = throughput(readMillis, overallCount);
+    String c = throughput(convertMillis, overallCount);
+    String w = throughput(writeMillis, overallCount);
+    return format("%s a%s r%s c%s w%s - %s", getCount(overallCount), throughput, r, c, w, getTime(overallElapsed));
+  }
+
+  private String analyze(ChunkResult result, Stopwatch current) {
     String now = throughput(current, result.getCount());
-    String throughput = throughput(overall, overallCount);
     String r = throughput(result.getRead());
     String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
     String w = throughput(result.getWrite());
-    info(LOGGER, "[%s %sd/s %s] now[a%s r%s%sw%s - %s]", getCount(overallCount), throughput, getTime(overall), now, r, c, w, getTime(current));
+    return format("a%s r%s%sw%s - %s", now, r, c, w, getTime(current));
+  }
+
+  private void progress(Iterable<ChunkResult> results, Stopwatch overall, ChunkResult result, Stopwatch current) {
+    String all = analyze(results, overall);
+    String now = analyze(result, current);
+    info(LOGGER, "all[%s] now[%s]", all, now);
   }
 
   private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
