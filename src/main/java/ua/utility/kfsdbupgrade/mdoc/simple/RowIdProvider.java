@@ -93,6 +93,11 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
       return this;
     }
 
+    public Builder withTable(String table) {
+      this.table = table;
+      return this;
+    }
+
     public Builder withSchema(String schema) {
       return withSchema(of(schema));
     }
