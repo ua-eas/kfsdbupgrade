@@ -62,7 +62,7 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
 
     public MaintDoc apply(MaintDoc input) {
       String reversed = reverse(input.getContent());
-      return MaintDoc.build(input.getRowId(), input.getHeaderId(), input.getContent());
+      return MaintDoc.build(input.getRowId(), input.getHeaderId(), reversed);
     }
   }
 
