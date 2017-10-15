@@ -85,7 +85,7 @@ public class MDocTest {
     String r = throughput(readMillis, overallCount);
     String c = throughput(convertMillis, overallCount);
     String w = throughput(writeMillis, overallCount);
-    return format("%s a%s r%s c%s w%s - %s", getCount(overallCount), throughput, r, c, w, getTime(overallElapsed));
+    return format("%s %sd/s r%s c%s w%s - %s", getCount(overallCount), throughput, r, c, w, getTime(overallElapsed));
   }
 
   private String analyze(ChunkResult result, Stopwatch current) {
@@ -93,7 +93,7 @@ public class MDocTest {
     String r = throughput(result.getRead());
     String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
     String w = throughput(result.getWrite());
-    return format("%s a%s r%s%sw%s - %s", getCount(result.getCount()), now, r, c, w, getTime(current));
+    return format("%s %sd/s r%s%sw%s - %s", getCount(result.getCount()), now, r, c, w, getTime(current));
   }
 
   private void progress(Iterable<ChunkResult> results, Stopwatch overall, ChunkResult result, Stopwatch current) {
