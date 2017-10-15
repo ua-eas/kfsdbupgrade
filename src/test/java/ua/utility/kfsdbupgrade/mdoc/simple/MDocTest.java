@@ -60,14 +60,17 @@ public class MDocTest {
         MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
         count += chunk.size();
         long elapsed = current.elapsed(MILLISECONDS);
-        long sum = read.getMetric().getMillis() + convert.getMetric().getMillis() + write.getMetric().getMillis();
-        long diff = elapsed - sum;
+        long sumMillis = read.getMetric().getMillis() + convert.getMetric().getMillis() + write.getMetric().getMillis();
+        long sumCount = read.getMetric().getCount() + convert.getMetric().getCount() + write.getMetric().getCount();
+        long millisDiff = elapsed - sumMillis;
+        long countDiff = chunk.size() - sumCount;
         String now = getThroughputInSeconds(elapsed, chunk.size(), "").trim();
         String throughput = getThroughputInSeconds(overall.elapsed(MILLISECONDS), count, "").trim();
-        String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "").trim();
-        String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "").trim();
-        String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "").trim();
-        info(LOGGER, "[%s %s docs/s %s] now[%s docs/s r%s c%s w%s %s] diff %s", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current), diff);
+        String r = throughput(read.getMetric());
+        String c = throughput(convert.getMetric());
+        String w = throughput(write.getMetric());
+        info(LOGGER, "[%s %s docs/s %s] now[%s docs/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
+        info(LOGGER, "millisDiff=%s countDiff=%s", millisDiff, countDiff);
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -76,6 +79,10 @@ public class MDocTest {
       closeQuietly(first);
       closeQuietly(conns);
     }
+  }
+
+  private String throughput(DataMetric metric) {
+    return getThroughputInSeconds(metric.getMillis(), metric.getCount(), "").trim();
   }
 
   private MDocResult read(ExecutorService rds, List<Connection> conns, List<String> rows, int selectSize) {
