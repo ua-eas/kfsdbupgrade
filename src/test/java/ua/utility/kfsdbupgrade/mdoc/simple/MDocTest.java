@@ -53,9 +53,6 @@ public class MDocTest {
       ExecutorService ec2 = new ExecutorProvider("ec2", ctx.getEc2Threads()).get();
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
       List<RowId> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
-      if (true) {
-        return;
-      }
       Stopwatch overall = createStarted();
       int count = 0;
       for (List<RowId> chunk : partition(rowIds, ctx.getChunkSize())) {
