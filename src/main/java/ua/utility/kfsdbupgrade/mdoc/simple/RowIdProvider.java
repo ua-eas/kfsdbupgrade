@@ -1,6 +1,10 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
@@ -15,6 +19,8 @@ import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Converter;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import ua.utility.kfsdbupgrade.mdoc.RowId;
@@ -24,33 +30,30 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
 
   private static final Logger LOGGER = Logger.getLogger(RowIdProvider.class);
 
-  public RowIdProvider(Connection conn, int max) {
-    this.conn = conn;
-    this.max = max;
-  }
-
   private final Connection conn;
-  private final int max;
-  private final RowIdConverter converter = RowIdConverter.getInstance();
+  private final Optional<String> schema;
+  private final String table;
+  private final Optional<Integer> max;
+  private final Optional<Integer> show;
+  private final Converter<String, RowId> converter;
 
   @Override
   public ImmutableList<RowId> get() {
+    List<RowId> rowIds = newArrayList();
     Statement stmt = null;
     ResultSet rs = null;
-    List<RowId> list = newArrayList();
     try {
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("SELECT ROWID FROM KRNS_MAINT_DOC_T");
-      int count = 0;
+      String from = schema.isPresent() ? schema.get() + "." + table : table;
+      rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
       while (rs.next()) {
-        String rowId = rs.getString(1);
-        RowId element = converter.convert(rowId);
-        list.add(element);
-        count++;
-        if (count % 100000 == 0) {
-          info(LOGGER, "%s", getCount(count));
+        String string = rs.getString(1);
+        RowId rowId = converter.convert(string);
+        rowIds.add(rowId);
+        if (show.isPresent() && rowIds.size() % show.get() == 0) {
+          info(LOGGER, "%s", getCount(rowIds.size()));
         }
-        if (count == max) {
+        if (max.isPresent() && rowIds.size() == max.get()) {
           break;
         }
       }
@@ -60,7 +63,77 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
       closeQuietly(rs);
       closeQuietly(stmt);
     }
-    return newList(list);
+    return newList(rowIds);
+  }
+
+  private RowIdProvider(Builder builder) {
+    this.conn = builder.conn;
+    this.max = builder.max;
+    this.show = builder.show;
+    this.converter = builder.converter;
+    this.schema = builder.schema;
+    this.table = builder.table;
+  }
+
+  public static class Builder {
+
+    private Connection conn;
+    private Optional<String> schema = absent();
+    private String table;
+    private Optional<Integer> max = absent();
+    private Optional<Integer> show = of(100000);
+    private Converter<String, RowId> converter = RowIdConverter.getInstance();
+
+    public Builder withConn(Connection conn) {
+      this.conn = conn;
+      return this;
+    }
+
+    public Builder withSchema(String schema) {
+      return withSchema(of(schema));
+    }
+
+    public Builder withSchema(Optional<String> schema) {
+      this.schema = schema;
+      return this;
+    }
+
+    public Builder withMax(int max) {
+      return withMax(of(max));
+    }
+
+    public Builder withMax(Optional<Integer> max) {
+      this.max = max;
+      return this;
+    }
+
+    public Builder withShow(int show) {
+      return withShow(of(show));
+    }
+
+    public Builder withShow(Optional<Integer> show) {
+      this.show = show;
+      return this;
+    }
+
+    public Builder withConverter(Converter<String, RowId> converter) {
+      this.converter = converter;
+      return this;
+    }
+
+    public RowIdProvider build() {
+      return validate(new RowIdProvider(this));
+    }
+
+    private static RowIdProvider validate(RowIdProvider instance) {
+      checkNotNull(instance.conn, "conn may not be null");
+      checkNotNull(instance.schema, "schema may not be null");
+      checkNotNull(instance.table, "table may not be null");
+      checkNotNull(instance.max, "max may not be null");
+      checkNotNull(instance.show, "show may not be null");
+      checkNotNull(instance.converter, "converter may not be null");
+      return instance;
+    }
   }
 
 }
