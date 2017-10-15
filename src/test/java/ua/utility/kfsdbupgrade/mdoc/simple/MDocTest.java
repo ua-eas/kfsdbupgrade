@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
@@ -48,10 +49,6 @@ import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
-import ua.utility.kfsdbupgrade.mdoc.simple.MDocConverter;
-import ua.utility.kfsdbupgrade.mdoc.simple.MDocProvider;
-import ua.utility.kfsdbupgrade.mdoc.simple.MDocUpdater;
-import ua.utility.kfsdbupgrade.mdoc.simple.RowIdProvider;
 
 public class MDocTest {
 
@@ -85,7 +82,7 @@ public class MDocTest {
       Stopwatch sw = createStarted();
       info(LOGGER, "ec2 cores -> %s", ec2Cores);
       info(LOGGER, "rds cores -> %s", rdsCores);
-      List<RowId> rowIds = getRowIds(conns.iterator().next(), max);
+      List<RowId> rowIds = getRowIds(conns.iterator().next(), max, max / 10);
       overall.start();
       for (List<RowId> chunk : partition(rowIds, chunkSize)) {
         List<MaintDoc> originals = select(rds, conns, chunk, selectSize, rdsCores);
@@ -99,6 +96,15 @@ public class MDocTest {
       throw new IllegalStateException(e);
     } finally {
       closeQuietly(conns);
+    }
+  }
+
+  private int getRdsCores(Properties props, Provider<Connection> provider) {
+    Optional<Integer> oracleValue = new OracleCpusProvider(provider).get();
+    if (oracleValue.isPresent()) {
+      return oracleValue.get();
+    } else {
+      return parseInt(props.getProperty("rds.cores.default", "4"));
     }
   }
 
@@ -154,10 +160,14 @@ public class MDocTest {
     info(LOGGER, "stored ----> %s (%s docs [%s] %s) [%s]", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
   }
 
-  private ImmutableList<RowId> getRowIds(Connection conn, int max) {
+  private ImmutableList<RowId> getRowIds(Connection conn, int max, int show) {
     Stopwatch sw = createStarted();
-    info(LOGGER, "acquiring -> row ids (max of %s)", getCount(max));
-    RowIdProvider provider = new RowIdProvider(conn, max);
+    info(LOGGER, "acquiring -> row ids (maximum of %s)", getCount(max));
+    RowIdProvider.Builder builder = RowIdProvider.builder();
+    builder.withConn(conn);
+    builder.withMax(max);
+    builder.withShow(show);
+    RowIdProvider provider = builder.build();
     ImmutableList<RowId> rowIds = provider.get();
     info(LOGGER, "acquired --> %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
     return rowIds;

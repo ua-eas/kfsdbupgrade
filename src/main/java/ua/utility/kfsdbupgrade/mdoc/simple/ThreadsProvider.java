@@ -17,8 +17,8 @@ public final class ThreadsProvider implements Provider<Integer> {
 
   public ThreadsProvider(String key, Properties props, int cores) {
     checkArgument(cores > 0, "cores must be greater than zero");
-    this.props = checkNotNull(props);
     this.key = checkNotNull(key);
+    this.props = checkNotNull(props);
     this.cores = cores;
   }
 

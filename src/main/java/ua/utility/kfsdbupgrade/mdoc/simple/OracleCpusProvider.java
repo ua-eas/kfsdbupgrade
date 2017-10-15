@@ -16,21 +16,35 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Optional;
 
+import ua.utility.kfsdbupgrade.mdoc.Providers;
+
 public final class OracleCpusProvider implements Provider<Optional<Integer>> {
 
   private static final Logger LOGGER = getLogger(OracleCpusProvider.class);
 
   public OracleCpusProvider(Connection conn) {
-    this.conn = checkNotNull(conn);
+    this(Providers.of(conn), false);
   }
 
-  private final Connection conn;
+  public OracleCpusProvider(Provider<Connection> provider) {
+    this(provider, true);
+  }
+
+  private OracleCpusProvider(Provider<Connection> provider, boolean closeConnection) {
+    this.provider = checkNotNull(provider);
+    this.closeConnection = closeConnection;
+  }
+
+  private final Provider<Connection> provider;
+  private final boolean closeConnection;
 
   public Optional<Integer> get() {
+    Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      // create a jdbc statement
+      // establish a connection to the db and create a statement
+      conn = provider.get();
       stmt = conn.createStatement();
       // pull the cpu count from the V$OSSTAT table
       rs = stmt.executeQuery("SELECT VALUE FROM V$OSSTAT WHERE STAT_NAME ='NUM_CPUS'");
@@ -48,6 +62,9 @@ public final class OracleCpusProvider implements Provider<Optional<Integer>> {
       // cleanup
       closeQuietly(rs);
       closeQuietly(stmt);
+      if (closeConnection) {
+        closeQuietly(conn);
+      }
     }
   }
 

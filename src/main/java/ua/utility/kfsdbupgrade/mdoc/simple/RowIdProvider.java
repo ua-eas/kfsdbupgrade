@@ -75,6 +75,10 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
     this.table = builder.table;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static class Builder {
 
     private Connection conn;
