@@ -36,7 +36,7 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
     if (function.equalsIgnoreCase("identity")) {
       return identity();
     } else {
-      throw new IllegalStateException(function + " is an unknown conversion function");
+      throw new IllegalStateException("'" + function + "' is an unknown conversion function");
     }
 
   }
