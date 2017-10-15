@@ -50,7 +50,8 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
     try {
       Stopwatch sw = createStarted();
       String from = schema.isPresent() ? schema.get() + "." + table : table;
-      info(LOGGER, "acquiring %s row ids from %s", max.or(-1), from);
+      String acquire = max.isPresent() ? "maximum of " + getCount(max.get()) : "all";
+      info(LOGGER, "acquiring %s row ids from %s", acquire, from);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
       while (rs.next()) {
