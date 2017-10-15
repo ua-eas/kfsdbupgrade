@@ -54,12 +54,9 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
       info(LOGGER, "acquiring %s row ids from %s", acquire, from);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
-      RowId rowId = null;
       while (rs.next()) {
         String string = rs.getString(1);
-        if (rowId == null) {
-          rowId = converter.convert(string);
-        }
+        RowId rowId = converter.convert(string);
         rowIds.add(rowId);
         if (show.isPresent() && rowIds.size() % show.get() == 0) {
           info(LOGGER, "%s", getCount(rowIds.size()));
