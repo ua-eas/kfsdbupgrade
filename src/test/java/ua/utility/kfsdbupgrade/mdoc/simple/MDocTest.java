@@ -76,7 +76,7 @@ public class MDocTest {
     String r = throughput(result.getRead());
     String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
     String w = throughput(result.getWrite());
-    info(LOGGER, "[%s %sd/s %s] now[a%s r%s%sw%s - %s]", getCount(result.getCount()), throughput, getTime(overall), now, r, c, w, getTime(current));
+    info(LOGGER, "[%s %sd/s %s] now[a%s r%s%sw%s - %s]", getCount(overallCount), throughput, getTime(overall), now, r, c, w, getTime(current));
   }
 
   private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
