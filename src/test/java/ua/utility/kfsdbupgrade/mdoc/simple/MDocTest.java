@@ -64,7 +64,7 @@ public class MDocTest {
         String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "").trim();
         String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "").trim();
         String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "").trim();
-        info(LOGGER, "[%s %s docs/sec %s] now[%s docs/sec r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
+        info(LOGGER, "[%s %sd/s %s] now[%sd/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
       }
     } catch (Throwable e) {
       e.printStackTrace();
