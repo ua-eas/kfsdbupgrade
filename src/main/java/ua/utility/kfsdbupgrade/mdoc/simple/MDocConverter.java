@@ -27,10 +27,10 @@ public final class MDocConverter implements Function<MaintDoc, MaintDoc> {
       String decrypted = encryptor.isEnabled() ? encryptor.decrypt(input.getContent()) : input.getContent();
       String converted = converter.transformMaintainableXML(decrypted);
       String encrypted = encryptor.isEnabled() ? encryptor.encrypt(converted) : converted;
-      return MaintDoc.build(input.getRowId(), input.getDocId(), encrypted);
+      return MaintDoc.build(input.getRowId(), input.getHeaderId(), encrypted);
     } catch (Throwable e) {
       e.printStackTrace();
-      LOGGER.error("document conversion error -> " + input.getDocId(), e);
+      LOGGER.error("document conversion error -> " + input.getHeaderId(), e);
       return input;
     }
   }

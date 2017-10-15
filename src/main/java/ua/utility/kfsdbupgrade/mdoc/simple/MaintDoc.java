@@ -6,19 +6,19 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public final class MaintDoc {
 
   private final String rowId;
-  private final String docId;
+  private final String headerId;
   private final String content;
 
   private MaintDoc(Builder builder) {
     this.rowId = builder.rowId;
-    this.docId = builder.docId;
+    this.headerId = builder.headerId;
     this.content = builder.content;
   }
 
-  public static MaintDoc build(String rowId, String docId, String content) {
+  public static MaintDoc build(String rowId, String headerId, String content) {
     Builder builder = builder();
     builder.withRowId(rowId);
-    builder.withDocId(docId);
+    builder.withHeaderId(headerId);
     builder.withContent(content);
     return builder.build();
   }
@@ -30,7 +30,7 @@ public final class MaintDoc {
   public static class Builder {
 
     private String rowId;
-    private String docId;
+    private String headerId;
     private String content;
 
     public Builder withRowId(String rowId) {
@@ -38,8 +38,8 @@ public final class MaintDoc {
       return this;
     }
 
-    public Builder withDocId(String docId) {
-      this.docId = docId;
+    public Builder withHeaderId(String headerId) {
+      this.headerId = headerId;
       return this;
     }
 
@@ -54,7 +54,7 @@ public final class MaintDoc {
 
     private static MaintDoc validate(MaintDoc instance) {
       checkArgument(isNotBlank(instance.rowId), "rowId may not be blank");
-      checkArgument(isNotBlank(instance.docId), "docId may not be blank");
+      checkArgument(isNotBlank(instance.headerId), "headerId may not be blank");
       checkArgument(isNotBlank(instance.content), "content may not be blank");
       return instance;
     }
@@ -64,8 +64,8 @@ public final class MaintDoc {
     return rowId;
   }
 
-  public String getDocId() {
-    return docId;
+  public String getHeaderId() {
+    return headerId;
   }
 
   public String getContent() {

@@ -1,7 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static com.google.common.base.Stopwatch.createUnstarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -21,6 +20,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Provider;
 
@@ -40,11 +40,6 @@ public class MDocTest {
 
   private static final Logger LOGGER = Logger.getLogger(MDocTest.class);
 
-  private int selected = 0;
-  private int converted = 0;
-  private int updated = 0;
-  private final Stopwatch overall = createUnstarted();
-
   @Test
   public void test() {
     List<Connection> conns = newArrayList();
@@ -57,16 +52,20 @@ public class MDocTest {
       ExecutorService rds = new ExecutorProvider("rds", ctx.getRdsThreads()).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ctx.getEc2Threads()).get();
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
-      Stopwatch sw = createStarted();
       List<RowId> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
-      overall.start();
+      Stopwatch overall = createStarted();
+      int count = 0;
       for (List<RowId> chunk : partition(rowIds, ctx.getChunkSize())) {
-        List<MaintDoc> originals = select(rds, conns, chunk, ctx.getSelectSize());
-        List<MaintDoc> converted = convert(ec2, originals, ctx.getConverter());
-        store(rds, conns, converted, ctx.getBatchSize());
+        Stopwatch current = createStarted();
+        MDocResult selected = select(rds, conns, chunk, ctx.getSelectSize());
+        MDocResult converted = convert(ec2, selected.getDocs(), ctx.getConverter());
+        MDocResult stored = store(rds, conns, converted.getDocs(), ctx.getBatchSize());
+        String s = getThroughputInSeconds(selected.getMetric().getMillis(), selected.getMetric().getCount(), "docs/sec");
+        String c = getThroughputInSeconds(converted.getMetric().getMillis(), converted.getMetric().getCount(), "docs/sec");
+        String u = getThroughputInSeconds(stored.getMetric().getMillis(), stored.getMetric().getCount(), "docs/sec");
+        count += chunk.size();
+        info(LOGGER, "%s select %s, convert %s, store %s [%s %s]", getCount(count), s, c, u, getTime(current), getTime(overall));
       }
-      String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
-      info(LOGGER, "converted -> %s docs [%s] %s", getCount(rowIds.size()), getTime(sw), tp);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -76,22 +75,33 @@ public class MDocTest {
     }
   }
 
-  private ImmutableList<MaintDoc> select(ExecutorService rds, List<Connection> conns, List<RowId> rows, int selectSize) {
-    Stopwatch sw = createStarted();
+  private MDocResult select(ExecutorService rds, List<Connection> conns, List<RowId> rows, int selectSize) {
     List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
     for (List<RowId> distribution : distribute(rows, conns.size())) {
       MDocProvider mdp = new MDocProvider(conns.get(index++), distribution, selectSize);
       callables.add(fromProvider(mdp));
     }
-    ImmutableList<MaintDoc> docs = concat(getFutures(rds, callables));
-    String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
-    this.selected += docs.size();
-    info(LOGGER, "selected --> %s (%s docs [%s] %s)", getCount(selected), getCount(docs.size()), getTime(sw), tp);
-    return docs;
+    Stopwatch sw = createStarted();
+    List<MaintDoc> docs = concat(getFutures(rds, callables));
+    long elapsed = sw.elapsed(TimeUnit.MILLISECONDS);
+    DataMetric metric = new DataMetric(docs.size(), sum(docs, false), elapsed);
+    return new MDocResult(metric, docs);
   }
 
-  private ImmutableList<MaintDoc> convert(ExecutorService ec2, List<MaintDoc> docs, Function<MaintDoc, MaintDoc> function) {
+  private long sum(Iterable<MaintDoc> docs, boolean contentOnly) {
+    long bytes = 0;
+    for (MaintDoc doc : docs) {
+      if (contentOnly) {
+        bytes += doc.getContent().length();
+      } else {
+        bytes += doc.getRowId().length() + doc.getHeaderId().length() + doc.getContent().length();
+      }
+    }
+    return bytes;
+  }
+
+  private MDocResult convert(ExecutorService ec2, List<MaintDoc> docs, Function<MaintDoc, MaintDoc> function) {
     List<Callable<MaintDoc>> callables = newArrayList();
     for (MaintDoc doc : docs) {
       Provider<MaintDoc> provider = fromFunction(doc, function);
@@ -99,26 +109,24 @@ public class MDocTest {
       callables.add(callable);
     }
     Stopwatch sw = createStarted();
-    ImmutableList<MaintDoc> converted = getFutures(ec2, callables);
-    String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
-    this.converted += docs.size();
-    info(LOGGER, "converted -> %s (%s docs [%s] %s)", getCount(this.converted), getCount(docs.size()), getTime(sw), tp);
-    return converted;
+    List<MaintDoc> converted = getFutures(ec2, callables);
+    long millis = sw.elapsed(MILLISECONDS);
+    DataMetric metric = new DataMetric(converted.size(), sum(converted, true), millis);
+    return new MDocResult(metric, converted);
   }
 
-  private void store(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize) {
-    Stopwatch sw = createStarted();
+  private MDocResult store(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize) {
     int index = 0;
     List<Callable<DataMetric>> callables = newArrayList();
     for (List<MaintDoc> distribution : distribute(docs, conns.size())) {
       MDocUpdater mdu = new MDocUpdater(conns.get(index++), distribution, batchSize);
       callables.add(fromProvider(mdu));
     }
+    Stopwatch sw = createStarted();
     getFutures(rds, callables);
-    String tp1 = getThroughputInSeconds(sw.elapsed(MILLISECONDS), docs.size(), "docs/sec");
-    this.updated += docs.size();
-    String tp2 = getThroughputInSeconds(overall.elapsed(MILLISECONDS), updated, "docs/sec");
-    info(LOGGER, "stored ----> %s (%s docs [%s] %s) [%s]", getCount(updated), getCount(docs.size()), getTime(sw), tp1, tp2);
+    long millis = sw.elapsed(MILLISECONDS);
+    DataMetric metric = new DataMetric(docs.size(), sum(docs, true), millis);
+    return new MDocResult(metric, docs);
   }
 
   private ImmutableList<RowId> getRowIds(MDocContext ctx, Connection conn, int show) {
