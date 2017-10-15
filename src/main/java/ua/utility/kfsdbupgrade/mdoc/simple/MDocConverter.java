@@ -9,7 +9,6 @@ import com.google.common.base.Function;
 
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
-import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 
 public final class MDocConverter implements Function<MaintDoc, MaintDoc> {
 
@@ -28,10 +27,10 @@ public final class MDocConverter implements Function<MaintDoc, MaintDoc> {
       String decrypted = encryptor.isEnabled() ? encryptor.decrypt(input.getContent()) : input.getContent();
       String converted = converter.transformMaintainableXML(decrypted);
       String encrypted = encryptor.isEnabled() ? encryptor.encrypt(converted) : converted;
-      return MaintDoc.build(input.getId(), encrypted);
+      return MaintDoc.build(input.getRowId(), input.getDocId(), encrypted);
     } catch (Throwable e) {
       e.printStackTrace();
-      LOGGER.error("document conversion error -> " + input.getId(), e);
+      LOGGER.error("document conversion error -> " + input.getDocId(), e);
       return input;
     }
   }

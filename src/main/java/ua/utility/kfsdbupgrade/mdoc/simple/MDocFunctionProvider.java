@@ -18,7 +18,6 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
-import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 
 public final class MDocFunctionProvider implements Provider<Function<MaintDoc, MaintDoc>> {
 
