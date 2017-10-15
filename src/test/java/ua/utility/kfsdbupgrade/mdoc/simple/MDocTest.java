@@ -64,12 +64,12 @@ public class MDocTest {
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       first = provider.get();
+      int ec2Threads = new Ec2ThreadsProvider(props).get();
+      int rdsThreads = new RdsThreadsProvider(props, first).get();
       int max = parseInt(props.getProperty("mdoc.max", "1000000"));
       int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
-      int ec2Threads = new Ec2ThreadsProvider(props).get();
-      int rdsThreads = new RdsThreadsProvider(props, first).get();
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       String encryptionKey = props.getProperty("encryption-key");
       EncryptionService encryptor = new EncryptionService(encryptionKey);
