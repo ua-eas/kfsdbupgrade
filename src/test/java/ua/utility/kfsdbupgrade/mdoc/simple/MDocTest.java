@@ -62,7 +62,7 @@ public class MDocTest {
         String now = throughput(current, chunk.size());
         String throughput = throughput(overall, count);
         String r = throughput(read.getMetric());
-        String c = throughput(convert.getMetric());
+        String c = convert.getMetric().getMillis() > 5 ? throughput(convert.getMetric()) : "n/a";
         String w = throughput(write.getMetric());
         info(LOGGER, "[%s %sd/s %s] now[o%s r%s c%s w%s docs/sec - %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
       }
