@@ -64,7 +64,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
           break;
         }
       }
-      String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "ids/sec");
+      String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "row ids/sec");
       info(LOGGER, "acquired %s row ids from %s in %s [%s]", getCount(rowIds.size()), from, getTime(sw), tp);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
