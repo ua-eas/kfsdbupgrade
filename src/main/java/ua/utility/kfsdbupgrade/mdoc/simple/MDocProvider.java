@@ -4,6 +4,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.removeEnd;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 
@@ -62,9 +63,9 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
     for (String rowId : rowIds) {
       sb.append("'");
       sb.append(rowId);
-      sb.append("'");
+      sb.append("',");
     }
-    return sb.toString();
+    return removeEnd(sb.toString(), ",");
   }
 
 }
