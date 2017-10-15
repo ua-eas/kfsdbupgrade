@@ -57,8 +57,8 @@ public class MDocTest {
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
         ChunkResult result = doChunk(rds, ec2, conns, chunk, ctx);
-        progress(chunks, overall, result, current);
         chunks.add(result);
+        progress(chunks, overall, result, current);
       }
     } catch (Throwable e) {
       e.printStackTrace();
