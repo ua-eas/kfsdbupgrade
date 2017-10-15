@@ -32,8 +32,7 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
     String function = props.getProperty("mdoc.content", "convert");
     if (function.equalsIgnoreCase("convert")) {
       return getConverter();
-    }
-    if (function.equalsIgnoreCase("identity")) {
+    } else if (function.equalsIgnoreCase("identity")) {
       return identity();
     } else if (function.equalsIgnoreCase("reverse")) {
       return ReverseFunction.INSTANCE;
