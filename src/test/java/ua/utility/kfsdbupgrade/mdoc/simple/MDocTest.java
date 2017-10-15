@@ -55,16 +55,9 @@ public class MDocTest {
       int count = 0;
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
         Stopwatch current = createStarted();
-        MDocResult read = read(rds, conns, chunk, ctx.getSelectSize());
-        MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
-        MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
-        count += chunk.size();
-        String now = throughput(current, chunk.size());
-        String throughput = throughput(overall, count);
-        String r = throughput(read.getMetric());
-        String c = convert.getMetric().getMillis() > 5 ? " c" + throughput(convert.getMetric()) + " " : " ";
-        String w = throughput(write.getMetric());
-        info(LOGGER, "[%s %sd/s %s] now[o%s r%s%sw%s - %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
+        ChunkResult result = doChunk(rds, ec2, conns, chunk, ctx);
+        count += result.getCount();
+        showChunk(result, overall, current, count);
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -73,6 +66,22 @@ public class MDocTest {
       closeQuietly(first);
       closeQuietly(conns);
     }
+  }
+
+  private void showChunk(ChunkResult result, Stopwatch overall, Stopwatch current, int overallCount) {
+    String now = throughput(current, result.getCount());
+    String throughput = throughput(overall, overallCount);
+    String r = throughput(result.getRead());
+    String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
+    String w = throughput(result.getWrite());
+    info(LOGGER, "[%s %sd/s %s] now[o%s r%s%sw%s - %s]", getCount(result.getCount()), throughput, getTime(overall), now, r, c, w, getTime(current));
+  }
+
+  private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
+    MDocResult read = read(rds, conns, rowIds, ctx.getSelectSize());
+    MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
+    MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
+    return new ChunkResult(rowIds.size(), read.getMetric(), convert.getMetric(), write.getMetric());
   }
 
   private String throughput(Stopwatch sw, int count) {
@@ -108,7 +117,7 @@ public class MDocTest {
       if (contentOnly) {
         bytes += doc.getContent().length();
       } else {
-        bytes += doc.getRowId().length() + doc.getHeaderId().length() + doc.getContent().length();
+        bytes += doc.getContent().length() + doc.getRowId().length() + doc.getHeaderId().length();
       }
     }
     return bytes;
