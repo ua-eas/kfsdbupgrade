@@ -29,15 +29,13 @@ public final class ThreadsProvider implements Provider<Integer> {
   @Override
   public Integer get() {
     String value = props.getProperty(key, "1C").toUpperCase(ENGLISH);
-    int threads = -1;
     if (value.endsWith("C")) {
       String trimmed = removeEnd(value, "C");
       double multiplier = parseDouble(trimmed);
-      threads = roundToInt(multiplier * cores, HALF_UP);
+      return roundToInt(multiplier * cores, HALF_UP);
     } else {
-      threads = parseInt(value);
+      return parseInt(value);
     }
-    return threads;
   }
 
 }
