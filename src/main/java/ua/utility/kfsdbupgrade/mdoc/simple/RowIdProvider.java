@@ -45,6 +45,7 @@ public final class RowIdProvider implements Provider<ImmutableList<RowId>> {
     try {
       stmt = conn.createStatement();
       String from = schema.isPresent() ? schema.get() + "." + table : table;
+      info(LOGGER, "acquiring %s row ids from %s", max.isPresent() ? "all" : max.get(), from);
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
       while (rs.next()) {
         String string = rs.getString(1);

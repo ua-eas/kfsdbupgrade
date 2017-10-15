@@ -131,7 +131,7 @@ public class MDocTest {
     builder.withTable("KRNS_MAINT_DOC_T");
     RowIdProvider provider = builder.build();
     ImmutableList<RowId> rowIds = provider.get();
-    info(LOGGER, "acquired --> %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
+    info(LOGGER, "acquiring %s row ids [%s]", getCount(rowIds.size()), getTime(sw));
     return rowIds;
   }
 
