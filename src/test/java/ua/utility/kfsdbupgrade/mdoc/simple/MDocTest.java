@@ -76,16 +76,17 @@ public class MDocTest {
   }
 
   private MDocResult read(ExecutorService rds, List<Connection> conns, List<String> rows, int selectSize) {
+    Stopwatch sw = createStarted();
     List<Callable<ImmutableList<MaintDoc>>> callables = newArrayList();
     int index = 0;
     for (List<String> distribution : distribute(rows, conns.size())) {
       MDocProvider mdp = new MDocProvider(conns.get(index++), distribution, selectSize);
       callables.add(fromProvider(mdp));
     }
-    Stopwatch sw = createStarted();
     List<MaintDoc> docs = concat(getFutures(rds, callables));
+    long bytes = sum(docs, false);
     long elapsed = sw.elapsed(MILLISECONDS);
-    DataMetric metric = new DataMetric(docs.size(), sum(docs, false), elapsed);
+    DataMetric metric = new DataMetric(docs.size(), bytes, elapsed);
     return new MDocResult(metric, docs);
   }
 
@@ -102,30 +103,32 @@ public class MDocTest {
   }
 
   private MDocResult convert(ExecutorService ec2, List<MaintDoc> docs, Function<MaintDoc, MaintDoc> function) {
+    Stopwatch sw = createStarted();
     List<Callable<MaintDoc>> callables = newArrayList();
     for (MaintDoc doc : docs) {
       Provider<MaintDoc> provider = fromFunction(doc, function);
       Callable<MaintDoc> callable = fromProvider(provider);
       callables.add(callable);
     }
-    Stopwatch sw = createStarted();
     List<MaintDoc> converted = getFutures(ec2, callables);
+    long bytes = sum(converted, true);
     long millis = sw.elapsed(MILLISECONDS);
-    DataMetric metric = new DataMetric(converted.size(), sum(converted, true), millis);
+    DataMetric metric = new DataMetric(converted.size(), bytes, millis);
     return new MDocResult(metric, converted);
   }
 
   private MDocResult write(ExecutorService rds, List<Connection> conns, List<MaintDoc> docs, int batchSize) {
+    Stopwatch sw = createStarted();
     int index = 0;
     List<Callable<DataMetric>> callables = newArrayList();
     for (List<MaintDoc> distribution : distribute(docs, conns.size())) {
       MDocUpdater mdu = new MDocUpdater(conns.get(index++), distribution, batchSize);
       callables.add(fromProvider(mdu));
     }
-    Stopwatch sw = createStarted();
     getFutures(rds, callables);
+    long bytes = sum(docs, true);
     long millis = sw.elapsed(MILLISECONDS);
-    DataMetric metric = new DataMetric(docs.size(), sum(docs, true), millis);
+    DataMetric metric = new DataMetric(docs.size(), bytes, millis);
     return new MDocResult(metric, docs);
   }
 
