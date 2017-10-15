@@ -45,7 +45,7 @@ public final class MDocFunctionProvider implements Provider<Function<MaintDoc, M
     try {
       ByteSource rulesXmlFile = wrap(asByteSource(getResource("MaintainableXMLUpgradeRules.xml")).read());
       String encryptionKey = props.getProperty("encryption-key");
-      checkState(isNotBlank(encryptionKey), "blank encryption key");
+      checkState(isNotBlank(encryptionKey), "encryption key is blank");
       checkState(!encryptionKey.contains("${"), "unresolved encryption key -> %s", encryptionKey);
       EncryptionService encryptor = new EncryptionService(encryptionKey);
       MaintainableXmlConversionService service = new MaintainableXMLConversionServiceImpl(rulesXmlFile);
