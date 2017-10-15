@@ -59,24 +59,12 @@ public class MDocTest {
         MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
         MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
         count += chunk.size();
-        long currentElapsed = current.elapsed(MILLISECONDS);
-        long overallElapsed = overall.elapsed(MILLISECONDS);
-        long sumMillis = read.getMetric().getMillis() + convert.getMetric().getMillis() + write.getMetric().getMillis();
-        long sumCount = read.getMetric().getCount() + convert.getMetric().getCount() + write.getMetric().getCount();
-        long millisDiff = currentElapsed - sumMillis;
-        long countDiff = chunk.size() - sumCount;
-        String now = getThroughputInSeconds(currentElapsed, chunk.size(), "").trim();
-        String throughput = getThroughputInSeconds(overallElapsed, count, "").trim();
+        String now = throughput(current, chunk.size());
+        String throughput = throughput(overall, count);
         String r = throughput(read.getMetric());
         String c = throughput(convert.getMetric());
         String w = throughput(write.getMetric());
         info(LOGGER, "[%s %s docs/s %s] now[%s docs/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), now, r, c, w, getTime(current));
-        info(LOGGER, "millisDiff=%s countDiff=%s", millisDiff, countDiff);
-        info(LOGGER, "read----->%s %s", read.getMetric().getCount(), read.getMetric().getMillis());
-        info(LOGGER, "convert ->%s %s", convert.getMetric().getCount(), convert.getMetric().getMillis());
-        info(LOGGER, "write---->%s %s", write.getMetric().getCount(), write.getMetric().getMillis());
-        info(LOGGER, "current-->%s %s", chunk.size(), currentElapsed);
-        info(LOGGER, "overall-->%s %s", count, overallElapsed);
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -87,8 +75,16 @@ public class MDocTest {
     }
   }
 
+  private String throughput(Stopwatch sw, int count) {
+    return getThroughputInSeconds(sw.elapsed(MILLISECONDS), count, "").trim();
+  }
+
+  private String throughput(long millis, int count) {
+    return getThroughputInSeconds(millis, count, "").trim();
+  }
+
   private String throughput(DataMetric metric) {
-    return getThroughputInSeconds(metric.getMillis(), metric.getCount(), "").trim();
+    return throughput(metric.getMillis(), metric.getCount());
   }
 
   private MDocResult read(ExecutorService rds, List<Connection> conns, List<String> rows, int selectSize) {
