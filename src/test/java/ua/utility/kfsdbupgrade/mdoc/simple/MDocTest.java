@@ -64,7 +64,7 @@ public class MDocTest {
         String r = throughput(read.getMetric());
         String c = throughput(convert.getMetric());
         String w = throughput(write.getMetric());
-        info(LOGGER, "[%s-%s d/s %s] now[%s-%s d/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), getCount(chunk.size()), now, r, c, w, getTime(current));
+        info(LOGGER, "[%s %sd/s %s] now[%s %sd/s r%s c%s w%s %s]", getCount(count), throughput, getTime(overall), getCount(chunk.size()), now, r, c, w, getTime(current));
       }
     } catch (Throwable e) {
       e.printStackTrace();
