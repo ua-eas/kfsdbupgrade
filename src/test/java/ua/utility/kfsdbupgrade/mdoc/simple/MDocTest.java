@@ -69,9 +69,9 @@ public class MDocTest {
     }
   }
 
-  private void progress(Iterable<ChunkResult> results, Stopwatch overall, Stopwatch current) {
-    String all = analyze(results, overall);
-    String now = analyze(getLast(results), current);
+  private void progress(Iterable<ChunkResult> chunks, Stopwatch overall, Stopwatch current) {
+    String all = analyze(chunks, overall);
+    String now = analyze(getLast(chunks), current);
     info(LOGGER, "all[%s] now[%s]", all, now);
   }
 
@@ -94,12 +94,12 @@ public class MDocTest {
     return format("%s %sd/s r%s c%s w%s - %s", getCount(overallCount), throughput, r, c, w, getTime(overallElapsed));
   }
 
-  private String analyze(ChunkResult result, Stopwatch current) {
-    String now = throughput(current, result.getCount());
-    String r = throughput(result.getRead());
-    String c = result.getConvert().getMillis() > 0 ? " c" + throughput(result.getConvert()) + " " : " ";
-    String w = throughput(result.getWrite());
-    return format("%s %sd/s r%s%sw%s - %s", getCount(result.getCount()), now, r, c, w, getTime(current));
+  private String analyze(ChunkResult chunk, Stopwatch current) {
+    String now = throughput(current, chunk.getCount());
+    String r = throughput(chunk.getRead());
+    String c = chunk.getConvert().getMillis() > 0 ? " c" + throughput(chunk.getConvert()) + " " : " ";
+    String w = throughput(chunk.getWrite());
+    return format("%s %sd/s r%s%sw%s - %s", getCount(chunk.getCount()), now, r, c, w, getTime(current));
   }
 
   private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
