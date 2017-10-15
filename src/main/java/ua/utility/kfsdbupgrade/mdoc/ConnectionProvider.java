@@ -6,6 +6,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 
@@ -48,11 +49,11 @@ public final class ConnectionProvider implements Provider<Connection> {
         url = props.getProperty("db.url");
       }
       Stopwatch sw = createStarted();
-      info("%s as '%s'", url, username);
+      info(LOGGER, "%s as '%s'", url, username);
       Class.forName(checkedValue(props, "database-driver"));
       connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(autoCommit);
-      info("%s as '%s' [%s]", url, username, getTime(sw));
+      info(LOGGER, "%s as '%s' [%s]", url, username, getTime(sw));
       return connection;
     } catch (Throwable e) {
       closeQuietly(connection);
@@ -64,14 +65,6 @@ public final class ConnectionProvider implements Provider<Connection> {
     String value = props.getProperty(key);
     checkArgument(isNotBlank(value), "%s cannot be blank", key);
     return value;
-  }
-
-  private void info(String msg, Object... args) {
-    if (args == null || args.length == 0) {
-      LOGGER.info(msg);
-    } else {
-      LOGGER.info(format(msg, args));
-    }
   }
 
 }

@@ -62,7 +62,7 @@ public class MDocTest {
       int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
       int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
       Function<MaintDoc, MaintDoc> converter = new MDocFunctionProvider(props).get();
-      conns = openConnections(provider, rdsThreads, first);
+      conns = new ConnectionsProvider(provider, rdsThreads, first).get();
       ExecutorService rds = new ExecutorProvider("rds", rdsThreads).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ec2Threads).get();
       Stopwatch sw = createStarted();
