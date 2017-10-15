@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Provider;
 
@@ -86,7 +85,7 @@ public class MDocTest {
     }
     Stopwatch sw = createStarted();
     List<MaintDoc> docs = concat(getFutures(rds, callables));
-    long elapsed = sw.elapsed(TimeUnit.MILLISECONDS);
+    long elapsed = sw.elapsed(MILLISECONDS);
     DataMetric metric = new DataMetric(docs.size(), sum(docs, false), elapsed);
     return new MDocResult(metric, docs);
   }
