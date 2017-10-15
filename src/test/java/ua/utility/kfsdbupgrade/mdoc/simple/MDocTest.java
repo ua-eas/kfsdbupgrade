@@ -60,11 +60,13 @@ public class MDocTest {
         MDocResult read = read(rds, conns, chunk, ctx.getSelectSize());
         MDocResult convert = convert(ec2, read.getDocs(), ctx.getConverter());
         MDocResult write = write(rds, conns, convert.getDocs(), ctx.getBatchSize());
-        String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "docs/sec");
-        String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "docs/sec");
-        String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "docs/sec");
         count += chunk.size();
-        info(LOGGER, "%s [read %s, convert %s, write %s] %s %s", getCount(count), r, c, w, getTime(current), getTime(overall));
+        String r = getThroughputInSeconds(read.getMetric().getMillis(), read.getMetric().getCount(), "").trim();
+        String c = getThroughputInSeconds(convert.getMetric().getMillis(), convert.getMetric().getCount(), "").trim();
+        String w = getThroughputInSeconds(write.getMetric().getMillis(), write.getMetric().getCount(), "").trim();
+        String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "").trim();
+        String tp = getThroughputInSeconds(overall.elapsed(MILLISECONDS), count, "").trim();
+        info(LOGGER, "%s [%s][%s r%s, c%s, w%s][%s %s]", getCount(count), tp, now, r, c, w, getTime(current), getTime(overall));
       }
     } catch (Throwable e) {
       e.printStackTrace();
