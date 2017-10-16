@@ -1,10 +1,12 @@
 package ua.utility.kfsdbupgrade.md;
 
+import static org.apache.log4j.Logger.getLogger;
+
 import org.apache.log4j.Logger;
 
 public final class Closeables {
 
-  private static final Logger LOGGER = Logger.getLogger(Closeables.class);
+  private static final Logger LOGGER = getLogger(Closeables.class);
 
   public static void closeQuietly(AutoCloseable closeable) {
     if (closeable != null) {
