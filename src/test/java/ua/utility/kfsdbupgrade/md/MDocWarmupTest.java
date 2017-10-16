@@ -19,8 +19,8 @@ import static ua.utility.kfsdbupgrade.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.base.Providers.of;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
-import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
+import static ua.utility.kfsdbupgrade.md.MaintDocField.DOC_CNTNT;
+import static ua.utility.kfsdbupgrade.md.MaintDocField.VER_NBR;
 
 import java.io.IOException;
 import java.sql.Connection;

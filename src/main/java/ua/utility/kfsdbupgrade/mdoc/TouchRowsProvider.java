@@ -13,7 +13,7 @@ import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.base.Lists.distribute;
 import static ua.utility.kfsdbupgrade.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.base.Logging.info;
-import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.asMaintDocField;
+import static ua.utility.kfsdbupgrade.md.MaintDocField.asMaintDocField;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -33,6 +33,7 @@ import ua.utility.kfsdbupgrade.base.Callables;
 import ua.utility.kfsdbupgrade.base.Logging;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.ExecutorProvider;
+import ua.utility.kfsdbupgrade.md.MaintDocField;
 
 public final class TouchRowsProvider implements Provider<Long> {
 
