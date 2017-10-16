@@ -73,7 +73,8 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
     this.discard = builder.discard;
   }
 
-  public static <T> RowProvider<T> build(Connection conn, String table, Iterable<String> fields, Iterable<String> rowIds, int selectSize, boolean discard) {
+  public static <T> RowProvider<T> build(Connection conn, String table, Iterable<String> fields, Iterable<String> rowIds, Function<ResultSet, T> function, int selectSize,
+      boolean discard) {
     Builder<T> builder = builder();
     builder.withConn(conn);
     builder.withTable(table);
@@ -81,6 +82,7 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
     builder.withRowIds(copyOf(rowIds));
     builder.withSelectSize(selectSize);
     builder.withDiscard(discard);
+    builder.withFunction(function);
     return builder.build();
   }
 
@@ -98,6 +100,11 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
     private List<String> fields;
     private int selectSize = -1;
     private boolean discard;
+
+    public Builder<T> withFunction(Function<ResultSet, T> function) {
+      this.function = function;
+      return this;
+    }
 
     public Builder<T> withDiscard(boolean discard) {
       this.discard = discard;
@@ -150,6 +157,7 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
       checkNotNull(instance.conn, "conn may not be null");
       checkNotNull(instance.schema, "schema may not be null");
       checkNotNull(instance.table, "table may not be null");
+      checkNotNull(instance.function, "function may not be null");
       checkArgument(instance.rowIds.size() > 0, "rowIds can't be empty");
       checkArgument(instance.fields.size() > 0, "fields can't be empty");
       checkArgument(instance.selectSize > 0, "selectSize must be greater than zero");

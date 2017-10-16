@@ -8,8 +8,6 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.md.MaintDocField.DOC_CNTNT;
-import static ua.utility.kfsdbupgrade.md.MaintDocField.VER_NBR;
 import static ua.utility.kfsdbupgrade.md.base.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.md.base.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
@@ -36,11 +34,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
-import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
-import ua.utility.kfsdbupgrade.mdoc.SingleIntegerFunction;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
-import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 
 public class MDocWarmupTest {
 
@@ -62,9 +57,9 @@ public class MDocWarmupTest {
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
       info(LOGGER, "blocks ----> %s", getCount(blocks.size()));
       info(LOGGER, "selecting -> %s%% of the total number of rows", getCount(checkedCast(round(select))));
-      touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10000);
+      // touch(props, table, VER_NBR.name(), blocks.values(), SingleIntegerFunction.INSTANCE, IntegerWeigher.INSTANCE, 10000);
       int maximum = min(rowIds.size(), parseInt(props.getProperty("mdoc.clobs", "30000")));
-      touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
+      // touch(props, table, DOC_CNTNT.name(), rowIds.subList(0, maximum), SingleStringFunction.INSTANCE, StringWeigher.INSTANCE, 1000);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
@@ -105,10 +100,10 @@ public class MDocWarmupTest {
     DatabaseMetrics metrics = new DatabaseMetrics(show, false);
     RowSelector.Builder<String> builder = RowSelector.builder();
     builder.withFunction(SingleStringFunction.INSTANCE);
-    builder.withWeigher(StringWeigher.INSTANCE);
-    builder.withMetrics(metrics);
+    // builder.withWeigher(StringWeigher.INSTANCE);
+    // builder.withMetrics(metrics);
     builder.withTable(table);
-    builder.withProvider(provider);
+    // builder.withProvider(provider);
     RowSelector<String> selector = builder.build();
     metrics.start();
     return transform(selector.get(), converter);

@@ -1,12 +1,17 @@
 package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.MaintDocField.DOC_CNTNT;
+import static ua.utility.kfsdbupgrade.md.MaintDocField.VER_NBR;
 import static ua.utility.kfsdbupgrade.md.base.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.md.base.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
@@ -14,11 +19,13 @@ import static ua.utility.kfsdbupgrade.md.base.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Lists.concat;
 import static ua.utility.kfsdbupgrade.md.base.Lists.distribute;
+import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.md.base.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Providers.fromFunction;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -31,10 +38,14 @@ import org.junit.Test;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import ua.utility.kfsdbupgrade.mdoc.SingleIntegerFunction;
+import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 
 public class MDocTest {
 
-  private static final Logger LOGGER = Logger.getLogger(MDocTest.class);
+  private static final Logger LOGGER = getLogger(MDocTest.class);
 
   @Test
   public void test() {
@@ -49,6 +60,7 @@ public class MDocTest {
       ExecutorService ec2 = new ExecutorProvider("ec2", ctx.getEc2Threads()).get();
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
       List<String> rowIds = RowIdProvider.build(first, ctx.getTable(), ctx.getMax(), ctx.getMax() / 10).get();
+      warmup(ctx, rds, conns, rowIds);
       Stopwatch overall = createStarted();
       List<ChunkResult> chunks = newArrayList();
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
@@ -63,6 +75,26 @@ public class MDocTest {
       closeQuietly(first);
       closeQuietly(conns);
     }
+  }
+
+  private void warmup(MDocContext ctx, ExecutorService rds, Iterable<Connection> conns, List<String> rowIds) {
+    Stopwatch sw = createStarted();
+    info(LOGGER, "warming up the %s table", ctx.getTable(), getCount(rowIds.size()));
+    List<RowId> ids = transform(rowIds, RowIdConverter.getInstance());
+    Map<BlockId, RowId> blocks = getUniqueBlocks(ids);
+    info(LOGGER, "%s unique blocks detected", getCount(blocks.size()));
+    List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
+    RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
+    RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), rowIds.subList(0, rowIds.size() / 10), SingleStringFunction.INSTANCE, 1000, 100, true).get();
+    info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
+  }
+
+  private ImmutableMap<BlockId, RowId> getUniqueBlocks(Iterable<RowId> rowIds) {
+    Map<BlockId, RowId> map = newLinkedHashMap();
+    for (RowId rowId : rowIds) {
+      map.put(rowId.getBlock(), rowId);
+    }
+    return copyOf(map);
   }
 
   private void progress(Iterable<ChunkResult> chunks, Stopwatch overall, Stopwatch current) {

@@ -7,6 +7,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.partition;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
@@ -14,6 +15,7 @@ import static ua.utility.kfsdbupgrade.md.base.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.md.base.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Lists.concat;
 import static ua.utility.kfsdbupgrade.md.base.Lists.distribute;
 import static ua.utility.kfsdbupgrade.md.base.Logging.info;
@@ -57,21 +59,20 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
       info(LOGGER, "selecting [%s] from %s, %s rows total, discard=%s", Joiner.on(',').join(fields), from, getCount(rowIds.size()), discard);
       List<T> list = newArrayList();
       int processed = 0;
-      for (List<String> chunk : distribute(rowIds, chunkSize)) {
+      for (List<String> chunk : partition(rowIds, chunkSize)) {
         Stopwatch current = createStarted();
         int index = 0;
         List<Callable<ImmutableList<T>>> callables = newArrayList();
         for (List<String> distribution : distribute(chunk, conns.size())) {
-          RowProvider<T> provider = RowProvider.build(conns.get(index++), table, fields, distribution, selectSize, discard);
+          RowProvider<T> provider = RowProvider.build(conns.get(index++), table, fields, distribution, function, selectSize, discard);
           callables.add(fromProvider(provider));
         }
         list.addAll(concat(getFutures(executor, callables)));
         processed += chunk.size();
-        String throughput = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "rows/sec");
-        info(LOGGER, "processed %s rows of %s total, %s", getCount(processed), getCount(rowIds.size()), throughput);
+        String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "rows/sec");
+        String all = getThroughputInSeconds(overall.elapsed(MILLISECONDS), processed, "rows/sec");
+        info(LOGGER, "processed %s rows of %s total, all[%s] now[%s] %s", getCount(processed), getCount(rowIds.size()), all, now, getTime(overall));
       }
-      String throughput = getThroughputInSeconds(overall.elapsed(MILLISECONDS), rowIds.size(), "rows/sec");
-      info(LOGGER, "processed %s rows of %s total, %s", getCount(processed), getCount(rowIds.size()), throughput);
       return copyOf(list);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
@@ -91,7 +92,8 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
     this.chunkSize = builder.chunkSize;
   }
 
-  public static <T> RowsProvider<T> build(Iterable<Connection> conns, String table, String field, Iterable<String> rowIds, int chunkSize, int selectSize, boolean discard) {
+  public static <T> RowsProvider<T> build(ExecutorService executor, Iterable<Connection> conns, String table, String field, Iterable<String> rowIds,
+      Function<ResultSet, T> function, int chunkSize, int selectSize, boolean discard) {
     Builder<T> builder = builder();
     builder.withConns(copyOf(conns));
     builder.withTable(table);
@@ -100,6 +102,8 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
     builder.withChunkSize(chunkSize);
     builder.withSelectSize(selectSize);
     builder.withDiscard(discard);
+    builder.withFunction(function);
+    builder.withExecutor(executor);
     return builder.build();
   }
 
@@ -119,6 +123,11 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
     private Function<ResultSet, T> function;
     private List<String> fields;
     private ExecutorService executor;
+
+    public Builder<T> withFunction(Function<ResultSet, T> function) {
+      this.function = function;
+      return this;
+    }
 
     public Builder<T> withChunkSize(int chunkSize) {
       this.chunkSize = chunkSize;
