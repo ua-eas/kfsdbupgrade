@@ -8,10 +8,10 @@ import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.md.Formats.getCount;
-import static ua.utility.kfsdbupgrade.md.Formats.getRate;
-import static ua.utility.kfsdbupgrade.md.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.md.Formats.getTime;
+import static ua.utility.kfsdbupgrade.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.base.Formats.getRate;
+import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 

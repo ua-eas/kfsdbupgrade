@@ -1,12 +1,12 @@
-package ua.utility.kfsdbupgrade.md;
+package ua.utility.kfsdbupgrade.base;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.md.Formats.getCount;
-import static ua.utility.kfsdbupgrade.md.Formats.getSize;
-import static ua.utility.kfsdbupgrade.md.Formats.getTime;
+import static ua.utility.kfsdbupgrade.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.base.Formats.getSize;
+import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 
 import java.util.List;
 

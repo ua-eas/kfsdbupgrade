@@ -6,7 +6,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.md.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.base.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.google.common.base.Stopwatch;
 
-import ua.utility.kfsdbupgrade.md.Logging;
+import ua.utility.kfsdbupgrade.base.Logging;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;

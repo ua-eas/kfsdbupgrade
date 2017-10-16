@@ -5,8 +5,8 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.md.Formats.getTime;
-import static ua.utility.kfsdbupgrade.md.Logging.info;
+import static ua.utility.kfsdbupgrade.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 
 import java.sql.Connection;

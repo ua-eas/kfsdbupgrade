@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
-import static ua.utility.kfsdbupgrade.md.Logging.info;
+import static ua.utility.kfsdbupgrade.base.Logging.info;
 
 import java.sql.Connection;
 import java.util.List;

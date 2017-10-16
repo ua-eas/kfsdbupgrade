@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.md;
+package ua.utility.kfsdbupgrade.base;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

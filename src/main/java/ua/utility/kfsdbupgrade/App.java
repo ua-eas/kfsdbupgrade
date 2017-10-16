@@ -18,9 +18,9 @@ package ua.utility.kfsdbupgrade;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
-import static ua.utility.kfsdbupgrade.md.Formats.getCount;
-import static ua.utility.kfsdbupgrade.md.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.md.Formats.getTime;
+import static ua.utility.kfsdbupgrade.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -8,11 +8,11 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.md.Formats.getCount;
-import static ua.utility.kfsdbupgrade.md.Formats.getTime;
-import static ua.utility.kfsdbupgrade.md.Lists.distribute;
-import static ua.utility.kfsdbupgrade.md.Lists.transform;
-import static ua.utility.kfsdbupgrade.md.Logging.info;
+import static ua.utility.kfsdbupgrade.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.base.Lists.distribute;
+import static ua.utility.kfsdbupgrade.base.Lists.transform;
+import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.asMaintDocField;
 
 import java.sql.Connection;
@@ -29,8 +29,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.md.Callables;
-import ua.utility.kfsdbupgrade.md.Logging;
+import ua.utility.kfsdbupgrade.base.Callables;
+import ua.utility.kfsdbupgrade.base.Logging;
 
 public final class TouchRowsProvider implements Provider<Long> {
 

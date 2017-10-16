@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.md;
+package ua.utility.kfsdbupgrade.base;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -6,10 +6,10 @@ import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.concurrent.Executors.newFixedThreadPool;
-import static ua.utility.kfsdbupgrade.md.Exceptions.illegalArgument;
-import static ua.utility.kfsdbupgrade.md.Exceptions.illegalState;
-import static ua.utility.kfsdbupgrade.md.Lists.newList;
-import static ua.utility.kfsdbupgrade.md.Providers.fromFunction;
+import static ua.utility.kfsdbupgrade.base.Exceptions.illegalArgument;
+import static ua.utility.kfsdbupgrade.base.Exceptions.illegalState;
+import static ua.utility.kfsdbupgrade.base.Lists.newList;
+import static ua.utility.kfsdbupgrade.base.Providers.fromFunction;
 
 import java.util.List;
 import java.util.concurrent.Callable;

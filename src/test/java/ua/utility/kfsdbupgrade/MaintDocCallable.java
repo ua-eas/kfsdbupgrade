@@ -6,8 +6,8 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.md.Lists.transform;
-import static ua.utility.kfsdbupgrade.md.Providers.of;
+import static ua.utility.kfsdbupgrade.base.Lists.transform;
+import static ua.utility.kfsdbupgrade.base.Providers.of;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.sql.Connection;
