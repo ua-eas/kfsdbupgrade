@@ -15,9 +15,9 @@ public class RowUpdaterFunction implements Function<SelectContext<MaintDoc>, Row
   public RowUpdater<MaintDoc> apply(SelectContext<MaintDoc> input) {
     RowSelector<MaintDoc> selector = input.getSelector();
     RowUpdater.Builder<MaintDoc> builder = RowUpdater.builder();
-    builder.withProvider(selector.getProvider());
+    // builder.withProvider(selector.getProvider());
     builder.withTable(selector.getTable());
-    builder.withWeigher(selector.getWeigher());
+    // builder.withWeigher(selector.getWeigher());
     builder.withField("DOC_CNTNT");
     builder.withBatch(DocBatchFunction.INSTANCE);
     builder.withWhere("ROWID");

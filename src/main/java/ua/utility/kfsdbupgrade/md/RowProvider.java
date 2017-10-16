@@ -96,7 +96,7 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
     private List<String> rowIds;
     private Function<ResultSet, T> function;
     private List<String> fields;
-    private int selectSize = 75;
+    private int selectSize = -1;
     private boolean discard;
 
     public Builder<T> withDiscard(boolean discard) {
