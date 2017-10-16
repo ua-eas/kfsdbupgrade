@@ -19,11 +19,11 @@ import org.junit.Test;
 
 import com.google.common.base.Stopwatch;
 
-import ua.utility.kfsdbupgrade.log.Logging;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
+import ua.utility.kfsdbupgrade.mdoc.simple.Logging;
 
 public class DatabaseMetricsTest {
 

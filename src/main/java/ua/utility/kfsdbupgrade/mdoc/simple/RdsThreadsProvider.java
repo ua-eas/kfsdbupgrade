@@ -2,7 +2,7 @@ package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Integer.parseInt;
-import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
 
 import java.sql.Connection;
 import java.util.Properties;

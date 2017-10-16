@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.log;
+package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.primitives.Ints.checkedCast;
@@ -13,6 +13,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Stopwatch;
+
+import ua.utility.kfsdbupgrade.log.GarbageCollectionEvent;
+import ua.utility.kfsdbupgrade.log.Memory;
 
 public final class Logging {
 

@@ -6,7 +6,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
@@ -16,6 +15,7 @@ import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.concat;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
 
 import java.sql.Connection;
 import java.util.List;

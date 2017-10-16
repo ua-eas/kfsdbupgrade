@@ -8,7 +8,6 @@ import static com.google.common.collect.Lists.partition;
 import static java.lang.Runtime.getRuntime;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.fromFunction;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
@@ -16,6 +15,7 @@ import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
 
 import java.sql.Connection;
 import java.util.List;

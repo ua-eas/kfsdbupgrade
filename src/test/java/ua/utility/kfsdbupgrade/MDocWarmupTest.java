@@ -9,7 +9,6 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
 import static java.lang.String.format;
-import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
@@ -21,6 +20,7 @@ import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
 
 import java.io.IOException;
 import java.sql.Connection;

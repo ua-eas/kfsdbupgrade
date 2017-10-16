@@ -20,7 +20,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.log.Logging;
+import ua.utility.kfsdbupgrade.mdoc.simple.Logging;
 
 public final class DocConverter implements Provider<Long> {
 

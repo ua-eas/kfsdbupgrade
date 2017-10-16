@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.log;
+package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Optional.of;
 import static java.lang.Thread.currentThread;

@@ -42,7 +42,7 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
-import ua.utility.kfsdbupgrade.log.Logging;
+import ua.utility.kfsdbupgrade.mdoc.simple.Logging;
 
 public final class DataPumper implements Provider<Long> {
 
