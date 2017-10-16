@@ -17,7 +17,7 @@ import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.base.Lists.distribute;
 import static ua.utility.kfsdbupgrade.base.Lists.newList;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 
 import java.sql.Connection;
 import java.sql.SQLException;

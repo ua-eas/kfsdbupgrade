@@ -5,7 +5,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 

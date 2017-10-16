@@ -7,7 +7,7 @@ import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.sql.Connection;

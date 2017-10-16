@@ -4,7 +4,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

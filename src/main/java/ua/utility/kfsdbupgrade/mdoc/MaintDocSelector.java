@@ -6,7 +6,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.String.format;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

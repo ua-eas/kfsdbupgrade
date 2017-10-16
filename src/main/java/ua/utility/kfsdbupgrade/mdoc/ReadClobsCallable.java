@@ -11,7 +11,7 @@ import static ua.utility.kfsdbupgrade.base.Formats.getCount;
 import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.base.Logging.info;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 

@@ -6,7 +6,7 @@ import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.removeEnd;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

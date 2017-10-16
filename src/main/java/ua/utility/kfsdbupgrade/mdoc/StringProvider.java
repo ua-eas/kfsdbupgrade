@@ -7,7 +7,7 @@ import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.base.Logging.info;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

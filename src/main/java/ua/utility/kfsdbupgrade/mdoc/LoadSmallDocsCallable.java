@@ -12,7 +12,7 @@ import static ua.utility.kfsdbupgrade.base.Formats.getCount;
 import static ua.utility.kfsdbupgrade.base.Formats.getRate;
 import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
 
 import java.sql.Connection;

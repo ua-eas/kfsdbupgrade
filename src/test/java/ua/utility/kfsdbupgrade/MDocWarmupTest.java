@@ -18,7 +18,7 @@ import static ua.utility.kfsdbupgrade.base.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.base.Providers.of;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
 

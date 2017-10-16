@@ -15,7 +15,7 @@ import static ua.utility.kfsdbupgrade.base.Lists.concat;
 import static ua.utility.kfsdbupgrade.base.Lists.distribute;
 import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.base.Providers.fromFunction;
-import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 
 import java.sql.Connection;
 import java.util.List;
