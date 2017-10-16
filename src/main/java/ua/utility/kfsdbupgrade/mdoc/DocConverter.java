@@ -20,8 +20,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.md.base.Logging;
-
 public final class DocConverter implements Provider<Long> {
 
   private final Provider<Connection> provider;
@@ -59,7 +57,7 @@ public final class DocConverter implements Provider<Long> {
                 new ProgressProvider(metrics).get();
               }
               if (count % 10000 == 0) {
-                Logging.java();
+                // Logging.java();
               }
             }
             batched++;

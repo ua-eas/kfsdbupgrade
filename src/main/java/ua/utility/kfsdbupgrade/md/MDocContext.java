@@ -14,6 +14,7 @@ public final class MDocContext {
   private final int chunkSize;
   private final int selectSize;
   private final int batchSize;
+  private final int warmupClobsPercent;
   private final Function<MaintDoc, MaintDoc> converter;
   private final String table;
 
@@ -25,6 +26,7 @@ public final class MDocContext {
     this.selectSize = builder.selectSize;
     this.batchSize = builder.batchSize;
     this.converter = builder.converter;
+    this.warmupClobsPercent = builder.warmupClobsPercent;
     this.table = builder.table;
   }
 
@@ -42,6 +44,12 @@ public final class MDocContext {
     private int batchSize = -1;
     private Function<MaintDoc, MaintDoc> converter = identity();
     private String table = "KRNS_MAINT_DOC_T";
+    private int warmupClobsPercent = -1;
+
+    public Builder withWarmupClobsPercent(int warmupClobsPercent) {
+      this.warmupClobsPercent = warmupClobsPercent;
+      return this;
+    }
 
     public Builder withTable(String table) {
       this.table = table;
@@ -94,6 +102,7 @@ public final class MDocContext {
       checkArgument(instance.chunkSize > 0, "chunkSize must be greater than zero");
       checkArgument(instance.selectSize > 0, "selectSize must be greater than zero");
       checkArgument(instance.batchSize > 0, "batchSize must be greater than zero");
+      checkArgument(instance.warmupClobsPercent >= 0 && instance.warmupClobsPercent <= 100, "warmupClobsPercent must be 0-100");
       checkNotNull(instance.converter, "converter may not be null");
       checkNotNull(instance.table, "table may not be null");
       return instance;

@@ -44,7 +44,6 @@ import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.ExecutorProvider;
-import ua.utility.kfsdbupgrade.md.base.Logging;
 import ua.utility.kfsdbupgrade.md.base.Providers;
 
 public final class DataPumper implements Provider<Long> {
@@ -59,7 +58,7 @@ public final class DataPumper implements Provider<Long> {
 
   public Long get() {
     try {
-      Stopwatch sw = Logging.java();
+      Stopwatch sw = null;// Logging.java();
       int threads = new ThreadsProvider(props).get();
       int batchSize = parseInt(props.getProperty("mdoc.batch"));
       int selectSize = parseInt(props.getProperty("mdoc.select"));
@@ -99,7 +98,7 @@ public final class DataPumper implements Provider<Long> {
       info("update --> %s", getSize(metrics.getUpdate().getBytes()));
       info("convert -> %s", getSize(metrics.getConvert().getBytes()));
       info("elapsed -> %s", getTime(sw));
-      Logging.java();
+      // Logging.java();
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     }
