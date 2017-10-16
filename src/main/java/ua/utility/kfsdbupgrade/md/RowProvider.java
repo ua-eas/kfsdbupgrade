@@ -23,7 +23,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public final class RowSelector<T> implements Provider<ImmutableList<T>> {
+public final class RowProvider<T> implements Provider<ImmutableList<T>> {
 
   private final Connection conn;
   private final Optional<String> schema;
@@ -55,7 +55,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     return copyOf(list);
   }
 
-  private RowSelector(Builder<T> builder) {
+  private RowProvider(Builder<T> builder) {
     this.conn = builder.conn;
     this.schema = builder.schema;
     this.table = builder.table;
@@ -64,7 +64,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     this.function = builder.function;
   }
 
-  public static <T> RowSelector<T> build(Connection conn, String table, Iterable<String> rowIds) {
+  public static <T> RowProvider<T> build(Connection conn, String table, Iterable<String> rowIds) {
     Builder<T> builder = builder();
     builder.withConn(conn);
     builder.withTable(table);
@@ -118,11 +118,11 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       return this;
     }
 
-    public RowSelector<T> build() {
-      return validate(new RowSelector<T>(this));
+    public RowProvider<T> build() {
+      return validate(new RowProvider<T>(this));
     }
 
-    private static <T> RowSelector<T> validate(RowSelector<T> instance) {
+    private static <T> RowProvider<T> validate(RowProvider<T> instance) {
       checkNotNull(instance.conn, "conn may not be null");
       checkNotNull(instance.schema, "schema may not be null");
       checkNotNull(instance.table, "table may not be null");
