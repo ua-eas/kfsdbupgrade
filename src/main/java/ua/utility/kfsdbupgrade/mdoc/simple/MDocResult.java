@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 
 import com.google.common.collect.ImmutableList;
@@ -7,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 public final class MDocResult {
 
   public MDocResult(DataMetric metric, Iterable<MaintDoc> docs) {
-    this.metric = metric;
+    this.metric = checkNotNull(metric);
     this.docs = copyOf(docs);
   }
 

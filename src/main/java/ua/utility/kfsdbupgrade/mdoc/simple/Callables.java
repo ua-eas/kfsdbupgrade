@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -8,8 +8,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalArgument;
 import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.Providers.fromFunction;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.newList;
 
 import java.util.List;
 import java.util.concurrent.Callable;

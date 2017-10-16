@@ -11,10 +11,10 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.newList;
 
 import java.io.IOException;
 import java.sql.Connection;

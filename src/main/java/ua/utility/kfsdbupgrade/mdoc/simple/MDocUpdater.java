@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade.mdoc.simple;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
@@ -17,7 +18,7 @@ import com.google.common.collect.ImmutableList;
 public final class MDocUpdater implements Provider<DataMetric> {
 
   public MDocUpdater(Connection conn, Iterable<MaintDoc> docs, int batchSize) {
-    this.conn = conn;
+    this.conn = checkNotNull(conn);
     this.docs = copyOf(docs);
     this.batchSize = batchSize;
   }

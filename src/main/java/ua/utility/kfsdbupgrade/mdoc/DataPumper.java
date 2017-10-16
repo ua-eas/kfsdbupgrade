@@ -15,12 +15,12 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.reverse;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.mdoc.Callables.fromProvider;
-import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.fromProvider;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.distribute;
 
 import java.sql.Connection;
 import java.util.List;

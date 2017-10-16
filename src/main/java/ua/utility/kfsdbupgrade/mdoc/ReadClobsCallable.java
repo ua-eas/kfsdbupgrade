@@ -11,9 +11,9 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

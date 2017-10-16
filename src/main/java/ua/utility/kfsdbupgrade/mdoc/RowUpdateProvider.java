@@ -1,7 +1,7 @@
 package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
 
 import java.util.List;
 

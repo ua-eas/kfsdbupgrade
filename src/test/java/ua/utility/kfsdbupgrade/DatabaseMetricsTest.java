@@ -6,8 +6,8 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
 
 import java.util.List;
 import java.util.Random;

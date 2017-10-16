@@ -9,11 +9,11 @@ import static java.lang.Runtime.getRuntime;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.commons.lang3.StringUtils.reverse;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
-import static ua.utility.kfsdbupgrade.mdoc.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.shuffle;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.shuffle;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
 
 import java.util.List;
 import java.util.Properties;

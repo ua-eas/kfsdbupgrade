@@ -11,9 +11,9 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
 import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.distribute;
-import static ua.utility.kfsdbupgrade.mdoc.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.asMaintDocField;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.distribute;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import ua.utility.kfsdbupgrade.log.Logging;
+import ua.utility.kfsdbupgrade.mdoc.simple.Callables;
 
 public final class TouchRowsProvider implements Provider<Long> {
 
