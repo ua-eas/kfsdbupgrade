@@ -141,4 +141,8 @@ public final class MDocContext {
     return table;
   }
 
+  public int getWarmupClobsPercent() {
+    return warmupClobsPercent;
+  }
+
 }

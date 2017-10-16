@@ -53,7 +53,6 @@ public class MDocTest {
     List<Connection> conns = newArrayList();
     Connection first = null;
     try {
-      System.setProperty("mdoc.max", "100");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       first = provider.get();
@@ -63,6 +62,7 @@ public class MDocTest {
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
       List<String> rowIds = RowIdProvider.build(first, ctx.getTable(), ctx.getMax(), ctx.getMax() / 10).get();
       warmup(ctx, rds, conns, rowIds);
+      info(LOGGER, "converting %s maintenance documents", getCount(rowIds.size()));
       Stopwatch overall = createStarted();
       List<ChunkResult> chunks = newArrayList();
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
@@ -87,9 +87,13 @@ public class MDocTest {
     info(LOGGER, "%s unique blocks detected", getCount(blocks.size()));
     List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
     RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
-    int percent = 5;
-    List<String> sample = sample(rowIds, rowIds.size() / (100 / percent));
-    RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), sample, SingleStringFunction.INSTANCE, 1000, 100, true).get();
+    if (ctx.getWarmupClobsPercent() > 0) {
+      int sampleSize = rowIds.size() / (100 / ctx.getWarmupClobsPercent());
+      List<String> sample = sample(rowIds, sampleSize);
+      RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), sample, SingleStringFunction.INSTANCE, 1000, 100, true).get();
+    } else {
+
+    }
     info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
   }
 
