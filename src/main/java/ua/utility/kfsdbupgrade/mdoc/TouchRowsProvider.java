@@ -32,6 +32,8 @@ import com.google.common.collect.ImmutableList;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.ExecutorProvider;
 import ua.utility.kfsdbupgrade.md.MaintDocField;
+import ua.utility.kfsdbupgrade.md.RowId;
+import ua.utility.kfsdbupgrade.md.RowIdConverter;
 import ua.utility.kfsdbupgrade.md.base.Callables;
 import ua.utility.kfsdbupgrade.md.base.Logging;
 

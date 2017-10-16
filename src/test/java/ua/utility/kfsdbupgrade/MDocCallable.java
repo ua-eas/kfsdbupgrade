@@ -31,10 +31,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import ua.utility.kfsdbupgrade.md.ExecutorProvider;
+import ua.utility.kfsdbupgrade.md.RowId;
+import ua.utility.kfsdbupgrade.md.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
-import ua.utility.kfsdbupgrade.mdoc.RowId;
-import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 
 public final class MDocCallable implements Callable<Long> {

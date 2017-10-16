@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Objects.equal;
@@ -7,6 +7,8 @@ import static java.util.Objects.hash;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ComparisonChain;
+
+import ua.utility.kfsdbupgrade.mdoc.BlockId;
 
 public final class RowId implements Comparable<RowId> {
 

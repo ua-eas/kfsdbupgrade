@@ -30,6 +30,9 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import ua.utility.kfsdbupgrade.md.RowId;
+import ua.utility.kfsdbupgrade.md.RowIdConverter;
+
 public final class BlockProvider implements Provider<ImmutableMap<BlockId, RowId>> {
 
   private static final Logger LOGGER = getLogger(BlockProvider.class);

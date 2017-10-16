@@ -28,9 +28,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.mdoc.RowId;
-import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
-
 public final class RowIdProvider implements Provider<ImmutableList<String>> {
 
   private static final Logger LOGGER = Logger.getLogger(RowIdProvider.class);

@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Splitter.fixedLength;
@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Converter;
 import com.google.common.base.Joiner;
+
+import ua.utility.kfsdbupgrade.mdoc.BlockId;
 
 public final class RowIdConverter extends Converter<String, RowId> {
 
