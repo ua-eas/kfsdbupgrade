@@ -28,9 +28,9 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   private final Connection conn;
   private final Optional<String> schema;
   private final String table;
+  private final ImmutableList<String> fields;
   private final ImmutableList<String> rowIds;
   private final Function<ResultSet, T> function;
-  private final ImmutableList<String> fields;
 
   @Override
   public ImmutableList<T> get() {
