@@ -42,7 +42,7 @@ public final class BlockId implements Comparable<BlockId> {
       return false;
     } else {
       BlockId other = (BlockId) object;
-      return (hash == other.hash) && (fileNumber == other.fileNumber) && (blockNumber == other.blockNumber);
+      return (hash == other.hash) && compareTo(other) == 0;
     }
   }
 
