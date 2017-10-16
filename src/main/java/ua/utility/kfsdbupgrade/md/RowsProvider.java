@@ -56,7 +56,7 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
       String from = schema.isPresent() ? schema.get() + "." + table : table;
       info(LOGGER, "selecting [%s] from %s, %s rows total, discard=%s", Joiner.on(',').join(fields), from, getCount(rowIds.size()), discard);
       List<T> list = newArrayList();
-      int chunkId = 0;
+      int processed = 0;
       for (List<String> chunk : distribute(rowIds, chunkSize)) {
         Stopwatch current = createStarted();
         int index = 0;
@@ -66,12 +66,12 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
           callables.add(fromProvider(provider));
         }
         list.addAll(concat(getFutures(executor, callables)));
-        chunkId++;
+        processed += chunk.size();
         String throughput = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "rows/sec");
-        info(LOGGER, "processed %s chunks of %s total, %s", getCount(chunkId), getCount(rowIds.size() / chunkSize), throughput);
+        info(LOGGER, "processed %s rows of %s total, %s", getCount(processed), getCount(rowIds.size()), throughput);
       }
       String throughput = getThroughputInSeconds(overall.elapsed(MILLISECONDS), rowIds.size(), "rows/sec");
-      info(LOGGER, "processed %s chunks of %s total, %s", getCount(chunkId), getCount(rowIds.size() / chunkSize), throughput);
+      info(LOGGER, "processed %s rows of %s total, %s", getCount(processed), getCount(rowIds.size()), throughput);
       return copyOf(list);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
