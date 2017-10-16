@@ -31,6 +31,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import ua.utility.kfsdbupgrade.mdoc.simple.Providers;
+
 public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   private final Provider<Connection> provider;

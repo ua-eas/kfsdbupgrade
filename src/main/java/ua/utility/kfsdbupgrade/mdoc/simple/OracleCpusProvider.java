@@ -16,8 +16,6 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Optional;
 
-import ua.utility.kfsdbupgrade.mdoc.Providers;
-
 public final class OracleCpusProvider implements Provider<Optional<Integer>> {
 
   private static final Logger LOGGER = getLogger(OracleCpusProvider.class);

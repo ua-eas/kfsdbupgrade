@@ -2,7 +2,7 @@ package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Exceptions.illegalState;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

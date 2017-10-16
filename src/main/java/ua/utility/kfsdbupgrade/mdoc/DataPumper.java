@@ -43,6 +43,7 @@ import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 import ua.utility.kfsdbupgrade.mdoc.simple.Logging;
+import ua.utility.kfsdbupgrade.mdoc.simple.Providers;
 
 public final class DataPumper implements Provider<Long> {
 

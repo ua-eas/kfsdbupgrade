@@ -6,10 +6,10 @@ import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.concurrent.Executors.newFixedThreadPool;
-import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalArgument;
-import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
-import static ua.utility.kfsdbupgrade.mdoc.Providers.fromFunction;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Exceptions.illegalArgument;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Exceptions.illegalState;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.newList;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Providers.fromFunction;
 
 import java.util.List;
 import java.util.concurrent.Callable;

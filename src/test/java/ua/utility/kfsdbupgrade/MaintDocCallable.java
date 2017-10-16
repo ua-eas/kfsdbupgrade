@@ -6,9 +6,9 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Providers.of;
 
 import java.sql.Connection;
 import java.util.List;

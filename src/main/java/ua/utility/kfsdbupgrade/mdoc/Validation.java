@@ -4,8 +4,8 @@ import static com.google.common.collect.ImmutableMultimap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalArgument;
-import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Exceptions.illegalArgument;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Exceptions.illegalState;
 
 import java.lang.reflect.Field;
 import java.util.Comparator;

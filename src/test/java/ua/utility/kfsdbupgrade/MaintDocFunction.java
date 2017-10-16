@@ -1,6 +1,6 @@
 package ua.utility.kfsdbupgrade;
 
-import static ua.utility.kfsdbupgrade.mdoc.Exceptions.illegalState;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Exceptions.illegalState;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

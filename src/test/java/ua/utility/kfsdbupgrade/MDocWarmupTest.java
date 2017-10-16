@@ -12,7 +12,6 @@ import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocField.VER_NBR;
-import static ua.utility.kfsdbupgrade.mdoc.Providers.of;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getCount;
@@ -21,6 +20,7 @@ import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.distribute;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Lists.transform;
 import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Providers.of;
 
 import java.io.IOException;
 import java.sql.Connection;
