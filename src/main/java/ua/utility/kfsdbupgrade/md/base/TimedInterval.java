@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.md.base;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
