@@ -8,9 +8,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getTime;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

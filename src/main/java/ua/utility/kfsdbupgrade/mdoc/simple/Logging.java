@@ -4,9 +4,9 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getSize;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getSize;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getTime;
 
 import java.util.List;
 

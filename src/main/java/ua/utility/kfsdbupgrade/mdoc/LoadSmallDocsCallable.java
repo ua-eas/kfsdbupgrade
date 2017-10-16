@@ -9,11 +9,11 @@ import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.mdoc.Closeables.closeQuietly;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getRate;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
 import static ua.utility.kfsdbupgrade.mdoc.Stopwatches.synchronizedStart;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getCount;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getRate;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.mdoc.simple.Formats.getTime;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

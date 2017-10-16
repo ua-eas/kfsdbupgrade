@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.mdoc.simple;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -6,6 +6,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.text.NumberFormat;
 
 import com.google.common.base.Stopwatch;
+
+import ua.utility.kfsdbupgrade.mdoc.Size;
 
 public final class Formats {
 
