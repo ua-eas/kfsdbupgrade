@@ -9,6 +9,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.Jdbc.asInClause;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,9 +40,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     try {
       String select = Joiner.on(',').join(fields);
       String from = schema.isPresent() ? schema.get() + "." + table : table;
-      String in = null;
       stmt = conn.createStatement();
-      rs = stmt.executeQuery(format("SELECT %s FROM %s WHERE ROWID IN (%s)", select, from, in));
+      rs = stmt.executeQuery(format("SELECT %s FROM %s WHERE ROWID IN (%s)", select, from, asInClause(rowIds, true)));
       while (rs.next()) {
         T instance = function.apply(rs);
         list.add(instance);
