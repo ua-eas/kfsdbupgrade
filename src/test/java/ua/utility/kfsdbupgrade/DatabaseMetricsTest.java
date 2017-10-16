@@ -6,8 +6,8 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.md.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
-import static ua.utility.kfsdbupgrade.mdoc.simple.Callables.getFutures;
 
 import java.util.List;
 import java.util.Random;
@@ -19,11 +19,11 @@ import org.junit.Test;
 
 import com.google.common.base.Stopwatch;
 
+import ua.utility.kfsdbupgrade.md.Logging;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
-import ua.utility.kfsdbupgrade.mdoc.simple.Logging;
 
 public class DatabaseMetricsTest {
 

@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc.simple;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.ImmutableList.copyOf;

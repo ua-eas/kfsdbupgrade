@@ -1,11 +1,11 @@
-package ua.utility.kfsdbupgrade.mdoc.simple;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
-import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
+import static ua.utility.kfsdbupgrade.md.Logging.info;
 
 import java.sql.Connection;
 import java.util.List;

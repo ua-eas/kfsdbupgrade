@@ -1,8 +1,8 @@
-package ua.utility.kfsdbupgrade.mdoc.simple;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Integer.parseInt;
-import static ua.utility.kfsdbupgrade.mdoc.simple.Logging.info;
+import static ua.utility.kfsdbupgrade.md.Logging.info;
 
 import java.sql.Connection;
 import java.util.Properties;
