@@ -1,6 +1,5 @@
 package ua.utility.kfsdbupgrade.md;
 
-import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
@@ -8,19 +7,16 @@ import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
-import static java.lang.String.format;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.md.MaintDocField.DOC_CNTNT;
 import static ua.utility.kfsdbupgrade.md.MaintDocField.VER_NBR;
 import static ua.utility.kfsdbupgrade.md.base.Callables.fromProvider;
 import static ua.utility.kfsdbupgrade.md.base.Callables.getFutures;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
-import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Lists.distribute;
 import static ua.utility.kfsdbupgrade.md.base.Lists.shuffle;
 import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.md.base.Logging.info;
-import static ua.utility.kfsdbupgrade.md.base.Providers.of;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -32,28 +28,20 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import javax.inject.Provider;
-
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.google.common.base.Function;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import ua.utility.kfsdbupgrade.md.ConnectionProvider;
-import ua.utility.kfsdbupgrade.md.ExecutorProvider;
-import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
-import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 import ua.utility.kfsdbupgrade.mdoc.SingleIntegerFunction;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
-import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class MDocWarmupTest {
 
@@ -63,10 +51,13 @@ public class MDocWarmupTest {
 
   @Test
   public void test() {
+    Connection conn = null;
     try {
       Properties props = new PropertiesProvider().get();
+      conn = new ConnectionProvider(props, false).get();
       String table = "KRNS_MAINT_DOC_T";
-      List<RowId> rowIds = shuffle(getRowIds(props, table, 50000));
+      List<String> strings = RowIdProvider.build(conn, table, 1000000, 100000).get();
+      List<RowId> rowIds = shuffle(transform(strings, RowIdConverter.getInstance()));
       Map<BlockId, RowId> blocks = getBlocks(rowIds);
       double select = ((blocks.size() * 1d) / rowIds.size() * 100);
       info(LOGGER, "rows ------> %s", getCount(rowIds.size()));
@@ -78,52 +69,28 @@ public class MDocWarmupTest {
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
-    }
-  }
-
-  public void computeStats(Properties props, String table) throws IOException {
-    Connection conn = null;
-    Statement stmt = null;
-    try {
-      Stopwatch sw = createStarted();
-      info(LOGGER, "compute statistics for %s", table);
-      conn = new ConnectionProvider(props, true).get();
-      stmt = conn.createStatement();
-      stmt.execute(format("ANALYZE TABLE %s COMPUTE STATISTICS", table.toUpperCase()));
-      info(LOGGER, "finished computing statistics for %s [%s]", table, getTime(sw));
-    } catch (Throwable e) {
-      throw new IOException(e);
     } finally {
-      closeQuietly(stmt);
       closeQuietly(conn);
     }
   }
 
-  private static <T> DatabaseMetric touch(Properties props, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function, Function<T, Long> weigher,
-      int show) {
+  private static <T> void touch(List<Connection> conns, ExecutorService executor, String table, String field, Iterable<RowId> iterable, Function<ResultSet, T> function) {
     RowIdConverter converter = RowIdConverter.getInstance();
     List<String> rowIds = shuffle(transform(iterable, converter.reverse()));
-    int threads = new ThreadsProvider(props).get();
-    ExecutorService executor = new ExecutorProvider("t", threads).get();
     List<Callable<ImmutableList<T>>> callables = newArrayList();
-    DatabaseMetrics metrics = new DatabaseMetrics(show, false);
-    for (List<String> distribution : distribute(rowIds, threads)) {
-      Provider<Connection> provider = of(new ConnectionProvider(props, false).get());
+    int index = 0;
+    for (List<String> distribution : distribute(rowIds, conns.size())) {
       RowSelector.Builder<T> builder = RowSelector.builder();
       builder.withFunction(function);
-      builder.withWeigher(weigher);
       builder.withRowIds(distribution);
       builder.withTable(table);
-      builder.withProvider(provider);
+      builder.withConn(conns.get(index++));
       builder.withField(field);
       builder.withDiscard(true);
-      builder.withMetrics(metrics);
       RowSelector<T> selector = builder.build();
       callables.add(fromProvider(selector));
     }
-    metrics.start();
     getFutures(executor, callables);
-    return metrics.getSnapshot();
   }
 
   private ImmutableMap<BlockId, RowId> getBlocks(Iterable<RowId> rowIds) {

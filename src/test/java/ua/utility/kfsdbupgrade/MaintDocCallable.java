@@ -58,14 +58,14 @@ public final class MaintDocCallable implements Callable<Long> {
     List<String> rowIds = transform(ids, converter.reverse());
     RowSelector.Builder<MaintDoc> builder = RowSelector.builder();
     builder.withFunction(MaintDocFunction.INSTANCE);
-    builder.withWeigher(MaintDocWeigher.INSTANCE);
+    //builder.withWeigher(MaintDocWeigher.INSTANCE);
     builder.withRowIds(rowIds);
-    builder.withMetrics(metrics);
+    // builder.withMetrics(metrics);
     builder.withTable("KRNS_MAINT_DOC_T");
-    builder.withProvider(provider);
+    // builder.withProvider(provider);
     builder.withFields(asList("ROWID", "DOC_CNTNT"));
-    builder.withCloseConnection(false);
-    builder.withShowFinal(false);
+    // builder.withCloseConnection(false);
+    // builder.withShowFinal(false);
     return builder.build();
   }
 

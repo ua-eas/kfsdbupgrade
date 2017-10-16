@@ -38,7 +38,6 @@ import ua.utility.kfsdbupgrade.mdoc.MaintDocConverterFunction;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 import ua.utility.kfsdbupgrade.mdoc.RowUpdaterFunction;
 import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
-import ua.utility.kfsdbupgrade.mdoc.StringWeigher;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class OldMDocConvertTest {
@@ -116,11 +115,11 @@ public class OldMDocConvertTest {
     ConnectionProvider provider = new ConnectionProvider(props, false);
     RowSelector.Builder<String> builder = RowSelector.builder();
     builder.withFunction(SingleStringFunction.INSTANCE);
-    builder.withWeigher(StringWeigher.INSTANCE);
+    // builder.withWeigher(StringWeigher.INSTANCE);
     builder.withMax(max);
     builder.withTable(table);
-    builder.withProvider(provider);
-    builder.withMetrics(new DatabaseMetrics(show, true));
+    // builder.withProvider(provider);
+    // builder.withMetrics(new DatabaseMetrics(show, true));
     RowSelector<String> selector = builder.build();
     List<String> strings = selector.get();
     return transform(strings, RowIdConverter.getInstance());

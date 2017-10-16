@@ -3,17 +3,14 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.md.base.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
-import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
 
 import java.io.IOException;
@@ -28,34 +25,25 @@ import javax.inject.Provider;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
-import ua.utility.kfsdbupgrade.md.base.Providers;
 
 public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
-  private final Provider<Connection> provider;
-  private final int batchSize;
-  private final ImmutableList<String> rowIds;
-  private final DatabaseMetrics metrics;
+  private final Connection conn;
   private final Optional<String> schema;
   private final String table;
+  private final int batchSize;
+  private final ImmutableList<String> rowIds;
   private final ImmutableList<String> fields;
   private final Function<ResultSet, T> function;
-  private final Function<T, Long> weigher;
   private final Optional<Integer> max;
   private final boolean discard;
-  private final boolean closeConnection;
-  private final boolean showFinal;
 
   @Override
   public ImmutableList<T> get() {
-    Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      conn = provider.get();
       stmt = conn.createStatement();
       String select = Joiner.on(',').join(fields);
       String from = schema.isPresent() ? schema.get() + "." + table : table;
@@ -67,14 +55,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
-      if (showFinal) {
-        show(metrics.getSnapshot());
-      }
       closeQuietly(rs);
       closeQuietly(stmt);
-      if (closeConnection) {
-        closeQuietly(conn);
-      }
     }
   }
 
@@ -99,8 +81,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       for (List<String> partition : partition(rowIds, batchSize)) {
         String sql = format("SELECT %s FROM %s WHERE ROWID IN (%s)", select, from, asInClause(partition));
         rs = stmt.executeQuery(sql);
-        List<T> batch = doResultSet(rs);
-        list.addAll(batch);
+        list.addAll(doResultSet(rs));
       }
     } catch (Throwable e) {
       throw new IOException(e);
@@ -111,38 +92,26 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
   }
 
   private ImmutableList<T> doResultSet(ResultSet rs) throws SQLException {
-    Stopwatch sw = createStarted();
     List<T> list = newArrayList();
     while (rs.next()) {
       T instance = function.apply(rs);
-      long weight = weigher.apply(instance);
       if (!discard) {
         list.add(instance);
       }
-      sw = increment(weight, sw);
     }
     return newList(list);
   }
 
-  private Stopwatch increment(long weight, Stopwatch sw) {
-    metrics.select(weight, sw.elapsed(MICROSECONDS));
-    return createStarted();
-  }
-
   private RowSelector(Builder<T> builder) {
-    this.provider = builder.provider;
+    this.conn = builder.conn;
     this.batchSize = builder.batchSize;
     this.rowIds = copyOf(builder.rowIds);
     this.schema = builder.schema;
     this.table = builder.table;
     this.fields = copyOf(builder.fields);
     this.function = builder.function;
-    this.weigher = builder.weigher;
     this.max = builder.max;
     this.discard = builder.discard;
-    this.closeConnection = builder.closeConnection;
-    this.showFinal = builder.showFinal;
-    this.metrics = builder.metrics;
   }
 
   public static <T> Builder<T> builder() {
@@ -151,8 +120,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   public static class Builder<T> {
 
-    private Provider<Connection> provider;
-    private DatabaseMetrics metrics = new DatabaseMetrics(1000, true);
+    private Connection conn;
     private int batchSize = 75;
     private List<String> rowIds = newArrayList();
     private Optional<String> schema = absent();
@@ -160,25 +128,7 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     private List<String> fields = newArrayList("ROWID");
     private Optional<Integer> max = absent();
     private Function<ResultSet, T> function;
-    private Function<T, Long> weigher;
     private boolean discard;
-    private boolean closeConnection;
-    private boolean showFinal = true;
-
-    public Builder<T> withMetrics(DatabaseMetrics metrics) {
-      this.metrics = metrics;
-      return this;
-    }
-
-    public Builder<T> withShowFinal(boolean showFinal) {
-      this.showFinal = showFinal;
-      return this;
-    }
-
-    public Builder<T> withCloseConnection(boolean closeConnection) {
-      this.closeConnection = closeConnection;
-      return this;
-    }
 
     public Builder<T> withDiscard(boolean discard) {
       this.discard = discard;
@@ -194,23 +144,13 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
       return withMax(of(max));
     }
 
-    public Builder<T> withWeigher(Function<T, Long> weigher) {
-      this.weigher = weigher;
-      return this;
-    }
-
     public Builder<T> withFunction(Function<ResultSet, T> function) {
       this.function = function;
       return this;
     }
 
-    public Builder<T> withConnection(Connection connection, boolean closeConnection) {
-      withProvider(Providers.of(connection));
-      return withCloseConnection(closeConnection);
-    }
-
-    public Builder<T> withProvider(Provider<Connection> provider) {
-      this.provider = provider;
+    public Builder<T> withConn(Connection conn) {
+      this.conn = conn;
       return this;
     }
 
@@ -257,10 +197,6 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 
   }
 
-  public Provider<Connection> getProvider() {
-    return provider;
-  }
-
   public int getBatchSize() {
     return batchSize;
   }
@@ -285,20 +221,8 @@ public final class RowSelector<T> implements Provider<ImmutableList<T>> {
     return function;
   }
 
-  public Function<T, Long> getWeigher() {
-    return weigher;
-  }
-
   public Optional<Integer> getMax() {
     return max;
-  }
-
-  public boolean isDiscard() {
-    return discard;
-  }
-
-  public boolean isCloseConnection() {
-    return closeConnection;
   }
 
 }

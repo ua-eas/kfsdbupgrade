@@ -57,7 +57,7 @@ public final class OracleCpusProvider implements Provider<Optional<Integer>> {
     } catch (Throwable e) {
       // if anything goes wrong at any point, log it, and return absent
       e.printStackTrace();
-      LOGGER.error("unexpected error determining Oracle cpu count", e);
+      LOGGER.error("unexpected error determining oracle cpu count", e);
       return absent();
     } finally {
       // cleanup
