@@ -9,7 +9,7 @@ import static java.math.RoundingMode.HALF_UP;
 import static java.util.Locale.ENGLISH;
 import static org.apache.commons.lang.StringUtils.removeEnd;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.base.Logging.info;
+import static ua.utility.kfsdbupgrade.md.base.Logging.info;
 
 import java.util.Properties;
 

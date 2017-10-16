@@ -6,9 +6,9 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.md.base.Logging.info;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

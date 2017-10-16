@@ -8,12 +8,12 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.base.Formats.getCount;
-import static ua.utility.kfsdbupgrade.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.base.Lists.distribute;
-import static ua.utility.kfsdbupgrade.base.Lists.transform;
-import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.md.MaintDocField.asMaintDocField;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.md.base.Lists.distribute;
+import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
+import static ua.utility.kfsdbupgrade.md.base.Logging.info;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -29,11 +29,11 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.base.Callables;
-import ua.utility.kfsdbupgrade.base.Logging;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.ExecutorProvider;
 import ua.utility.kfsdbupgrade.md.MaintDocField;
+import ua.utility.kfsdbupgrade.md.base.Callables;
+import ua.utility.kfsdbupgrade.md.base.Logging;
 
 public final class TouchRowsProvider implements Provider<Long> {
 

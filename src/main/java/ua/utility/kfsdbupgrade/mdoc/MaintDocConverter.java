@@ -7,10 +7,10 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static ua.utility.kfsdbupgrade.base.Formats.getCount;
-import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -15,12 +15,12 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.reverse;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.base.Callables.fromProvider;
-import static ua.utility.kfsdbupgrade.base.Callables.getFutures;
-import static ua.utility.kfsdbupgrade.base.Formats.getCount;
-import static ua.utility.kfsdbupgrade.base.Formats.getSize;
-import static ua.utility.kfsdbupgrade.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.base.Lists.distribute;
+import static ua.utility.kfsdbupgrade.md.base.Callables.fromProvider;
+import static ua.utility.kfsdbupgrade.md.base.Callables.getFutures;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getSize;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.md.base.Lists.distribute;
 
 import java.sql.Connection;
 import java.util.List;
@@ -42,10 +42,10 @@ import com.google.common.io.ByteSource;
 import ua.utility.kfsdbupgrade.EncryptionService;
 import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
-import ua.utility.kfsdbupgrade.base.Logging;
-import ua.utility.kfsdbupgrade.base.Providers;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.ExecutorProvider;
+import ua.utility.kfsdbupgrade.md.base.Logging;
+import ua.utility.kfsdbupgrade.md.base.Providers;
 
 public final class DataPumper implements Provider<Long> {
 

@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.base;
+package ua.utility.kfsdbupgrade.md.base;
 
 import static com.google.common.base.Functions.identity;
 import static com.google.common.base.Preconditions.checkArgument;

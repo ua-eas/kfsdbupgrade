@@ -3,10 +3,10 @@ package ua.utility.kfsdbupgrade.mdoc;
 import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.base.Formats.getCount;
-import static ua.utility.kfsdbupgrade.base.Formats.getRate;
-import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getRate;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 
 import javax.inject.Provider;
 

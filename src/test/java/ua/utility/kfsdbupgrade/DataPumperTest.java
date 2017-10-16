@@ -1,6 +1,6 @@
 package ua.utility.kfsdbupgrade;
 
-import static ua.utility.kfsdbupgrade.base.Exceptions.illegalState;
+import static ua.utility.kfsdbupgrade.md.base.Exceptions.illegalState;
 
 import java.io.File;
 import java.util.Properties;

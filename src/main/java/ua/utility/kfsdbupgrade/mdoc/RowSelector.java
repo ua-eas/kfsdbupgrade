@@ -10,8 +10,8 @@ import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static ua.utility.kfsdbupgrade.base.Lists.newList;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.base.Lists.newList;
 import static ua.utility.kfsdbupgrade.mdoc.MaintDocSelector.asInClause;
 import static ua.utility.kfsdbupgrade.mdoc.Show.show;
 import static ua.utility.kfsdbupgrade.mdoc.Validation.checkNoBlanks;
@@ -31,7 +31,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.base.Providers;
+import ua.utility.kfsdbupgrade.md.base.Providers;
 
 public final class RowSelector<T> implements Provider<ImmutableList<T>> {
 

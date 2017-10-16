@@ -8,11 +8,11 @@ import static com.google.common.collect.ImmutableMap.copyOf;
 import static java.lang.Math.round;
 import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
-import static ua.utility.kfsdbupgrade.base.Formats.getCount;
-import static ua.utility.kfsdbupgrade.base.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.base.Logging.info;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getThroughputInSeconds;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
+import static ua.utility.kfsdbupgrade.md.base.Logging.info;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
