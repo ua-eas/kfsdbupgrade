@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.log;
+package ua.utility.kfsdbupgrade.mdoc;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.lang.Runtime.getRuntime;

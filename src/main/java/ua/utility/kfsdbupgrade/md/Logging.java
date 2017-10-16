@@ -14,8 +14,8 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
-import ua.utility.kfsdbupgrade.log.GarbageCollectionEvent;
-import ua.utility.kfsdbupgrade.log.Memory;
+import ua.utility.kfsdbupgrade.mdoc.GarbageCollectionEvent;
+import ua.utility.kfsdbupgrade.mdoc.Memory;
 
 public final class Logging {
 
