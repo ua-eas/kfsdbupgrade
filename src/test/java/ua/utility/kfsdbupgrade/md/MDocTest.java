@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc.simple;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Iterables.getLast;
