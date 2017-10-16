@@ -19,6 +19,7 @@ import static ua.utility.kfsdbupgrade.md.base.Formats.getThroughputInSeconds;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Lists.concat;
 import static ua.utility.kfsdbupgrade.md.base.Lists.distribute;
+import static ua.utility.kfsdbupgrade.md.base.Lists.sample;
 import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.md.base.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Providers.fromFunction;
@@ -52,6 +53,7 @@ public class MDocTest {
     List<Connection> conns = newArrayList();
     Connection first = null;
     try {
+      System.setProperty("mdoc.max", "100");
       Properties props = new PropertiesProvider().get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       first = provider.get();
@@ -85,7 +87,9 @@ public class MDocTest {
     info(LOGGER, "%s unique blocks detected", getCount(blocks.size()));
     List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
     RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
-    RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), rowIds.subList(0, rowIds.size() / 10), SingleStringFunction.INSTANCE, 1000, 100, true).get();
+    int percent = 5;
+    List<String> sample = sample(rowIds, rowIds.size() / (100 / percent));
+    RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), sample, SingleStringFunction.INSTANCE, 1000, 100, true).get();
     info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
   }
 
