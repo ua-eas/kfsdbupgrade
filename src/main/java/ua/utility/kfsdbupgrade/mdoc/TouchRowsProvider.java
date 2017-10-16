@@ -31,6 +31,8 @@ import com.google.common.collect.ImmutableList;
 
 import ua.utility.kfsdbupgrade.base.Callables;
 import ua.utility.kfsdbupgrade.base.Logging;
+import ua.utility.kfsdbupgrade.md.ConnectionProvider;
+import ua.utility.kfsdbupgrade.md.ExecutorProvider;
 
 public final class TouchRowsProvider implements Provider<Long> {
 

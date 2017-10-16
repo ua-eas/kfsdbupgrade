@@ -63,12 +63,12 @@ import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import ua.utility.kfsdbupgrade.md.ExecutorProvider;
+import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.DataLoader;
 import ua.utility.kfsdbupgrade.mdoc.DataPumper;
-import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
-import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 import ua.utility.kfsdbupgrade.mdoc.TouchRowsProvider;
 

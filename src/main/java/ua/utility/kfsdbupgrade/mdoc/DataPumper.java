@@ -44,6 +44,8 @@ import ua.utility.kfsdbupgrade.MaintainableXMLConversionServiceImpl;
 import ua.utility.kfsdbupgrade.MaintainableXmlConversionService;
 import ua.utility.kfsdbupgrade.base.Logging;
 import ua.utility.kfsdbupgrade.base.Providers;
+import ua.utility.kfsdbupgrade.md.ConnectionProvider;
+import ua.utility.kfsdbupgrade.md.ExecutorProvider;
 
 public final class DataPumper implements Provider<Long> {
 

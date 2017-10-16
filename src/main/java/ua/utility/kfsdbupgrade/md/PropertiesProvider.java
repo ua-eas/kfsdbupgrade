@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkArgument;

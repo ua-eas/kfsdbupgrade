@@ -42,9 +42,6 @@ import ua.utility.kfsdbupgrade.md.MDocResult;
 import ua.utility.kfsdbupgrade.md.MDocUpdater;
 import ua.utility.kfsdbupgrade.md.MaintDoc;
 import ua.utility.kfsdbupgrade.md.RowIdProvider;
-import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
-import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
-import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 
 public class MDocTest {
 

@@ -7,8 +7,8 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.DataPumper;
-import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 
 public class DataPumperTest {
 

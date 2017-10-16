@@ -42,13 +42,13 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import ua.utility.kfsdbupgrade.md.ConnectionProvider;
+import ua.utility.kfsdbupgrade.md.ExecutorProvider;
+import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.BlockId;
-import ua.utility.kfsdbupgrade.mdoc.ConnectionProvider;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetric;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
-import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
 import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
-import ua.utility.kfsdbupgrade.mdoc.PropertiesProvider;
 import ua.utility.kfsdbupgrade.mdoc.RowId;
 import ua.utility.kfsdbupgrade.mdoc.RowIdConverter;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;

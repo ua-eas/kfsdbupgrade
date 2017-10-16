@@ -34,6 +34,9 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import ua.utility.kfsdbupgrade.md.ConnectionProvider;
+import ua.utility.kfsdbupgrade.md.ExecutorProvider;
+
 public class DataLoader {
 
   private static final Logger LOGGER = getLogger(DataLoader.class);
