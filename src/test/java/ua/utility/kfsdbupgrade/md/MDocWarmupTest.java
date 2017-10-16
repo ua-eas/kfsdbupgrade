@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.ImmutableMap.copyOf;
