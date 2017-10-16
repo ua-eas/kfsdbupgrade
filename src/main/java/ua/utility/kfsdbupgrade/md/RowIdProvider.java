@@ -81,6 +81,15 @@ public final class RowIdProvider implements Provider<ImmutableList<String>> {
     this.table = builder.table;
   }
 
+  public static RowIdProvider build(Connection conn, String table, int max, int show) {
+    Builder builder = builder();
+    builder.withConn(conn);
+    builder.withTable(table);
+    builder.withMax(max);
+    builder.withShow(show);
+    return builder.build();
+  }
+
   public static Builder builder() {
     return new Builder();
   }

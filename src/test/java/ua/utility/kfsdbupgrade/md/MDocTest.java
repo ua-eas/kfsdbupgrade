@@ -32,17 +32,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ua.utility.kfsdbupgrade.md.ChunkResult;
-import ua.utility.kfsdbupgrade.md.ConnectionsProvider;
-import ua.utility.kfsdbupgrade.md.DataMetric;
-import ua.utility.kfsdbupgrade.md.MDocContext;
-import ua.utility.kfsdbupgrade.md.MDocContextProvider;
-import ua.utility.kfsdbupgrade.md.MDocProvider;
-import ua.utility.kfsdbupgrade.md.MDocResult;
-import ua.utility.kfsdbupgrade.md.MDocUpdater;
-import ua.utility.kfsdbupgrade.md.MaintDoc;
-import ua.utility.kfsdbupgrade.md.RowIdProvider;
-
 public class MDocTest {
 
   private static final Logger LOGGER = Logger.getLogger(MDocTest.class);
@@ -59,7 +48,7 @@ public class MDocTest {
       ExecutorService rds = new ExecutorProvider("rds", ctx.getRdsThreads()).get();
       ExecutorService ec2 = new ExecutorProvider("ec2", ctx.getEc2Threads()).get();
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
-      List<String> rowIds = getRowIds(ctx, conns.iterator().next(), ctx.getMax() / 10);
+      List<String> rowIds = RowIdProvider.build(first, ctx.getTable(), ctx.getMax(), ctx.getMax() / 10).get();
       Stopwatch overall = createStarted();
       List<ChunkResult> chunks = newArrayList();
       for (List<String> chunk : partition(rowIds, ctx.getChunkSize())) {
@@ -183,16 +172,6 @@ public class MDocTest {
     long millis = sw.elapsed(MILLISECONDS);
     DataMetric metric = new DataMetric(docs.size(), bytes, millis);
     return new MDocResult(metric, docs);
-  }
-
-  private ImmutableList<String> getRowIds(MDocContext ctx, Connection conn, int show) {
-    RowIdProvider.Builder builder = RowIdProvider.builder();
-    builder.withConn(conn);
-    builder.withMax(ctx.getMax());
-    builder.withShow(show);
-    builder.withTable(ctx.getTable());
-    RowIdProvider provider = builder.build();
-    return provider.get();
   }
 
 }
