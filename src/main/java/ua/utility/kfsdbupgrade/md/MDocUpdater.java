@@ -30,7 +30,6 @@ public final class MDocUpdater implements Provider<DataMetric> {
   @Override
   public DataMetric get() {
     Stopwatch sw = createStarted();
-    int count = 0;
     long bytes = 0;
     PreparedStatement pstmt = null;
     try {
@@ -40,7 +39,6 @@ public final class MDocUpdater implements Provider<DataMetric> {
           pstmt.setString(1, doc.getContent());
           pstmt.setString(2, doc.getRowId());
           pstmt.addBatch();
-          count++;
           bytes += doc.getContent().length();
         }
         pstmt.executeBatch();
@@ -51,7 +49,7 @@ public final class MDocUpdater implements Provider<DataMetric> {
     } finally {
       closeQuietly(pstmt);
     }
-    return new DataMetric(count, bytes, sw);
+    return new DataMetric(docs.size(), bytes, sw);
   }
 
 }
