@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
@@ -31,6 +32,8 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
   private final ImmutableList<String> fields;
   private final ImmutableList<String> rowIds;
   private final Function<ResultSet, T> function;
+  private final int selectSize;
+  private final boolean discard;
 
   @Override
   public ImmutableList<T> get() {
@@ -41,10 +44,14 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
       String select = Joiner.on(',').join(fields);
       String from = schema.isPresent() ? schema.get() + "." + table : table;
       stmt = conn.createStatement();
-      rs = stmt.executeQuery(format("SELECT %s FROM %s WHERE ROWID IN (%s)", select, from, asInClause(rowIds, true)));
-      while (rs.next()) {
-        T instance = function.apply(rs);
-        list.add(instance);
+      for (List<String> partition : partition(rowIds, selectSize)) {
+        rs = stmt.executeQuery(format("SELECT %s FROM %s WHERE ROWID IN (%s)", select, from, asInClause(partition, true)));
+        while (rs.next()) {
+          T instance = function.apply(rs);
+          if (!discard) {
+            list.add(instance);
+          }
+        }
       }
     } catch (Throwable e) {
       throw new IllegalStateException(e);
@@ -62,13 +69,18 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
     this.rowIds = copyOf(builder.rowIds);
     this.fields = copyOf(builder.fields);
     this.function = builder.function;
+    this.selectSize = builder.selectSize;
+    this.discard = builder.discard;
   }
 
-  public static <T> RowProvider<T> build(Connection conn, String table, Iterable<String> rowIds) {
+  public static <T> RowProvider<T> build(Connection conn, String table, Iterable<String> fields, Iterable<String> rowIds, int selectSize, boolean discard) {
     Builder<T> builder = builder();
     builder.withConn(conn);
     builder.withTable(table);
+    builder.withFields(copyOf(fields));
     builder.withRowIds(copyOf(rowIds));
+    builder.withSelectSize(selectSize);
+    builder.withDiscard(discard);
     return builder.build();
   }
 
@@ -84,6 +96,18 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
     private List<String> rowIds;
     private Function<ResultSet, T> function;
     private List<String> fields;
+    private int selectSize = 75;
+    private boolean discard;
+
+    public Builder<T> withDiscard(boolean discard) {
+      this.discard = discard;
+      return this;
+    }
+
+    public Builder<T> withSelectSize(int selectSize) {
+      this.selectSize = selectSize;
+      return this;
+    }
 
     public Builder<T> withField(String field) {
       return withFields(asList(field));
@@ -128,6 +152,7 @@ public final class RowProvider<T> implements Provider<ImmutableList<T>> {
       checkNotNull(instance.table, "table may not be null");
       checkArgument(instance.rowIds.size() > 0, "rowIds can't be empty");
       checkArgument(instance.fields.size() > 0, "fields can't be empty");
+      checkArgument(instance.selectSize > 0, "selectSize must be greater than zero");
       return instance;
     }
   }

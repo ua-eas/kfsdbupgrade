@@ -33,7 +33,7 @@ public final class MDocContextProvider implements Provider<MDocContext> {
     int chunkSize = parseInt(props.getProperty("mdoc.chunk", "1000"));
     // maximum number of documents to select in one SQL query
     int selectSize = parseInt(props.getProperty("mdoc.select", "75"));
-    // maximum number of documents to process in one batch
+    // maximum number of documents to process in one batch update
     int batchSize = parseInt(props.getProperty("mdoc.batch", "75"));
     MDocContext.Builder builder = MDocContext.builder();
     builder.withEc2Threads(ec2Threads);
