@@ -35,7 +35,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import ua.utility.kfsdbupgrade.mdoc.BlockId;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.IntegerWeigher;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;

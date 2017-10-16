@@ -1,14 +1,11 @@
 package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.hash;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ComparisonChain;
-
-import ua.utility.kfsdbupgrade.mdoc.BlockId;
 
 public final class RowId implements Comparable<RowId> {
 
@@ -74,7 +71,7 @@ public final class RowId implements Comparable<RowId> {
       return false;
     } else {
       RowId other = (RowId) object;
-      return (hash == other.hash) && (objectId == other.objectId) && (rowNumber == other.rowNumber) && equal(block, other.block);
+      return (hash == other.hash) && compareTo(other) == 0;
     }
   }
 

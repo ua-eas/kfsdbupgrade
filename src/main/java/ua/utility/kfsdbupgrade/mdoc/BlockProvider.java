@@ -30,6 +30,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import ua.utility.kfsdbupgrade.md.BlockId;
 import ua.utility.kfsdbupgrade.md.RowId;
 import ua.utility.kfsdbupgrade.md.RowIdConverter;
 

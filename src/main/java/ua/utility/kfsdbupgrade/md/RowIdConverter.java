@@ -11,8 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.base.Converter;
 import com.google.common.base.Joiner;
 
-import ua.utility.kfsdbupgrade.mdoc.BlockId;
-
 public final class RowIdConverter extends Converter<String, RowId> {
 
   private RowIdConverter() {
