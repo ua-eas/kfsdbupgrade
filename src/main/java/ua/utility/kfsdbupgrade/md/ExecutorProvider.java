@@ -15,7 +15,7 @@ public final class ExecutorProvider implements Provider<ExecutorService> {
 
   public ExecutorProvider(String name, int threads) {
     checkArgument(isNotBlank(name), "name cannot be blank");
-    checkArgument(threads > 0, "threads must greater than zero");
+    checkArgument(threads > 0, "threads must be greater than zero");
     this.name = name;
     this.threads = threads;
   }
