@@ -35,6 +35,8 @@ public final class MDocContextProvider implements Provider<MDocContext> {
     int selectSize = parseInt(props.getProperty("mdoc.select", Integer.toString(chunkSize / 10)));
     // maximum number of documents to process before calling execute batch
     int batchSize = parseInt(props.getProperty("mdoc.batch", Integer.toString(chunkSize / 10)));
+    // number of maintenance document clobs to select when warming up the table
+    int warmupClobsPercent = parseInt(props.getProperty("mdoc.clobs.warmup", "5"));
     MDocContext.Builder builder = MDocContext.builder();
     builder.withEc2Threads(ec2Threads);
     builder.withRdsThreads(rdsThreads);
@@ -43,6 +45,7 @@ public final class MDocContextProvider implements Provider<MDocContext> {
     builder.withSelectSize(selectSize);
     builder.withBatchSize(batchSize);
     builder.withConverter(converter);
+    builder.withWarmupClobsPercent(warmupClobsPercent);
     return builder.build();
   }
 
