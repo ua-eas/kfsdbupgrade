@@ -56,7 +56,7 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
     try {
       Stopwatch overall = createStarted();
       String from = schema.isPresent() ? schema.get() + "." + table : table;
-      info(LOGGER, "selecting [%s] from %s, %s rows total, discard=%s", Joiner.on(',').join(fields), from, getCount(rowIds.size()), discard);
+      info(LOGGER, "selecting [%s] from %s [%s rows total, discard=%s]", Joiner.on(',').join(fields), from, getCount(rowIds.size()), discard);
       List<T> list = newArrayList();
       int processed = 0;
       for (List<String> chunk : partition(rowIds, chunkSize)) {
