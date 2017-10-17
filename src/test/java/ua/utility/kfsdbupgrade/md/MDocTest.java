@@ -130,11 +130,12 @@ public class MDocTest {
   }
 
   private String analyze(ChunkResult chunk, Stopwatch current) {
-    String now = throughput(current, chunk.getCount());
+    String throughput = throughput(current, chunk.getCount());
     String r = throughput(chunk.getRead());
+    // if convert is set to 'identity' this is usually zero milliseconds
     String c = chunk.getConvert().getMillis() > 0 ? " c" + throughput(chunk.getConvert()) + " " : " ";
     String w = throughput(chunk.getWrite());
-    return format("%s %sd/s r%s%sw%s - %s", getCount(chunk.getCount()), now, r, c, w, getTime(current));
+    return format("%s %sd/s r%s%sw%s - %s", getCount(chunk.getCount()), throughput, r, c, w, getTime(current));
   }
 
   private ChunkResult doChunk(ExecutorService rds, ExecutorService ec2, List<Connection> conns, List<String> rowIds, MDocContext ctx) {
