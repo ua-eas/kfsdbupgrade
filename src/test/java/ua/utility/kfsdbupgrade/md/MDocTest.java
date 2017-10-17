@@ -6,6 +6,8 @@ import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.primitives.Ints.checkedCast;
+import static java.lang.Math.round;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
@@ -85,7 +87,7 @@ public class MDocTest {
     List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
     RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
     if (ctx.getWarmupClobsPercent() > 0) {
-      int sampleSize = rowIds.size() / (100 / ctx.getWarmupClobsPercent());
+      int sampleSize = checkedCast(round(rowIds.size() / (100 / ctx.getWarmupClobsPercent())));
       List<String> sample = sample(rowIds, sampleSize);
       RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), sample, SingleStringFunction.INSTANCE, 1000, 100, true).get();
     } else {
