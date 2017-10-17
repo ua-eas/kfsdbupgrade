@@ -69,14 +69,18 @@ public final class RowsProvider<T> implements Provider<ImmutableList<T>> {
         }
         list.addAll(concat(getFutures(executor, callables)));
         processed += chunk.size();
-        String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunk.size(), "rows/sec");
-        String all = getThroughputInSeconds(overall.elapsed(MILLISECONDS), processed, "rows/sec");
-        info(LOGGER, "processed %s rows of %s total, all[%s] now[%s] %s", getCount(processed), getCount(rowIds.size()), all, now, getTime(overall));
+        progress(processed, overall, chunk.size(), current);
       }
       return copyOf(list);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private void progress(int processed, Stopwatch overall, int chunkSize, Stopwatch current) {
+    String now = getThroughputInSeconds(current.elapsed(MILLISECONDS), chunkSize, "rows/sec");
+    String all = getThroughputInSeconds(overall.elapsed(MILLISECONDS), processed, "rows/sec");
+    info(LOGGER, "processed %s rows of %s total, all[%s] now[%s] %s", getCount(processed), getCount(rowIds.size()), all, now, getTime(overall));
   }
 
   private RowsProvider(Builder<T> builder) {
