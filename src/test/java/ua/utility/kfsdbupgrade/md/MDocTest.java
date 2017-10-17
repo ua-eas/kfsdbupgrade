@@ -110,17 +110,17 @@ public class MDocTest {
     info(LOGGER, "all[%s] now[%s]", all, now);
   }
 
-  private String analyze(Iterable<ChunkResult> results, Stopwatch overall) {
+  private String analyze(Iterable<ChunkResult> chunks, Stopwatch overall) {
     long overallElapsed = overall.elapsed(MILLISECONDS);
     long readMillis = 0;
     long convertMillis = 0;
     long writeMillis = 0;
     int overallCount = 0;
-    for (ChunkResult result : results) {
-      overallCount += result.getCount();
-      readMillis += result.getRead().getMillis();
-      convertMillis += result.getConvert().getMillis();
-      writeMillis += result.getWrite().getMillis();
+    for (ChunkResult chunk : chunks) {
+      overallCount += chunk.getCount();
+      readMillis += chunk.getRead().getMillis();
+      convertMillis += chunk.getConvert().getMillis();
+      writeMillis += chunk.getWrite().getMillis();
     }
     String throughput = throughput(overallElapsed, overallCount);
     String r = throughput(readMillis, overallCount);
