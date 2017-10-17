@@ -42,9 +42,9 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-public final class MaintDocConversionProvider implements Provider<Long> {
+public final class MDocsProvider implements Provider<Long> {
 
-  private static final Logger LOGGER = getLogger(MaintDocConversionProvider.class);
+  private static final Logger LOGGER = getLogger(MDocsProvider.class);
 
   public Long get() {
     List<Connection> conns = newArrayList();
