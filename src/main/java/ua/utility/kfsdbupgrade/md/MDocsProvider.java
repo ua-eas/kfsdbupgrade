@@ -81,21 +81,33 @@ public final class MDocsProvider implements Provider<Long> {
   private void warmup(MDocContext ctx, ExecutorService rds, Iterable<Connection> conns, List<String> rowIds) {
     Stopwatch sw = createStarted();
     info(LOGGER, "warming up the %s table", ctx.getTable(), getCount(rowIds.size()));
+    // Convert the Oracle row id strings into RowId objects
     List<RowId> ids = transform(rowIds, RowIdConverter.getInstance());
+    // Distill the full set of rows down to get the unique set of oracle blocks containing data from this table
+    // When Oracle goes to fetch the data for a row, it always reads the entire block the row resides in (usually 8 kilobytes)
+    // This guarantees that every file system block containing data from this table gets touched by the Oracle runtime
     Map<BlockId, RowId> blocks = getUniqueBlocks(ids);
     info(LOGGER, "%s unique blocks detected", getCount(blocks.size()));
-    List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
-    RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
+    // Convert the list of RowId objects (each representing a unique filesystem block) into row id strings Oracle can understand
+    List<String> rows = transform(blocks.values(), RowIdConverter.getInstance().reverse());
+    // Select the smallest possible field from the table to minimize network traffic while still guaranteeing that every file system block gets touched
+    RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), rows, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
+    // Since CLOB data isn't cached by default, we'll now use high speed selects to touch 10% of the CLOBS from this table
     List<String> samples = samples(ctx, rowIds);
+    // This explicitly touches 10% of the CLOBS from the table, and just as importantly, provides the Oracle runtime
+    // buffering routines with a very strong hint that they need to pay attention to the CLOB data from this table
     RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), samples, SingleStringFunction.INSTANCE, 1000, 100, true).get();
+    // The table is now warmed up and ready for action
     info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
   }
 
   private ImmutableList<String> samples(MDocContext ctx, List<String> rowIds) {
     if (ctx.getWarmupClobsPercent().isPresent()) {
+      // grab a percentage of the clobs
       int sampleSize = checkedCast(round(rowIds.size() / (100 / ctx.getWarmupClobsPercent().get())));
       return sample(rowIds, sampleSize);
     } else {
+      // grab them all
       return copyOf(rowIds);
     }
   }
