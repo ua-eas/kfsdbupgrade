@@ -86,12 +86,12 @@ public class MDocTest {
     info(LOGGER, "%s unique blocks detected", getCount(blocks.size()));
     List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
     RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
-    if (ctx.getWarmupClobsPercent() > 0) {
-      int sampleSize = checkedCast(round(rowIds.size() / (100 / ctx.getWarmupClobsPercent())));
+    if (ctx.getWarmupClobsPercent().isPresent()) {
+      int sampleSize = checkedCast(round(rowIds.size() / (100 / ctx.getWarmupClobsPercent().get())));
       List<String> sample = sample(rowIds, sampleSize);
       RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), sample, SingleStringFunction.INSTANCE, 1000, 100, true).get();
     } else {
-
+      RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, 1000, 100, true).get();
     }
     info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
   }

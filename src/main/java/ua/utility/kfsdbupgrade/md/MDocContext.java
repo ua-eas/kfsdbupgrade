@@ -1,10 +1,12 @@
 package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Functions.identity;
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 
 public final class MDocContext {
 
@@ -14,7 +16,7 @@ public final class MDocContext {
   private final int chunkSize;
   private final int selectSize;
   private final int batchSize;
-  private final double warmupClobsPercent;
+  private final Optional<Double> warmupClobsPercent;
   private final Function<MaintDoc, MaintDoc> converter;
   private final String table;
 
@@ -44,9 +46,9 @@ public final class MDocContext {
     private int batchSize = -1;
     private Function<MaintDoc, MaintDoc> converter = identity();
     private String table = "KRNS_MAINT_DOC_T";
-    private double warmupClobsPercent = -1;
+    private Optional<Double> warmupClobsPercent = absent();
 
-    public Builder withWarmupClobsPercent(double warmupClobsPercent) {
+    public Builder withWarmupClobsPercent(Optional<Double> warmupClobsPercent) {
       this.warmupClobsPercent = warmupClobsPercent;
       return this;
     }
@@ -102,7 +104,11 @@ public final class MDocContext {
       checkArgument(instance.chunkSize > 0, "chunkSize must be greater than zero");
       checkArgument(instance.selectSize > 0, "selectSize must be greater than zero");
       checkArgument(instance.batchSize > 0, "batchSize must be greater than zero");
-      checkArgument(instance.warmupClobsPercent >= 0 && instance.warmupClobsPercent <= 100, "warmupClobsPercent must be 0-100");
+      if (instance.warmupClobsPercent.isPresent()) {
+        String msg = "warmupClobsPercent must be greater than zero and less than or equal to 100";
+        checkArgument(instance.warmupClobsPercent.get() > 0 && instance.warmupClobsPercent.get() <= 100, msg);
+
+      }
       checkNotNull(instance.converter, "converter may not be null");
       checkNotNull(instance.table, "table may not be null");
       return instance;
@@ -141,7 +147,7 @@ public final class MDocContext {
     return table;
   }
 
-  public double getWarmupClobsPercent() {
+  public Optional<Double> getWarmupClobsPercent() {
     return warmupClobsPercent;
   }
 

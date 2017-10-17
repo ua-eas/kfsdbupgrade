@@ -1,5 +1,6 @@
 package ua.utility.kfsdbupgrade.md;
 
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
@@ -10,6 +11,7 @@ import java.util.Properties;
 import javax.inject.Provider;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 
 public final class MDocContextProvider implements Provider<MDocContext> {
 
@@ -37,7 +39,11 @@ public final class MDocContextProvider implements Provider<MDocContext> {
     // maximum number of documents to process before calling execute batch
     int batchSize = parseInt(props.getProperty("mdoc.batch", Integer.toString(chunkSize / 10)));
     // number of maintenance document clobs to select when warming up the table
-    double warmupClobsPercent = parseDouble(props.getProperty("mdoc.clobs.warmup", "7.5"));
+    double value = parseDouble(props.getProperty("mdoc.clobs.warmup", "7.5"));
+    Optional<Double> warmupClobsPercent = absent();
+    if (value > 0) {
+      warmupClobsPercent = Optional.of(value);
+    }
     MDocContext.Builder builder = MDocContext.builder();
     builder.withEc2Threads(ec2Threads);
     builder.withRdsThreads(rdsThreads);
