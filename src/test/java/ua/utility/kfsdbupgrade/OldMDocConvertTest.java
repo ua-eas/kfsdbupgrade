@@ -32,12 +32,12 @@ import ua.utility.kfsdbupgrade.md.ExecutorProvider;
 import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 import ua.utility.kfsdbupgrade.md.RowId;
 import ua.utility.kfsdbupgrade.md.RowIdConverter;
+import ua.utility.kfsdbupgrade.md.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.DatabaseMetrics;
 import ua.utility.kfsdbupgrade.mdoc.MaintDoc;
 import ua.utility.kfsdbupgrade.mdoc.MaintDocConverterFunction;
 import ua.utility.kfsdbupgrade.mdoc.RowSelector;
 import ua.utility.kfsdbupgrade.mdoc.RowUpdaterFunction;
-import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
 import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
 
 public class OldMDocConvertTest {

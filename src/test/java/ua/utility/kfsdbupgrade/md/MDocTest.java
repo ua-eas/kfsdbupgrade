@@ -41,9 +41,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import ua.utility.kfsdbupgrade.mdoc.SingleIntegerFunction;
-import ua.utility.kfsdbupgrade.mdoc.SingleStringFunction;
-
 public class MDocTest {
 
   private static final Logger LOGGER = getLogger(MDocTest.class);

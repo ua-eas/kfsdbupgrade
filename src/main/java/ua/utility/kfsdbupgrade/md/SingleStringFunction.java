@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.md;
 
 import static ua.utility.kfsdbupgrade.md.base.Exceptions.illegalState;
 
