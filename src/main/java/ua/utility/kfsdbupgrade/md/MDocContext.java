@@ -14,7 +14,7 @@ public final class MDocContext {
   private final int chunkSize;
   private final int selectSize;
   private final int batchSize;
-  private final int warmupClobsPercent;
+  private final double warmupClobsPercent;
   private final Function<MaintDoc, MaintDoc> converter;
   private final String table;
 
@@ -44,9 +44,9 @@ public final class MDocContext {
     private int batchSize = -1;
     private Function<MaintDoc, MaintDoc> converter = identity();
     private String table = "KRNS_MAINT_DOC_T";
-    private int warmupClobsPercent = -1;
+    private double warmupClobsPercent = -1;
 
-    public Builder withWarmupClobsPercent(int warmupClobsPercent) {
+    public Builder withWarmupClobsPercent(double warmupClobsPercent) {
       this.warmupClobsPercent = warmupClobsPercent;
       return this;
     }
@@ -141,7 +141,7 @@ public final class MDocContext {
     return table;
   }
 
-  public int getWarmupClobsPercent() {
+  public double getWarmupClobsPercent() {
     return warmupClobsPercent;
   }
 
