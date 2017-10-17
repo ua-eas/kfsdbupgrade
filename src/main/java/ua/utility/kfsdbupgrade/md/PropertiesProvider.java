@@ -57,6 +57,8 @@ public final class PropertiesProvider implements Provider<Properties> {
 
       // override everything with system properties
       props.putAll(System.getProperties());
+
+      // return what we've got
       return props;
     } catch (IOException e) {
       throw new IllegalStateException(e);
