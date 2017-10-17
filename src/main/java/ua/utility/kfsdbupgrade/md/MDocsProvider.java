@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Lists.newArrayList;
@@ -85,14 +86,18 @@ public final class MDocsProvider implements Provider<Long> {
     info(LOGGER, "%s unique blocks detected", getCount(blocks.size()));
     List<String> unique = transform(blocks.values(), RowIdConverter.getInstance().reverse());
     RowsProvider.build(rds, conns, ctx.getTable(), VER_NBR.name(), unique, SingleIntegerFunction.INSTANCE, 5000, 100, true).get();
+    List<String> samples = samples(ctx, rowIds);
+    RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), samples, SingleStringFunction.INSTANCE, 1000, 100, true).get();
+    info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
+  }
+
+  private ImmutableList<String> samples(MDocContext ctx, List<String> rowIds) {
     if (ctx.getWarmupClobsPercent().isPresent()) {
       int sampleSize = checkedCast(round(rowIds.size() / (100 / ctx.getWarmupClobsPercent().get())));
-      List<String> sample = sample(rowIds, sampleSize);
-      RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), sample, SingleStringFunction.INSTANCE, 1000, 100, true).get();
+      return sample(rowIds, sampleSize);
     } else {
-      RowsProvider.build(rds, conns, ctx.getTable(), DOC_CNTNT.name(), rowIds, SingleStringFunction.INSTANCE, 1000, 100, true).get();
+      return copyOf(rowIds);
     }
-    info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
   }
 
   private ImmutableMap<BlockId, RowId> getUniqueBlocks(Iterable<RowId> rowIds) {
