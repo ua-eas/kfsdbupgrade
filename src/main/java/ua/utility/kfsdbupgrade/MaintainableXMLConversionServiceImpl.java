@@ -16,6 +16,9 @@
 
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.io.ByteSource.wrap;
+import static com.google.common.io.Files.asByteSource;
+
 import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -41,7 +44,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -54,6 +56,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
+import com.google.common.base.Optional;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.io.ByteSource;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.DomWriter;
@@ -66,6 +72,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
     private static final String OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME = "oldMaintainableObject";
     private static final String NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME = "newMaintainableObject";
 
+   private LoadingCache<PropertyClassKey, Optional<Class<?>>> propertyClassCache = CacheBuilder.newBuilder().build(new PropertyClassLoader());
 	/**
 	 * Populated by the <code>pattern</code> elements in the <code>rule</code>
 	 * named <code>maint_doc_classname_changes</code> in {@link #rulesXmlFile}.
@@ -98,7 +105,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 	 * {@link File} containing the rule maps that will be used to transform the
 	 * maintainable document XML.
 	 */
-	private final File rulesXmlFile;
+	private final ByteSource rulesXmlFile;
 	/**
 	 * {@link Set} of {@link String}s representing classnames to ignore during
 	 * transformation. Values are hardcoded and passed in during construction.
@@ -113,14 +120,17 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 	 */
     private Set <String> uaMaintenanceDocClasses = new HashSet <String>();
     
-	/**
-	 * Constructor
-	 * 
-	 * @param rulesXmlFile
-	 *            Value for {@link #rulesXmlFile}
-	 * @throws Exception
-	 */
-	public MaintainableXMLConversionServiceImpl(File rulesXmlFile) throws Exception {
+   public MaintainableXMLConversionServiceImpl(File rulesXmlFile) throws Exception {
+     this(wrap(asByteSource(rulesXmlFile).read()));
+   }
+  /**
+   * Constructor
+   * 
+   * @param rulesXmlFile
+   *            Value for {@link #rulesXmlFile}
+   * @throws Exception
+   */
+  public MaintainableXMLConversionServiceImpl(ByteSource rulesXmlFile) throws Exception {
         this.rulesXmlFile = rulesXmlFile;
 		setRuleMaps();
         
@@ -566,7 +576,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
         // Get the old bo note xml
         String notesXml = StringUtils.substringBetween(oldXML, "<boNotes>", "</boNotes>");
         if (notesXml != null) {
-			LOGGER.info("BO Notes present, upgrading -> " + docId);
+			LOGGER.trace("BO Notes present, upgrading -> " + docId);
             notesXml = notesXml.replace("org.kuali.rice.kns.bo.Note", "org.kuali.rice.krad.bo.Note");
             notesXml = "<org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl>\n"
                     + notesXml
@@ -930,13 +940,12 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
             if ((currentClass != null) && isValidClass(currentClass)) {
                 if (childNode.hasChildNodes() && !(Collection.class.isAssignableFrom(currentClass) || Map.class
                         .isAssignableFrom(currentClass))) {
-                    Class<?> propertyClass = PropertyUtils.getPropertyType(currentClass.newInstance(), propertyName);
-                    if (propertyClass != null && classPropertyRuleMap.containsKey(propertyClass.getName())) {
-                        transformNode(document, childNode, propertyClass, this.classPropertyRuleMap.get(
-                                propertyClass.getName()));
-                    }
-                    
-                    transformNode(document, childNode, propertyClass, classPropertyRuleMap.get("*"));
+                  PropertyClassKey key = new PropertyClassKey(currentClass, propertyName);
+                  Optional<Class<?>> propertyClass = propertyClassCache.getUnchecked(key);
+                  if (propertyClass.isPresent() && classPropertyRuleMap.containsKey(propertyClass.get().getName())) {
+                    transformNode(document, childNode, propertyClass.get(), this.classPropertyRuleMap.get(propertyClass.get().getName()));
+                  }
+                  transformNode(document, childNode, propertyClass.orNull(), classPropertyRuleMap.get("*"));
                 }
             }
 			childNode = nextChild;
@@ -981,7 +990,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
 
-        Document doc = db.parse(rulesXmlFile);
+        Document doc = db.parse(rulesXmlFile.openBufferedStream());
 
         doc.getDocumentElement().normalize();
         XPath xpath = XPathFactory.newInstance().newXPath();
