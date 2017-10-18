@@ -15,11 +15,7 @@
  */
 package ua.utility.kfsdbupgrade;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.lang.String.format;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+import static java.lang.Boolean.parseBoolean;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -51,7 +47,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,16 +57,12 @@ import org.apache.log4j.SimpleLayout;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
-import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
-import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
-import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
-import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
+import ua.utility.kfsdbupgrade.md.MDocsProvider;
+import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 
 public class App {
 	private static final Logger LOGGER = Logger.getLogger(App.class);
 
-    private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
-    
 	public static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
     public static final String ERROR = "************************************************* error *************************************************";
@@ -154,12 +145,8 @@ public class App {
 	 *            to use
 	 */
 	public App(String propertyFileName) {
-		properties = loadProperties(DEFAULT_PROPERTIES_FILE);
-        if (propertyFileName != null) {
-			Properties overridenProps = loadProperties(propertyFileName);
-			if ( overridenProps != null ){
-				properties.putAll(overridenProps);
-			}
+	    File propertiesFile = new File(propertyFileName);
+		  properties = new PropertiesProvider(propertiesFile).get();
 			LOGGER.debug("Finished loading properties from "+propertyFileName);
             upgradeRoot = properties.getProperty("upgrade-base-directory");
 			/*
@@ -187,10 +174,6 @@ public class App {
 				LOGGER.error("Unable to log to file " + properties.getProperty("output-log-file-name")
 						+ " . IOException encountered: ", e);
 			}
-        } else {
-			LOGGER.fatal("invalid properties file: " + propertyFileName);
-			postUpgradeDirectory = null;
-        }
     }
             
 	/**
@@ -214,7 +197,7 @@ public class App {
             stmt.close();
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
-			     if (Boolean.parseBoolean(System.getProperty("mdoc.only"))) {
+			     if (parseBoolean(properties.getProperty("mdoc.only"))) {
 			       convertMaintenanceDocuments(conn1);
 			       return;
 			     }
@@ -2760,37 +2743,10 @@ public class App {
 	 */
     private void convertMaintenanceDocuments(Connection upgradeConn) {
       logHeader2("Converting legacy maintenance documents to rice 2.0...");
-      MaintDocConverter converter = getMaintDocConverter(upgradeConn);
       try {
-        MaintDocResult result = converter.get();
-        String throughput = getThroughputInSeconds(result.getElapsed(), result.getConverted(), "docs/second");
-        LOGGER.info(format("maintenance docs converted -> %s", getCount(result.getConverted())));
-        LOGGER.info(format("maintenance docs errors ----> %s", getCount(result.getErrors())));
-        LOGGER.info(format("maintenance docs elapsed ---> %s", getTime(result.getElapsed())));
-        LOGGER.info(format("maintenance doc throughput -> %s", throughput));
+        new MDocsProvider(properties).get();
       } catch(Exception e) {
-        LOGGER.error(e);
-      }
-    }
-    
-    private MaintDocConverter getMaintDocConverter(Connection upgradeConn) {
-      try {
-        File rules = new File(properties.getProperty("maintenance-document-conversion-rules-file"));
-        checkArgument(rules.isFile(),"rules file does not exist -> %s", rules);
-        MaintainableXMLConversionServiceImpl converter = new MaintainableXMLConversionServiceImpl(rules);
-        EncryptionService encryptor = new EncryptionService(properties.getProperty("encryption-key"));
-        int threads = new ThreadsProvider(properties).get();
-        LOGGER.info(format("maintenance doc threads -> %s", threads));
-        ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
-        MaintDocConverter.Builder builder = MaintDocConverter.builder();
-        builder.withBatchSize(MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE);
-        builder.withConnection(upgradeConn);
-        builder.withConverter(converter);
-        builder.withEncryptor(encryptor);
-        builder.withExecutor(executor);
-        return builder.build();
-      }catch(Exception e) {
-        throw new IllegalStateException(e);
+        LOGGER.error("unexpected error converting maintenance documents",e);
       }
     }
 
