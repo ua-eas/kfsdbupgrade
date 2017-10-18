@@ -76,7 +76,7 @@ public final class MDocsProvider implements Provider<Long> {
       conns = new ConnectionsProvider(provider, ctx.getRdsThreads(), first).get();
       List<String> rowIds = RowIdProvider.build(first, ctx.getTable(), ctx.getMax(), ctx.getMax() / 10).get();
       warmup(ctx, rds, conns, rowIds);
-      convert(ctx, rowIds, conns, rds, ec2, sw);
+      convert(ctx, rowIds, conns, rds, ec2);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
@@ -109,7 +109,7 @@ public final class MDocsProvider implements Provider<Long> {
     info(LOGGER, "warmed up the %s table [%s]", ctx.getTable(), getTime(sw));
   }
 
-  private void convert(MDocContext ctx, List<String> rowIds, List<Connection> conns, ExecutorService rds, ExecutorService ec2, Stopwatch all) {
+  private void convert(MDocContext ctx, List<String> rowIds, List<Connection> conns, ExecutorService rds, ExecutorService ec2) {
     info(LOGGER, "converting %s maintenance documents", getCount(rowIds.size()));
     Stopwatch overall = createStarted();
     List<ChunkResult> chunks = newArrayList();
@@ -119,7 +119,7 @@ public final class MDocsProvider implements Provider<Long> {
       progress(chunks, overall, current);
     }
     String throughput = getThroughputInSeconds(overall.elapsed(MILLISECONDS), rowIds.size(), "docs/sec");
-    info(LOGGER, "maintenance document conversions -------> %s [%s] %s", getCount(rowIds.size()), getTime(all), throughput);
+    info(LOGGER, "maintenance document conversions -------> %s [%s] %s", getCount(rowIds.size()), getTime(overall), throughput);
     doErrors(chunks);
   }
 
