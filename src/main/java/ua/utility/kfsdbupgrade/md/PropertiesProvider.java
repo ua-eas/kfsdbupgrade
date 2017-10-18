@@ -50,7 +50,7 @@ public final class PropertiesProvider implements Provider<Properties> {
   public Properties get() {
     try {
       if (external.isPresent()) {
-        checkArgument(external.get().isFile(), "%s does not exist", external.get());
+        checkArgument(external.get().isFile(), "%s does not exist", external.get().getCanonicalFile());
       }
 
       // get the default set of properties

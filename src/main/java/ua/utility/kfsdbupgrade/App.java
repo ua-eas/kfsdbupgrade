@@ -58,6 +58,7 @@ import org.apache.log4j.SimpleLayout;
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
 import ua.utility.kfsdbupgrade.md.MDocsProvider;
+import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 
 public class App {
 	private static final Logger LOGGER = Logger.getLogger(App.class);
@@ -112,10 +113,6 @@ public class App {
 	 * @param args
 	 */
     public static void main(final String args[]) {
-      if (parseBoolean(System.getProperty("mdoc.only")) || parseBoolean(System.getenv().get("MDOC_ONLY"))) {
-        new MDocsProvider().get();
-        return;
-      }
       if (args == null || args.length == 0) {
         System.out.println("Usage: java -jar kfsdbupgrade.jar kfsdbupgrade.properties");
         System.exit(1);
@@ -148,14 +145,8 @@ public class App {
 	 *            to use
 	 */
 	public App(String propertyFileName) {
-		properties = loadProperties(DEFAULT_PROPERTIES_FILE);
-        if (propertyFileName != null) {
-			Properties overridenProps = loadProperties(propertyFileName);
-			if ( overridenProps != null ){
-				properties.putAll(overridenProps);
-			}
-			// always override with system properties
-			properties.putAll(System.getProperties());
+	    File propertiesFile = new File(propertyFileName);
+		  properties = new PropertiesProvider(propertiesFile).get();
 			LOGGER.debug("Finished loading properties from "+propertyFileName);
             upgradeRoot = properties.getProperty("upgrade-base-directory");
 			/*
@@ -183,10 +174,6 @@ public class App {
 				LOGGER.error("Unable to log to file " + properties.getProperty("output-log-file-name")
 						+ " . IOException encountered: ", e);
 			}
-        } else {
-			LOGGER.fatal("invalid properties file: " + propertyFileName);
-			postUpgradeDirectory = null;
-        }
     }
             
 	/**
@@ -210,7 +197,7 @@ public class App {
             stmt.close();
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
-			     if (Boolean.parseBoolean(System.getProperty("mdoc.only"))) {
+			     if (parseBoolean(properties.getProperty("mdoc.only"))) {
 			       convertMaintenanceDocuments(conn1);
 			       return;
 			     }
