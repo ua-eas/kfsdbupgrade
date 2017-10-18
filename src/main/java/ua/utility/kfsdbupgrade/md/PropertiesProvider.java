@@ -13,6 +13,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Provider;
@@ -67,7 +68,16 @@ public final class PropertiesProvider implements Provider<Properties> {
         props.putAll(load(wrap(asByteSource(external.get()).read())));
       }
 
-      // override everything with system properties
+      // make environment variables available as properties
+      Map<String, String> env = System.getenv();
+      for (String key : env.keySet()) {
+        String value = env.get(key);
+        props.setProperty(key, value);
+        props.setProperty(key.toLowerCase().replace('_', '-'), value);
+        props.setProperty(key.toLowerCase().replace('_', '.'), value);
+      }
+
+      // always override everything with system properties
       props.putAll(System.getProperties());
 
       // return what we've got

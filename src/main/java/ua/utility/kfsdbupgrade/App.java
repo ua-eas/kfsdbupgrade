@@ -15,6 +15,8 @@
  */
 package ua.utility.kfsdbupgrade;
 
+import static java.lang.Boolean.parseBoolean;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -110,6 +112,10 @@ public class App {
 	 * @param args
 	 */
     public static void main(final String args[]) {
+      if (parseBoolean(System.getProperty("mdoc.only")) || parseBoolean(System.getenv().get("MDOC_ONLY"))) {
+        new MDocsProvider().get();
+        return;
+      }
       if (args == null || args.length == 0) {
         System.out.println("Usage: java -jar kfsdbupgrade.jar kfsdbupgrade.properties");
         System.exit(1);

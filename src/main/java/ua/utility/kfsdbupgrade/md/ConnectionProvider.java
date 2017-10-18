@@ -38,7 +38,7 @@ public final class ConnectionProvider implements Provider<Connection> {
       String username = checkedValue(props, "database-user");
       String password = checkedValue(props, "database-password");
       String url;
-      if (!props.containsKey("db.url") && !props.containsKey("database-url")) {
+      if (props.containsKey("db.name")) {
         String name = checkedValue(props, "db.name");
         String fragment = checkedValue(props, "db.fragment");
         String port = props.getProperty("db.port", "1521");
@@ -46,12 +46,10 @@ public final class ConnectionProvider implements Provider<Connection> {
         String formatted = format("jdbc:oracle:thin:@%s.%s:%s:%s", name.toLowerCase(), fragment, port, sid.toUpperCase());
         url = formatted;
       } else {
-        if (props.containsKey("database-url")) {
-          url = props.getProperty("database-url");
-        } else if (props.containsKey("db.url")) {
+        if (props.containsKey("db.url")) {
           url = props.getProperty("db.url");
         } else {
-          throw new IllegalStateException("must provide db.url or database-url");
+          url = checkedValue(props, "database-url");
         }
       }
       Stopwatch sw = createStarted();
