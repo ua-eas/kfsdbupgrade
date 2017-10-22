@@ -53,10 +53,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
+
+import com.google.common.base.Optional;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
+import ua.utility.kfsdbupgrade.log.SimplePatternLayout;
+import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.MDocsProvider;
 import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 
@@ -112,28 +115,28 @@ public class App {
 	 * 
 	 * @param args
 	 */
-    public static void main(final String args[]) {
-      if (args == null || args.length == 0) {
-        System.out.println("Usage: java -jar kfsdbupgrade.jar kfsdbupgrade.properties");
-        System.exit(1);
-      }
+    public static void main(final String[] args) {
       try {
-        String propertyFileName = args[0];
-        boolean ingestWorkflow = false;
-        if (args.length > 1) {
-          ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
-        }
-			  App app = new App(propertyFileName);
-			  if (ingestWorkflow) {
-			    app.doWorkflow(propertyFileName);
+        Optional<String> commandLinePropertiesFile = (args != null && args.length > 0) ? Optional.of(args[0]) : Optional.<String> absent();
+			  App app = new App(commandLinePropertiesFile);
+			  if (isIngestWorkflow(args)) {
+			    app.doWorkflow(commandLinePropertiesFile.get());
 			  } else {
 			    app.doUpgrade();
         }
 			  System.exit(0);
       } catch(Throwable e) {
-        LOGGER.fatal(e);
         e.printStackTrace();
+        LOGGER.fatal(e);
         System.exit(1);
+      }
+    }
+    
+    private static boolean isIngestWorkflow(String[] args) {
+      if (args != null && args.length > 1) {
+        return "ingestWorkflow".equalsIgnoreCase(args[1]);
+      } else {
+        return false;
       }
     }
 
@@ -144,11 +147,12 @@ public class App {
 	 *            {@link String} of the <code>.properties</code> file location
 	 *            to use
 	 */
-	public App(String propertyFileName) {
-	    File propertiesFile = new File(propertyFileName);
-		  properties = new PropertiesProvider(propertiesFile).get();
-			LOGGER.debug("Finished loading properties from "+propertyFileName);
-            upgradeRoot = properties.getProperty("upgrade-base-directory");
+    public App(String commandLinePropertiesFile) {
+      this(Optional.of(commandLinePropertiesFile));
+    }
+    public App(Optional<String> commandLinePropertiesFile) {
+		  this.properties = new PropertiesProvider(commandLinePropertiesFile).get();
+      upgradeRoot = properties.getProperty("upgrade-base-directory");
 			/*
 			 * If the post-upgrade-directory property is specified, use it as
 			 * the path for the directory; otherwise, default to
@@ -164,7 +168,7 @@ public class App {
             upgradeFiles = loadFolderFileMap("files-");
 			Appender logFileAppender;
 			try {
-				logFileAppender = new FileAppender(new SimpleLayout(), properties.getProperty("output-log-file-name"));
+				logFileAppender = new FileAppender(new SimplePatternLayout(), properties.getProperty("output-log-file-name"));
 				LOGGER.addAppender(logFileAppender);
 			} catch (IOException e) {
 				/*
@@ -189,14 +193,13 @@ public class App {
         Statement stmt = null;
         boolean success = false;
         try {
-            conn1 = getUpgradeConnection();
-            conn2 = getUpgradeConnection();
-            conn2.setAutoCommit(true);
+            conn1 = new ConnectionProvider(properties, false).get();
+            conn2 = new ConnectionProvider(properties, true).get();
             stmt = conn2.createStatement();
             stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
             stmt.close();
             stmt = conn1.createStatement();
-			LOGGER.info("Starting KFS database upgrade process...");
+			     LOGGER.info("Starting KFS database upgrade process...");
 			     if (parseBoolean(properties.getProperty("mdoc.only"))) {
 			       convertMaintenanceDocuments(conn1);
 			       return;
@@ -385,37 +388,6 @@ public class App {
         }
 
         return retval;
-    }
-
-	/**
-	 * @param fname
-	 *            {@link String} location of a file to load into
-	 *            {@link Properties}
-	 * @return {@link Properties} loaded from the file at <code>fname</code>, or
-	 *         <code>null</code> if the file at <code>fname</code> does not
-	 *         contain an entry for <code>database-url</code> or if an
-	 *         {@link Exception} is encountered while attempting to read the
-	 *         file.
-	 */
-    private Properties loadProperties(String fname) {
-        Properties properties = new Properties();
-        FileReader reader = null;
-
-        try {
-            reader = new FileReader(fname);
-			properties.load(reader);
-        } catch (Exception fatal) {
-			    throw new IllegalStateException(fatal);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception ex) {
-            }
-        }
-
-        return properties;
     }
 
 	/**
@@ -846,16 +818,16 @@ public class App {
         props.setProperty("user", properties.getProperty("database-user"));
         props.setProperty("password", properties.getProperty("database-password"));
 
-		LOGGER.info("Connecting to db " + properties.getProperty("database-name") + "...");
-		LOGGER.info("url=" + url);
+		    LOGGER.info("Connecting to db " + properties.getProperty("database-name") + "...");
+		    LOGGER.info("url=" + url);
 
         Class.forName(properties.getProperty("database-driver"));
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-		LOGGER.info("connected to database " + properties.getProperty("database-name"));
-		LOGGER.info("");
+		    LOGGER.info("connected to database " + properties.getProperty("database-name"));
+		    LOGGER.info("");
 
         return retval;
     }

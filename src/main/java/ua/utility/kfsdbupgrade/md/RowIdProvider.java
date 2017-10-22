@@ -24,7 +24,6 @@ import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Converter;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -38,11 +37,10 @@ public final class RowIdProvider implements Provider<ImmutableList<String>> {
   private final String table;
   private final Optional<Integer> max;
   private final Optional<Integer> show;
-  private final Converter<String, RowId> converter;
 
   @Override
   public ImmutableList<String> get() {
-    List<String> rowIds = newArrayList();
+    List<String> list = newArrayList();
     Statement stmt = null;
     ResultSet rs = null;
     try {
@@ -53,30 +51,29 @@ public final class RowIdProvider implements Provider<ImmutableList<String>> {
       stmt = conn.createStatement();
       rs = stmt.executeQuery(format("SELECT ROWID FROM %s", from));
       while (rs.next()) {
-        rowIds.add(rs.getString(1));
-        if (show.isPresent() && rowIds.size() % show.get() == 0) {
-          info(LOGGER, "%s", getCount(rowIds.size()));
+        list.add(rs.getString(1));
+        if (show.isPresent() && list.size() % show.get() == 0) {
+          info(LOGGER, "%s", getCount(list.size()));
         }
-        if (max.isPresent() && rowIds.size() == max.get()) {
+        if (max.isPresent() && list.size() == max.get()) {
           break;
         }
       }
-      String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), rowIds.size(), "row ids/sec");
-      info(LOGGER, "acquired %s row ids from %s in %s [%s]", getCount(rowIds.size()), from, getTime(sw), tp);
+      String tp = getThroughputInSeconds(sw.elapsed(MILLISECONDS), list.size(), "row ids/sec");
+      info(LOGGER, "acquired %s row ids from %s in %s [%s]", getCount(list.size()), from, getTime(sw), tp);
     } catch (Throwable e) {
       throw new IllegalStateException(e);
     } finally {
       closeQuietly(rs);
       closeQuietly(stmt);
     }
-    return copyOf(rowIds);
+    return copyOf(list);
   }
 
   private RowIdProvider(Builder builder) {
     this.conn = builder.conn;
     this.max = builder.max;
     this.show = builder.show;
-    this.converter = builder.converter;
     this.schema = builder.schema;
     this.table = builder.table;
   }
@@ -101,7 +98,6 @@ public final class RowIdProvider implements Provider<ImmutableList<String>> {
     private String table;
     private Optional<Integer> max = absent();
     private Optional<Integer> show = of(100000);
-    private Converter<String, RowId> converter = RowIdConverter.getInstance();
 
     public Builder withConn(Connection conn) {
       this.conn = conn;
@@ -140,11 +136,6 @@ public final class RowIdProvider implements Provider<ImmutableList<String>> {
       return this;
     }
 
-    public Builder withConverter(Converter<String, RowId> converter) {
-      this.converter = converter;
-      return this;
-    }
-
     public RowIdProvider build() {
       return validate(new RowIdProvider(this));
     }
@@ -155,7 +146,6 @@ public final class RowIdProvider implements Provider<ImmutableList<String>> {
       checkNotNull(instance.table, "table may not be null");
       checkNotNull(instance.max, "max may not be null");
       checkNotNull(instance.show, "show may not be null");
-      checkNotNull(instance.converter, "converter may not be null");
       return instance;
     }
   }

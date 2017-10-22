@@ -52,22 +52,17 @@ public final class MDocsProvider implements Provider<Long> {
 
   private static final Logger LOGGER = getLogger(MDocsProvider.class);
 
-  public MDocsProvider() {
-    this(new Properties());
+  public MDocsProvider(Properties props) {
+    this.props = checkNotNull(props);
   }
 
-  public MDocsProvider(Properties properties) {
-    this.properties = checkNotNull(properties);
-  }
-
-  private final Properties properties;
+  private final Properties props;
 
   public Long get() {
     Stopwatch sw = createStarted();
     List<Connection> conns = newArrayList();
     Connection first = null;
     try {
-      Properties props = new PropertiesProvider(properties).get();
       ConnectionProvider provider = new ConnectionProvider(props, false);
       first = provider.get();
       MDocContext ctx = new MDocContextProvider(props, first).get();
