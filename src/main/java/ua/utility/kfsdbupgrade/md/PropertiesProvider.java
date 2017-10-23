@@ -57,7 +57,7 @@ public final class PropertiesProvider implements Provider<Properties> {
       throw new IllegalStateException(e);
     }
   }
-  
+
   private Properties getEnvironmentVariables() {
     Properties props = new Properties();
     Map<String, String> env = System.getenv();
@@ -69,12 +69,12 @@ public final class PropertiesProvider implements Provider<Properties> {
     }
     return props;
   }
-  
+
   private void override(Properties existing, Properties override, String label) {
-    for (String key: sort(override.stringPropertyNames())) {
+    for (String key : sort(override.stringPropertyNames())) {
       String oldValue = existing.getProperty(key);
       String newValue = override.getProperty(key);
-      if (oldValue !=null && !oldValue.equals(newValue)) {
+      if (oldValue != null && !oldValue.equals(newValue)) {
         info(LOGGER, "override -> %s from %s", key, label);
         existing.setProperty(key, newValue);
       } else {

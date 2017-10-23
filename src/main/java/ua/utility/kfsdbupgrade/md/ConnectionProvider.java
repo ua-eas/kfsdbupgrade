@@ -40,7 +40,7 @@ public final class ConnectionProvider implements Provider<Connection> {
       String url;
       if (props.containsKey("db.name")) {
         String name = checkedValue(props, "db.name");
-        info(LOGGER, "using db.name '%s' to construct full jdbc url", name, username);
+        info(LOGGER, "using database name '%s' to construct full jdbc url", name, username);
         String fragment = checkedValue(props, "db.fragment");
         String port = props.getProperty("db.port", "1521");
         String sid = props.getProperty("db.sid", name);
