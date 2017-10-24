@@ -585,7 +585,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
         
         return oldXML;
     }
-
+    
 	/**
 	 * Migrate any elements with the <code>class</code> containing
 	 * <code>PersonImpl</code> from the provided {@link Document} if there is a
@@ -648,27 +648,6 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 						tempNode.removeChild(child);
 					}
 				}
-				if (!(line1 == null || line1.isEmpty()) || !(line2 == null || line2.isEmpty())
-						|| !(line3 == null || line3.isEmpty()) || !(city == null || city.isEmpty())
-						|| !(stateProvinceCode == null || stateProvinceCode.isEmpty())
-						|| !(postalCode == null || postalCode.isEmpty())
-						|| !(countryCode == null || countryCode.isEmpty())) {
-					EntityAddressBo bo = new EntityAddressBo();
-					bo.setLine1(line1);
-					bo.setLine2(line2);
-					bo.setLine3(line3);
-					bo.setCity(city);
-					bo.setStateProvinceCode(stateProvinceCode);
-					bo.setPostalCode(postalCode);
-					bo.setCountryCode(countryCode);
-					EntityAddress address = EntityAddress.Builder.create(bo).build();
-
-					XStream xStream = new XStream(new DomDriver());
-					xStream.marshal(address, new DomWriter((Element) tempNode));
-				}
-				String newClassName = this.classNameRuleMap.get(personImplClassName);
-				Node classAttr = tempNode.getAttributes().getNamedItem("class");
-				classAttr.setNodeValue(newClassName);
             }
         } catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);
