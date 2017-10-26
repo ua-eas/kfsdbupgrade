@@ -21,7 +21,7 @@ import com.google.common.base.Splitter;
 public final class LogPrefixProvider implements Provider<String> {
 
   private static final String FORMAT = "yyyy-MM-dd HH:mm:ss.SSS zzz";
-  private static final TimeZone TIME_ZONE = TimeZone.getTimeZone("America/Phoenix");
+  private static final String TIME_ZONE = "America/Phoenix";
   private static final Integer PID = ProcessIdProvider.INSTANCE.get().orNull();
   private static final Splitter SPLITTER = Splitter.on('.').omitEmptyStrings().trimResults();
   private static final String ROOT = "root";
@@ -44,7 +44,7 @@ public final class LogPrefixProvider implements Provider<String> {
   public String get() {
     // New instance of SimpleDateFormat every single time because it isn't threadsafe
     SimpleDateFormat formatter = new SimpleDateFormat(FORMAT);
-    formatter.setTimeZone(TIME_ZONE);
+    formatter.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
 
     // extract the thread logging this event
     Thread thread = currentThread();
