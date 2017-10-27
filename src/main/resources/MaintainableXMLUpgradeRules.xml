@@ -85,10 +85,6 @@
     </pattern>
  <!-- revert to kuali version for the following to objects -->
     <pattern>
-      <match>edu.arizona.kfs.module.cam.document.AssetMaintainableImpl</match>
-      <replacement>org.kuali.kfs.module.cam.document.AssetMaintainableImpl</replacement>
-    </pattern>
-    <pattern>
       <match>edu.arizona.kfs.vnd.document.VendorMaintainableImpl</match>
       <replacement>org.kuali.kfs.vnd.document.VendorMaintainableImpl</replacement>
     </pattern>
@@ -164,9 +160,14 @@
       <match>org.kuali.rice.kns.maintenance.KualiMaintainableImpl</match>
       <replacement>org.kuali.kfs.sys.document.FinancialSystemMaintainable</replacement>
     </pattern>
+    <pattern>
+      <match>edu.arizona.kfs.module.cam.businessobject.AssetAwardHistory</match>
+      <replacement>edu.arizona.kfs.module.cam.businessobject.AssetAccountResponsibility</replacement>
+    </pattern>     
   </rule>
 
-  <!-- Rules specifying any change in class properties.
+  <!--  Rules specifying any change in class properties.
+        class is the destination class
         Empty replacement tag will remove that property from the class.
         Uses XPath to match names, can use wildcards
   -->
@@ -434,6 +435,13 @@
         <replacement></replacement>
       </pattern>
     </pattern>
+    <pattern>
+      <class>edu.arizona.kfs.module.cam.businessobject.AssetExtension</class>
+      <pattern>
+        <match>assetAwardHistory</match>
+        <replacement>assetAccountResponsibilities</replacement>
+      </pattern>
+    </pattern>       
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
