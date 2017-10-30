@@ -237,6 +237,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 		migrateAccountExtensionObjects(document);
 		migrateClassAsAttribute(document);
 		removeAutoIncrementSetElements(document);
+		removeReconcilerGroup(document);
 		catchMissedTypedArrayListElements(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
@@ -526,6 +527,26 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 				Node parent = match.getParentNode();
 				LOGGER.info("Removing element 'edu.arizona.kfs.module.cam.businessobject.AssetExtension' in "
 						+ parent.getNodeName());
+				parent.removeChild(match);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+	/*
+	 * UAF-5995
+	 * Used to remove the reconcilerGroup and its child nodes for the ProcurementCardDefault doc
+	 */
+	private void removeReconcilerGroup(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//reconcilerGroup");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node match = matchingNodes.item(i);
+				Node parent = match.getParentNode();
+				LOGGER.trace("Removing element 'reconcilerGroup' in " + parent.getNodeName());
 				parent.removeChild(match);
 			}
 		} catch (XPathExpressionException e) {
