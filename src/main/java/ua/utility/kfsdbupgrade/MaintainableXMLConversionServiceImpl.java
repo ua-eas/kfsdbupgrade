@@ -229,9 +229,9 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
             for (int n = 0; n < children.getLength(); n++) {
             	Node child = children.item(n);
             	if ((child != null) && (child.getNodeType() == Node.ELEMENT_NODE) && (child.hasAttributes())) {
-        			NamedNodeMap childAttributes = child.getAttributes();
-        			if (childAttributes.item(0).getNodeName() == "class") {
-        				String childClassName = childAttributes.item(0).getNodeValue();
+					NamedNodeMap childAttributes = child.getAttributes();
+					if (childAttributes.item(0).getNodeName() == "class") {
+        	            String childClassName = childAttributes.item(0).getNodeValue();
         	            if(classPropertyRuleMap.containsKey(childClassName)) {
         	            	Map<String, String> propertyMappings = classPropertyRuleMap.get(childClassName);
         	            	NodeList nestedChildren = child.getChildNodes();            	     
@@ -249,10 +249,10 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
     	            				}           	                		           	                		
         	                	}
         	                }
-        			    }
+        	            }
         		    }                 
             	}				
-			}
+            }
             childNode = nextChild;
         }		
 
