@@ -49,6 +49,7 @@ import org.kuali.rice.kim.api.identity.address.EntityAddress;
 import org.kuali.rice.kim.impl.identity.address.EntityAddressBo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -220,12 +221,41 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 			throw new SAXParseException(exMsg, null, ex);
 		}
 
-		// FIXME this traversal isn't guaranteed to get the full depth
         for(Node childNode = document.getFirstChild(); childNode != null;) {
 			Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
+            // Also Transform first level Children which have class attribute
+            NodeList children = childNode.getChildNodes();        
+            for (int n = 0; n < children.getLength(); n++) {
+            	Node child = children.item(n);
+                if ((child != null) && (child.getNodeType() == Node.ELEMENT_NODE) && (child.hasAttributes())) {
+                    NamedNodeMap childAttributes = child.getAttributes();
+                    if (childAttributes.item(0).getNodeName() == "class") {
+                        String childClassName = childAttributes.item(0).getNodeValue();
+        	            if(classPropertyRuleMap.containsKey(childClassName)) {
+        	            	Map<String, String> propertyMappings = classPropertyRuleMap.get(childClassName);
+        	            	NodeList nestedChildren = child.getChildNodes();            	     
+        	                for (int i = 0; i < nestedChildren.getLength()-1; i++) {
+        	                	Node property = nestedChildren.item(i);
+        	                	String propertyName = property.getNodeName();
+        	                	if ((property.getNodeType() == Node.ELEMENT_NODE) && (propertyMappings != null) && (propertyMappings.containsKey(propertyName))) {
+    	            				String newPropertyName = propertyMappings.get(propertyName);
+    	            				if(StringUtils.isNotBlank(newPropertyName)) {
+    	            					document.renameNode(property, null, newPropertyName);
+    	            					propertyName = newPropertyName;
+    	            				} else {
+    	            					// If there is no replacement name then the element needs to be removed
+    	            					child.removeChild(property);
+    	            				}           	                		           	                		
+        	                    }
+        	                }
+        	            }
+                    }                 
+                }				
+            }
             childNode = nextChild;
-        }
+        }		
+
 
 		/*
 		 * the default logic that traverses over the document tree doesn't
