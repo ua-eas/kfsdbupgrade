@@ -134,7 +134,7 @@ public class App {
     
     private static boolean isIngestWorkflow(String[] args) {
       if (args != null && args.length > 1) {
-        return "ingestWorkflow".equalsIgnoreCase(args[1]);
+        return "ingestWorkflow".equalsIgnoreCase(args[0]);
       } else {
         return false;
       }
