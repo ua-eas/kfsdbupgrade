@@ -119,10 +119,11 @@ public class App {
 	 */
     public static void main(final String[] args) {
       try {
-        Optional<String> first = getFirstArg(args);
-			  App app = new App(first);
-			  if (isIngestWorkflow(first)) {
-			    app.doWorkflow(first.get());
+        Optional<String> commandLinePropertiesFile = getArg(args, 0);
+        Optional<String> workflowIndicator = getArg(args, 1);
+			  App app = new App(commandLinePropertiesFile);
+			  if (isIngestWorkflow(workflowIndicator)) {
+			    app.doWorkflow(commandLinePropertiesFile.get());
 			  } else {
 			    app.doUpgrade();
         }
@@ -134,13 +135,13 @@ public class App {
       }
     }
     
-    private static boolean isIngestWorkflow(Optional<String> arg) {
-     return "ingestWorkflow".equalsIgnoreCase(arg.orNull());
+    private static boolean isIngestWorkflow(Optional<String> workflowIndicator) {
+     return "ingestWorkflow".equalsIgnoreCase(workflowIndicator.orNull());
     }
 
-    private static Optional<String> getFirstArg(String[] args) {
-      if (args != null && args.length > 0) {
-        return of(args[0]);
+    private static Optional<String> getArg(String[] args, int index) {
+      if (args != null && args.length > index) {
+        return of(args[index]);
       } else {
         return absent();
       }
