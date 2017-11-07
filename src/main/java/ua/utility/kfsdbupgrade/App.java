@@ -210,7 +210,6 @@ public class App {
             conn2 = getUpgradeConnection();
             conn2.setAutoCommit(true);
             stmt = conn2.createStatement();
-            //stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
             stmt.close();
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
