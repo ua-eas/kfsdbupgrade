@@ -208,9 +208,7 @@ public class App {
         try {
             conn1 = getUpgradeConnection();
             conn2 = getUpgradeConnection();
-            conn2.setAutoCommit(true);
-            stmt = conn2.createStatement();
-            stmt.close();
+            conn2.setAutoCommit(true);            
             stmt = conn1.createStatement();
 			LOGGER.info("Starting KFS database upgrade process...");
 			     if (Boolean.parseBoolean(System.getProperty("mdoc.only"))) {
