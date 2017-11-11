@@ -21,7 +21,6 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBSnapshot;
 import com.amazonaws.services.rds.model.DescribeDBSnapshotsRequest;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 public final class LatestSnapshotProvider implements Provider<String> {
 
@@ -41,8 +40,8 @@ public final class LatestSnapshotProvider implements Provider<String> {
   public String get() {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
     request.setDBInstanceIdentifier(instanceId);
-    Predicate<DBSnapshot> predicate = (automatedOnly) ? (ss) -> ss.getDBSnapshotIdentifier().startsWith(automatedPrefix) : Predicates.<DBSnapshot>alwaysTrue();
-    String log = (automatedOnly) ? format("instance:%s starts with:%s", instanceId, automatedPrefix) : "instance:" + instanceId;
+    Predicate<DBSnapshot> predicate = (automatedOnly) ? (ss) -> ss.getDBSnapshotIdentifier().startsWith(automatedPrefix) : (ss) -> true;
+    String log = (automatedOnly) ? format("instance=%s, startsWith=%s", instanceId, automatedPrefix) : "instance:" + instanceId;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, (ss) -> ss.getSnapshotCreateTime().getTime()));
     checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);
