@@ -19,7 +19,6 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBSnapshot;
 import com.amazonaws.services.rds.model.DescribeDBSnapshotsRequest;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
@@ -41,12 +40,12 @@ public final class LatestSnapshotProvider implements Provider<String> {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
     request.setDBInstanceIdentifier(instanceId);
     Predicate<DBSnapshot> predicate = (automatedOnly) ? AutomatedSnapshotPredicate.INSTANCE : Predicates.<DBSnapshot>alwaysTrue();
-    String log = (automatedOnly) ? Joiner.on(" and ").join(instanceId, predicate) : instanceId;
+    String log = (automatedOnly) ? String.format("instance:%s %s", instanceId, predicate) : "instance:" + instanceId;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, SnapshotCreationTime.INSTANCE));
-    checkState(filtered.size() > 0, "no snapshots found matching '%s'", log);
+    checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);
     DBSnapshot snapshot = filtered.iterator().next();
-    info(LOGGER, "located %s snapshots matching '%s'", getCount(filtered.size()), log);
+    info(LOGGER, "located %s snapshots matching [%s]", getCount(filtered.size()), log);
     info(LOGGER, "'%s' created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), snapshot.getSnapshotCreateTime());
     return snapshot.getDBSnapshotIdentifier();
   }
