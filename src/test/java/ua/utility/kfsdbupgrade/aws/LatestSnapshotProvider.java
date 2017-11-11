@@ -19,45 +19,50 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBSnapshot;
 import com.amazonaws.services.rds.model.DescribeDBSnapshotsRequest;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 public final class LatestSnapshotProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(LatestSnapshotProvider.class);
 
-  public LatestSnapshotProvider(AmazonRDS rds, String instanceId, Predicate<String> snapshotIdFilter) {
+  public LatestSnapshotProvider(AmazonRDS rds, String instanceId, boolean automatedOnly) {
     this.rds = checkNotNull(rds);
     this.instanceId = checkNotBlank(instanceId, "instanceId");
-    this.snapshotIdFilter = checkNotNull(snapshotIdFilter);
+    this.automatedOnly = automatedOnly;
   }
 
   private final AmazonRDS rds;
   private final String instanceId;
-  private final Predicate<String> snapshotIdFilter;
+  private final boolean automatedOnly;
 
   public String get() {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
     request.setDBInstanceIdentifier(instanceId);
-    Predicate<DBSnapshot> predicate = new SnapshotIdPredicate(snapshotIdFilter);
+    Predicate<DBSnapshot> predicate = (automatedOnly) ? AutomatedSnapshotPredicate.INSTANCE : Predicates.<DBSnapshot>alwaysTrue();
+    String pstring = (automatedOnly) ? Joiner.on(" and ").join(instanceId, predicate) : instanceId;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, SnapshotCreationTime.INSTANCE));
-    checkState(filtered.size() > 0, "no snapshots found matching %s [%s]", instanceId, snapshotIdFilter);
+    checkState(filtered.size() > 0, "no snapshots found matching '%s'", pstring);
     DBSnapshot snapshot = filtered.iterator().next();
-    info(LOGGER, "located %s snapshots matching %s and %s", getCount(filtered.size()), instanceId, snapshotIdFilter);
+    info(LOGGER, "located %s snapshots matching '%s'", getCount(filtered.size()), pstring);
     info(LOGGER, "'%s' created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), snapshot.getSnapshotCreateTime());
     return snapshot.getDBSnapshotIdentifier();
   }
 
-  private static class SnapshotIdPredicate implements Predicate<DBSnapshot> {
+  private enum AutomatedSnapshotPredicate implements Predicate<DBSnapshot> {
+    INSTANCE;
 
-    public SnapshotIdPredicate(Predicate<String> snapshotIdFilter) {
-      this.snapshotIdFilter = checkNotNull(snapshotIdFilter);
-    }
-
-    private final Predicate<String> snapshotIdFilter;
+    private final String prefix = "rds:";
 
     public boolean apply(DBSnapshot input) {
-      return snapshotIdFilter.apply(input.getDBSnapshotIdentifier());
+      return input.getDBSnapshotIdentifier().startsWith(prefix);
+    }
+
+    @Override
+    public String toString() {
+      return "StartsWith(" + prefix + ")";
     }
 
   }
