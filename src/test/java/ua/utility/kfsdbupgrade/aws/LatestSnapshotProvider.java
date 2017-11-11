@@ -41,12 +41,12 @@ public final class LatestSnapshotProvider implements Provider<String> {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
     request.setDBInstanceIdentifier(instanceId);
     Predicate<DBSnapshot> predicate = (automatedOnly) ? AutomatedSnapshotPredicate.INSTANCE : Predicates.<DBSnapshot>alwaysTrue();
-    String pstring = (automatedOnly) ? Joiner.on(" and ").join(instanceId, predicate) : instanceId;
+    String log = (automatedOnly) ? Joiner.on(" and ").join(instanceId, predicate) : instanceId;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, SnapshotCreationTime.INSTANCE));
-    checkState(filtered.size() > 0, "no snapshots found matching '%s'", pstring);
+    checkState(filtered.size() > 0, "no snapshots found matching '%s'", log);
     DBSnapshot snapshot = filtered.iterator().next();
-    info(LOGGER, "located %s snapshots matching '%s'", getCount(filtered.size()), pstring);
+    info(LOGGER, "located %s snapshots matching '%s'", getCount(filtered.size()), log);
     info(LOGGER, "'%s' created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), snapshot.getSnapshotCreateTime());
     return snapshot.getDBSnapshotIdentifier();
   }
