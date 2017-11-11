@@ -22,6 +22,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import ua.utility.kfsdbupgrade.log.Logging;
+
 public final class LatestSnapshotProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(LatestSnapshotProvider.class);
@@ -46,7 +48,7 @@ public final class LatestSnapshotProvider implements Provider<String> {
     checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);
     DBSnapshot snapshot = filtered.iterator().next();
     info(LOGGER, "located %s snapshots matching [%s]", getCount(filtered.size()), log);
-    info(LOGGER, "'%s' created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), snapshot.getSnapshotCreateTime());
+    info(LOGGER, "snapshot [%s] created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), Logging.date(snapshot.getSnapshotCreateTime().getTime()));
     return snapshot.getDBSnapshotIdentifier();
   }
 

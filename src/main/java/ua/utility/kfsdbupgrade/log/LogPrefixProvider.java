@@ -4,11 +4,9 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.Thread.currentThread;
 import static org.apache.commons.lang3.StringUtils.left;
+import static ua.utility.kfsdbupgrade.log.Logging.date;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import javax.inject.Provider;
 
@@ -20,8 +18,6 @@ import com.google.common.base.Splitter;
  */
 public final class LogPrefixProvider implements Provider<String> {
 
-  private static final String FORMAT = "yyyy-MM-dd HH:mm:ss.SSS zzz";
-  private static final String TIME_ZONE = "America/Phoenix";
   private static final Integer PID = ProcessIdProvider.INSTANCE.get().orNull();
   private static final Splitter SPLITTER = Splitter.on('.').omitEmptyStrings().trimResults();
   private static final String ROOT = "root";
@@ -42,10 +38,6 @@ public final class LogPrefixProvider implements Provider<String> {
 
   @Override
   public String get() {
-    // New instance of SimpleDateFormat every single time because it isn't threadsafe
-    SimpleDateFormat formatter = new SimpleDateFormat(FORMAT);
-    formatter.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
-
     // extract the thread logging this event
     Thread thread = currentThread();
 
@@ -53,7 +45,7 @@ public final class LogPrefixProvider implements Provider<String> {
     StringBuilder sb = new StringBuilder();
 
     // print a timestamp with timezone
-    sb.append(formatter.format(new Date(timestamp)));
+    sb.append(date(timestamp));
     sb.append(" ");
 
     // DEBUG,INFO,WARN,ERROR etc
