@@ -38,7 +38,7 @@ public final class MDocContextProvider implements Provider<MDocContext> {
     int selectSize = parseInt(props.getProperty("mdoc.select", Integer.toString(chunkSize / 10)));
     // maximum number of documents to process before calling execute batch
     int batchSize = parseInt(props.getProperty("mdoc.batch", Integer.toString(chunkSize / 10)));
-    // number of maintenance document clobs to select when warming up the table
+    // percentage of maintenance document clobs to select when warming up the table
     double value = parseDouble(props.getProperty("mdoc.clobs.warmup", "7.5"));
     Optional<Double> warmupClobsPercent = absent();
     if (value > 0) {
