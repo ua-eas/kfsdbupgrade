@@ -101,7 +101,7 @@ public class App {
    * {@link Set} of post-upgrade {@link File}s that were processed. At end of processing, should check if there are any files in the post-processing directory that were not
    * configured to run.
    */
-  private final Set<File> postUpgradeFilesProcessed = new HashSet<File>();
+  private final Set<File> postUpgradeFilesProcessed = new HashSet<>();
 
   /**
    * Main program entry point. Single argument is expected of a path to the <code>kfsdbupgrade.properties</code> properties file. Optional second argument of
