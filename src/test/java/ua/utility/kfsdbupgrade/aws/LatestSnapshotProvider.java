@@ -3,6 +3,7 @@ package ua.utility.kfsdbupgrade.aws;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.reverse;
+import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.date;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -41,7 +42,7 @@ public final class LatestSnapshotProvider implements Provider<String> {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
     request.setDBInstanceIdentifier(instanceId);
     Predicate<DBSnapshot> predicate = (automatedOnly) ? AutomatedSnapshotPredicate.INSTANCE : Predicates.<DBSnapshot>alwaysTrue();
-    String log = (automatedOnly) ? String.format("instance:%s %s", instanceId, predicate) : "instance:" + instanceId;
+    String log = (automatedOnly) ? format("instance:%s %s", instanceId, predicate) : "instance:" + instanceId;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, SnapshotCreationTime.INSTANCE));
     checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);
