@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.reverse;
 import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.log.Logging.date;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
 import static ua.utility.kfsdbupgrade.md.base.Lists.sort;
@@ -21,8 +22,6 @@ import com.amazonaws.services.rds.model.DescribeDBSnapshotsRequest;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-
-import ua.utility.kfsdbupgrade.log.Logging;
 
 public final class LatestSnapshotProvider implements Provider<String> {
 
@@ -48,7 +47,7 @@ public final class LatestSnapshotProvider implements Provider<String> {
     checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);
     DBSnapshot snapshot = filtered.iterator().next();
     info(LOGGER, "located %s snapshots matching [%s]", getCount(filtered.size()), log);
-    info(LOGGER, "snapshot [%s] created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), Logging.date(snapshot.getSnapshotCreateTime().getTime()));
+    info(LOGGER, "snapshot [%s] created on %s is the most recent", snapshot.getDBSnapshotIdentifier(), date(snapshot.getSnapshotCreateTime().getTime()));
     return snapshot.getDBSnapshotIdentifier();
   }
 
