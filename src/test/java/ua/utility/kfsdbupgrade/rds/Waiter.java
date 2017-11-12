@@ -35,8 +35,7 @@ public final class Waiter<T> implements Provider<Long> {
     long elapsedSinceLastDisplay = 0;
     while (!predicate.apply(provider.get())) {
       checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
-      elapsedSinceLastDisplay = timer.elapsed(MILLISECONDS) - elapsedSinceLastDisplay;
-      if (elapsedSinceLastDisplay > 60 * 1000) {
+      if (timer.elapsed(MILLISECONDS) - elapsedSinceLastDisplay > 60 * 1000) {
         info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
         elapsedSinceLastDisplay = timer.elapsed(MILLISECONDS);
       }
