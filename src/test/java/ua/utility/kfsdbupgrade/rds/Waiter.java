@@ -37,7 +37,7 @@ public final class Waiter<T> implements Provider<Long> {
       checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
       interval += timer.elapsed(MILLISECONDS);
       if (interval > 60 * 1000) {
-        info(LOGGER, "waited for %s, max of %s", getTime(timer), getTime(context.getDuration(), context.getUnit()));
+        info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
         interval = 0;
       }
     }
