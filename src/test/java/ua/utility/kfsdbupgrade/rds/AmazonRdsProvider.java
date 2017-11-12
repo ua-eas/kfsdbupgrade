@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.aws;
+package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Stopwatch.createStarted;
 import static org.apache.log4j.Logger.getLogger;

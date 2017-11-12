@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.aws;
+package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;

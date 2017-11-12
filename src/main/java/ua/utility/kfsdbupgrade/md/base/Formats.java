@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.text.NumberFormat;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
 
@@ -53,6 +54,10 @@ public final class Formats {
 
   public static String getTime(Stopwatch sw) {
     return getTime(sw.elapsed(MILLISECONDS));
+  }
+
+  public static String getTime(long elapsed, TimeUnit unit) {
+    return getTime(MILLISECONDS.convert(elapsed, unit));
   }
 
   public static String getTime(long elapsed) {

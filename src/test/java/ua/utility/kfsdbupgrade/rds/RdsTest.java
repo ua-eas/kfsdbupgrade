@@ -1,6 +1,5 @@
-package ua.utility.kfsdbupgrade.aws;
+package ua.utility.kfsdbupgrade.rds;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.apache.log4j.Logger.getLogger;
@@ -27,7 +26,7 @@ public final class RdsTest {
       String branch = "UAF-6014";
       AmazonRDS rds = new AmazonRdsProvider("us-west-2").get();
       String snapshotId = new LatestSnapshotProvider(rds, "kfs3imp", true).get();
-      checkAbsent(rds, id);
+      new DeleteDatabaseProvider(rds, id).get();
       RestoreDBInstanceFromDBSnapshotRequest request = new RestoreDBInstanceFromDBSnapshotRequest();
       request.setDBInstanceIdentifier(id);
       request.setDBSnapshotIdentifier(snapshotId);
@@ -59,24 +58,6 @@ public final class RdsTest {
       e.printStackTrace();
       throw new IllegalStateException(e);
     }
-  }
-
-  private String checkAbsent(AmazonRDS rds, String instanceId) {
-    checkState(isAbsent(rds, instanceId), "database [%s] already exists", instanceId);
-    return instanceId;
-  }
-
-  private boolean isAbsent(AmazonRDS rds, String instanceId) {
-    return !isPresent(rds, instanceId);
-  }
-
-  private boolean isPresent(AmazonRDS rds, String instanceId) {
-    for (DBInstance instance : rds.describeDBInstances().getDBInstances()) {
-      if (instanceId.equalsIgnoreCase(instance.getDBInstanceIdentifier())) {
-        return true;
-      }
-    }
-    return false;
   }
 
 }
