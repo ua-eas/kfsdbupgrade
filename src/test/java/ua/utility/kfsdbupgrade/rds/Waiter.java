@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 
-public final class Waiter<T> implements Provider<Long> {
+public final class Waiter<T> implements Provider<T> {
 
   private static final Logger LOGGER = getLogger(Waiter.class);
 
@@ -30,17 +30,25 @@ public final class Waiter<T> implements Provider<Long> {
   private final Predicate<T> predicate;
 
   @Override
-  public Long get() {
+  public T get() {
     Stopwatch timer = createStarted();
-    long elapsedSinceLastDisplay = 0;
-    while (!predicate.apply(provider.get())) {
+    long display = 0;
+    T instance = provider.get();
+    while (!predicate.apply(instance)) {
       checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
-      if (timer.elapsed(MILLISECONDS) - elapsedSinceLastDisplay > 60 * 1000) {
-        info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
-        elapsedSinceLastDisplay = timer.elapsed(MILLISECONDS);
-      }
+      display = doDisplay(display, timer);
+      instance = provider.get();
     }
-    return timer.elapsed(MILLISECONDS);
+    return instance;
+  }
+
+  private long doDisplay(long display, Stopwatch timer) {
+    if (timer.elapsed(MILLISECONDS) - display > 60 * 1000) {
+      info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
+      return timer.elapsed(MILLISECONDS);
+    } else {
+      return display;
+    }
   }
 
 }

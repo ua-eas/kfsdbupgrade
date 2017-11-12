@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
@@ -26,7 +25,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 
-public final class CreateDatabaseProvider implements Provider<Long> {
+public final class CreateDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(CreateDatabaseProvider.class);
 
@@ -40,18 +39,18 @@ public final class CreateDatabaseProvider implements Provider<Long> {
   private final String instanceId;
   private final String snapshotId;
 
-  public Long get() {
+  public String get() {
     Stopwatch sw = createStarted();
     checkAbsent(rds, instanceId);
     info(LOGGER, "creating database [%s] from snapshot [%s]", instanceId, snapshotId);
     create(rds, instanceId, snapshotId);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("30m"));
-    info(LOGGER, "waiting up to %s for %s to become available", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("45m"));
+    info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals("available");
-    new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", instanceId, provider.get().get().getDBInstanceStatus(), getTime(sw));
-    return sw.elapsed(MILLISECONDS);
+    Optional<DBInstance> database = new Waiter<>(ctx, provider, predicate).get();
+    info(LOGGER, "database=%s, status=%s [%s]", instanceId, database.get().getDBInstanceStatus(), getTime(sw));
+    return database.get().getDBInstanceIdentifier();
   }
 
   private void create(AmazonRDS rds, String instanceId, String snapshotId) {
