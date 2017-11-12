@@ -36,13 +36,13 @@ public final class Waiter<T> implements Provider<T> {
     T instance = provider.get();
     while (!predicate.apply(instance)) {
       checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
-      display = doDisplay(display, timer);
+      display = display(display, timer);
       instance = provider.get();
     }
     return instance;
   }
 
-  private long doDisplay(long display, Stopwatch timer) {
+  private long display(long display, Stopwatch timer) {
     if (timer.elapsed(MILLISECONDS) - display > 60 * 1000) {
       info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
       return timer.elapsed(MILLISECONDS);
