@@ -32,13 +32,13 @@ public final class Waiter<T> implements Provider<Long> {
   @Override
   public Long get() {
     Stopwatch timer = createStarted();
-    long interval = 0;
+    long elapsedSinceLastDisplay = 0;
     while (!predicate.apply(provider.get())) {
       checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
-      interval += timer.elapsed(MILLISECONDS);
-      if (interval > 60 * 1000) {
+      elapsedSinceLastDisplay = timer.elapsed(MILLISECONDS) - elapsedSinceLastDisplay;
+      if (elapsedSinceLastDisplay > 60 * 1000) {
         info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
-        interval = 0;
+        elapsedSinceLastDisplay = timer.elapsed(MILLISECONDS);
       }
     }
     return timer.elapsed(MILLISECONDS);
