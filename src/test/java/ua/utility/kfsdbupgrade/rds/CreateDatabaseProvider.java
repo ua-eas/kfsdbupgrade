@@ -9,6 +9,7 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
+import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAIALABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkAbsent;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public final class CreateDatabaseProvider implements Provider<String> {
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"));
     info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
-    Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals("available");
+    Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAIALABLE);
     Optional<DBInstance> database = new Waiter<>(ctx, provider, predicate).get();
     info(LOGGER, "database=%s, status=%s [%s]", instanceId, database.get().getDBInstanceStatus(), getTime(sw));
     return database.get().getDBInstanceIdentifier();

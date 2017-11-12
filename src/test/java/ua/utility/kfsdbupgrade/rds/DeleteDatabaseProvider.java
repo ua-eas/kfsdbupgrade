@@ -3,7 +3,6 @@ package ua.utility.kfsdbupgrade.rds;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Stopwatch.createStarted;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
@@ -20,7 +19,7 @@ import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
-public final class DeleteDatabaseProvider implements Provider<Long> {
+public final class DeleteDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(DeleteDatabaseProvider.class);
 
@@ -32,7 +31,7 @@ public final class DeleteDatabaseProvider implements Provider<Long> {
   private final AmazonRDS rds;
   private final String instanceId;
 
-  public Long get() {
+  public String get() {
     Stopwatch sw = createStarted();
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     if (deleteRequired(provider.get())) {
@@ -42,7 +41,7 @@ public final class DeleteDatabaseProvider implements Provider<Long> {
     info(LOGGER, "waiting up to %s for [%s] to be fully deleted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     new Waiter<>(ctx, provider, not(db -> db.isPresent())).get();
     info(LOGGER, "database=%s, status=deleted [%s]", instanceId, getTime(sw));
-    return sw.elapsed(MILLISECONDS);
+    return instanceId;
   }
 
   private void delete(AmazonRDS rds, String instanceId) {
