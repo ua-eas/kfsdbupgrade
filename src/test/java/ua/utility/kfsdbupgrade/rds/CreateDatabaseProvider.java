@@ -26,11 +26,11 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 
-public final class RestoreDatabaseProvider implements Provider<Long> {
+public final class CreateDatabaseProvider implements Provider<Long> {
 
-  private static final Logger LOGGER = getLogger(RestoreDatabaseProvider.class);
+  private static final Logger LOGGER = getLogger(CreateDatabaseProvider.class);
 
-  public RestoreDatabaseProvider(AmazonRDS rds, String instanceId, String snapshotId) {
+  public CreateDatabaseProvider(AmazonRDS rds, String instanceId, String snapshotId) {
     this.rds = checkNotNull(rds);
     this.instanceId = checkNotBlank(instanceId, "instanceId");
     this.snapshotId = checkNotBlank(snapshotId, "snapshotId");
@@ -43,6 +43,7 @@ public final class RestoreDatabaseProvider implements Provider<Long> {
   public Long get() {
     Stopwatch sw = createStarted();
     checkAbsent(rds, instanceId);
+    info(LOGGER, "creating database [%s] from snapshot [%s]", instanceId, snapshotId);
     create(rds, instanceId, snapshotId);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("30m"));

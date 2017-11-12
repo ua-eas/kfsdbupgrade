@@ -15,7 +15,7 @@ public final class RdsTest {
       AmazonRDS rds = new AmazonRdsProvider(region).get();
       String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
       new DeleteDatabaseProvider(rds, instanceId).get();
-      new RestoreDatabaseProvider(rds, instanceId, snapshotId).get();
+      new CreateDatabaseProvider(rds, instanceId, snapshotId).get();
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
