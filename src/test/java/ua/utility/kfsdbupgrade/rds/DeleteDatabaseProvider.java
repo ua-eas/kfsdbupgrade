@@ -1,15 +1,14 @@
 package ua.utility.kfsdbupgrade.rds;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
-import static ua.utility.kfsdbupgrade.md.base.Threads.sleep;
-import static ua.utility.kfsdbupgrade.rds.Rds.isAbsent;
 
 import javax.inject.Provider;
 
@@ -35,26 +34,13 @@ public final class DeleteDatabaseProvider implements Provider<Long> {
 
   public Long get() {
     Stopwatch sw = createStarted();
-    if (isAbsent(rds, instanceId)) {
-      info(LOGGER, "skipping delete -> database [%s] does not exist", instanceId);
-      return sw.elapsed(MILLISECONDS);
-    }
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
-    Optional<DBInstance> currentDatabase = provider.get();
-    if (doDelete(currentDatabase)) {
+    if (deleteRequired(provider.get())) {
       delete(rds, instanceId);
     }
-    Optional<DBInstance> previousDatabase = absent();
-    while (currentDatabase.isPresent()) {
-      String currentStatus = currentDatabase.get().getDBInstanceStatus();
-      String previousStatus = previousDatabase.isPresent() ? previousDatabase.get().getDBInstanceStatus() : "n/a";
-      if (!currentStatus.equals(previousStatus)) {
-        info(LOGGER, "database=%s, status=%s [%s]", instanceId, currentStatus, getTime(sw));
-      }
-      previousDatabase = currentDatabase;
-      currentDatabase = provider.get();
-      sleep(1000);
-    }
+    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"));
+    info(LOGGER, "waiting up to %s for %s to be fully deleted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    new Waiter<>(ctx, provider, not(db -> db.isPresent())).get();
     info(LOGGER, "database=%s, status=deleted [%s]", instanceId, getTime(sw));
     return sw.elapsed(MILLISECONDS);
   }
@@ -63,11 +49,11 @@ public final class DeleteDatabaseProvider implements Provider<Long> {
     DeleteDBInstanceRequest delete = new DeleteDBInstanceRequest();
     delete.setDBInstanceIdentifier(instanceId);
     delete.setSkipFinalSnapshot(true);
-    info(LOGGER, "deleting database=%s,", instanceId);
+    info(LOGGER, "deleting database [%s]", instanceId);
     rds.deleteDBInstance(delete);
   }
 
-  private boolean doDelete(Optional<DBInstance> instance) {
+  private boolean deleteRequired(Optional<DBInstance> instance) {
     return instance.isPresent() && !instance.get().getDBInstanceStatus().equalsIgnoreCase("deleting");
   }
 
