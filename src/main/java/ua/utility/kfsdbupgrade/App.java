@@ -181,8 +181,9 @@ public class App {
    */
   private void doUpgrade() {
     if (parseBoolean(properties.getProperty("db.process.integrated"))) {
-      String databaseName = new DatabaseProvider(properties).get();
-      properties.setProperty("db.name", databaseName);
+      String instanceId = new DatabaseProvider(properties).get();
+      // name & instanceId are the same for KFS @ UA
+      properties.setProperty("db.name", instanceId);
     }
     /*
      * conn1 used for miscellanous SQL statements and dropping temp tables, etc., and has autocommit set to 'true'. conn2 is used by liquibase
