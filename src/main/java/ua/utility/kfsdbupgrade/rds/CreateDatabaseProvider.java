@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
@@ -14,6 +15,8 @@ import static ua.utility.kfsdbupgrade.md.base.Lists.newList;
 import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
+import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
+import static ua.utility.kfsdbupgrade.md.base.Splitters.split;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkAbsent;
 
@@ -33,7 +36,6 @@ import com.amazonaws.services.rds.model.Tag;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -57,8 +59,8 @@ public final class CreateDatabaseProvider implements Provider<String> {
   public String get() {
     Stopwatch sw = createStarted();
     checkAbsent(rds, instanceId);
-    List<Tag> tags = getTags(getDefaultTags(props, instanceId));
     info(LOGGER, "creating database [%s] from snapshot [%s]", instanceId, snapshotId);
+    List<Tag> tags = getTags(getDefaultTags(props, instanceId));
     create(rds, instanceId, snapshotId, tags);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"));
@@ -91,8 +93,8 @@ public final class CreateDatabaseProvider implements Provider<String> {
     List<String> strings = transform(defaultTags.entrySet(), e -> e.getKey() + (e.getValue().isPresent() ? "=" + e.getValue().get() : ""));
     String tags = props.getProperty("rds.tags", Joiner.on(',').join(strings));
     List<Tag> list = newArrayList();
-    for (String tag : Splitter.on(',').omitEmptyStrings().trimResults().splitToList(tags)) {
-      Iterator<String> itr = Splitter.on('=').omitEmptyStrings().trimResults().split(tag).iterator();
+    for (String tag : csv(tags)) {
+      Iterator<String> itr = split('=', tag).iterator();
       list.add(new Tag().withKey(itr.next()).withValue(itr.hasNext() ? itr.next() : null));
     }
     return newList(list);
@@ -101,13 +103,14 @@ public final class CreateDatabaseProvider implements Provider<String> {
   private ImmutableMap<String, Optional<String>> getDefaultTags(Properties props, String instanceId) {
     String uaf = props.getProperty("rds.account", "UAccess Financials");
     Map<String, Optional<String>> map = newLinkedHashMap();
-    map.put("service", fromNullable(props.getProperty("rds.tags.service", uaf)));
-    map.put("accountnumber", fromNullable(props.getProperty("rds.tags.accountnumber", uaf)));
-    map.put("subaccount", fromNullable(props.getProperty("rds.tags.subaccount", uaf)));
-    map.put("name", fromNullable(props.getProperty("rds.tags.name", instanceId)));
-    map.put("environment", fromNullable(props.getProperty("rds.tags.environment", "dev")));
-    for (String key : filter(props.stringPropertyNames(), key -> key.startsWith("rds.tags"))) {
-      map.put(key, fromNullable(props.getProperty(key)));
+    map.put("service", fromNullable(props.getProperty("rds.tag.service", uaf)));
+    map.put("accountnumber", fromNullable(props.getProperty("rds.tag.accountnumber", uaf)));
+    map.put("subaccount", fromNullable(props.getProperty("rds.tag.subaccount", uaf)));
+    map.put("name", fromNullable(props.getProperty("rds.tag.name", instanceId)));
+    map.put("environment", fromNullable(props.getProperty("rds.tag.environment", "dev")));
+    String prefix = "rds.tag.";
+    for (String key : filter(props.stringPropertyNames(), key -> key.startsWith(prefix))) {
+      map.put(removeStart(key, prefix), fromNullable(props.getProperty(key)));
     }
     return ImmutableMap.copyOf(map);
   }

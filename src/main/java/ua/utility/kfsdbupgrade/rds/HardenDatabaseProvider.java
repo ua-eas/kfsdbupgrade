@@ -2,15 +2,20 @@ package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
-import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
+import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
+import static ua.utility.kfsdbupgrade.md.base.Props.parseInt;
+import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
 import static ua.utility.kfsdbupgrade.md.base.Threads.sleep;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
+
+import java.util.List;
+import java.util.Properties;
 
 import javax.inject.Provider;
 
@@ -27,13 +32,15 @@ public final class HardenDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(HardenDatabaseProvider.class);
 
-  public HardenDatabaseProvider(AmazonRDS rds, String instanceId) {
+  public HardenDatabaseProvider(AmazonRDS rds, String instanceId, Properties props) {
     this.rds = checkNotNull(rds);
     this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.props = checkNotNull(props);
   }
 
   private final AmazonRDS rds;
   private final String instanceId;
+  private final Properties props;
 
   public String get() {
     Stopwatch sw = createStarted();
@@ -51,12 +58,13 @@ public final class HardenDatabaseProvider implements Provider<String> {
 
   private void harden(AmazonRDS rds, String instanceId) {
     info(LOGGER, "hardening [%s]", instanceId);
+    List<String> vpcSecurityGroupIds = csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2"));
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();
     request.setDBInstanceIdentifier(instanceId);
-    request.setVpcSecurityGroupIds(asList("sg-9afa41e2"));
-    request.setDBParameterGroupName("kuali-oracle-12-1");
-    request.setBackupRetentionPeriod(0);
-    request.setApplyImmediately(true);
+    request.setVpcSecurityGroupIds(vpcSecurityGroupIds);
+    request.setDBParameterGroupName(props.getProperty("rds.parameter.group.name", "kuali-oracle-12-1"));
+    request.setBackupRetentionPeriod(parseInt(props, "rds.backup.retention.period", 0));
+    request.setApplyImmediately(parseBoolean(props, "rds.apply.immediately", true));
     rds.modifyDBInstance(request);
   }
 

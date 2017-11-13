@@ -29,7 +29,7 @@ public final class DatabaseProvider implements Provider<String> {
     String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
     new DeleteDatabaseProvider(rds, instanceId).get();
     new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
-    new HardenDatabaseProvider(rds, instanceId).get();
+    new HardenDatabaseProvider(rds, instanceId, props).get();
     new RebootDatabaseProvider(rds, instanceId).get();
     return instanceId;
   }
