@@ -17,9 +17,9 @@ public final class DatabaseProvider implements Provider<String> {
   @Override
   public String get() {
     AmazonRDS rds = new AmazonRdsProvider(request.getRegion()).get();
-    String snapshotId = new LatestSnapshotProvider(rds, request.getSnapshotDatabase(), true).get();
-    new DeleteDatabaseProvider(rds, request.getInstanceId()).get();
-    new CreateDatabaseProvider(rds, request.getInstanceId(), snapshotId).get();
+    // String snapshotId = new LatestSnapshotProvider(rds, request.getSnapshotDatabase(), true).get();
+    // new DeleteDatabaseProvider(rds, request.getInstanceId()).get();
+    // new CreateDatabaseProvider(rds, request.getInstanceId(), snapshotId).get();
     new HardenDatabaseProvider(rds, request.getInstanceId()).get();
     new RebootDatabaseProvider(rds, request.getInstanceId()).get();
     return request.getInstanceId();

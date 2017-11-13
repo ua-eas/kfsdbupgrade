@@ -11,6 +11,8 @@ public final class DatabaseProviderTest {
   @Test
   public void test() {
     try {
+      System.setProperty("rds.snapshot.name", "kfs3imp");
+      System.setProperty("rds.name", "kfs36014");
       Properties properties = new PropertiesProvider().get();
       String region = properties.getProperty("aws.region", "us-west-2");
       String snapshotDatabase = properties.getProperty("rds.snapshot.name");

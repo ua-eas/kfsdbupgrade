@@ -48,8 +48,9 @@ public final class HardenDatabaseProvider implements Provider<String> {
 
   private void harden(AmazonRDS rds, String instanceId) {
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();
+    request.setDBInstanceIdentifier(instanceId);
     request.setVpcSecurityGroupIds(asList("sg-9afa41e2"));
-    request.setDBParameterGroupName("db-parameter-group-name");
+    request.setDBParameterGroupName("kuali-oracle-12-1");
     request.setBackupRetentionPeriod(0);
     request.setApplyImmediately(true);
     rds.modifyDBInstance(request);
