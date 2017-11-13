@@ -11,8 +11,8 @@ public final class DatabaseProviderTest {
   @Test
   public void test() {
     try {
-      System.setProperty("db.snapshot.name", "kfs3imp");
       System.setProperty("db.name", "kfs36014");
+      System.setProperty("db.snapshot.name", "kfs3imp");
       Properties props = new PropertiesProvider().get();
       new DatabaseProvider(props).get();
     } catch (Throwable e) {

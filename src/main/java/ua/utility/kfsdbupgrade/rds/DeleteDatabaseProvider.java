@@ -8,6 +8,7 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
+import static ua.utility.kfsdbupgrade.rds.Rds.isAbsent;
 
 import javax.inject.Provider;
 
@@ -33,6 +34,10 @@ public final class DeleteDatabaseProvider implements Provider<String> {
 
   public String get() {
     Stopwatch sw = createStarted();
+    if (isAbsent(rds, instanceId)) {
+      info(LOGGER, "skipping delete [%s] does not exist", instanceId);
+      return instanceId;
+    }
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     if (isDeleteRequired(provider.get())) {
       delete(rds, instanceId);
