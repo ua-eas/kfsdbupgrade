@@ -10,6 +10,7 @@ public final class Rds {
   }
 
   public static String STATUS_AVAILABLE = "available";
+  public static String STATUS_MODIFYING = "modifying";
 
   public static String checkAbsent(AmazonRDS rds, String instanceId) {
     checkState(isAbsent(rds, instanceId), "database [%s] already exists", instanceId);
