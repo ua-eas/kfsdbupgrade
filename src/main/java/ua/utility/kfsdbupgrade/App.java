@@ -64,6 +64,7 @@ import ua.utility.kfsdbupgrade.log.SimplePatternLayout;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.MDocsProvider;
 import ua.utility.kfsdbupgrade.md.PropertiesProvider;
+import ua.utility.kfsdbupgrade.rds.DatabaseProvider;
 
 public class App {
   private static final Logger LOGGER = Logger.getLogger(App.class);
@@ -179,6 +180,10 @@ public class App {
    * Main entry point for the database upgrade code path.
    */
   private void doUpgrade() {
+    if (parseBoolean(properties.getProperty("db.process.integrated"))) {
+      String databaseName = new DatabaseProvider(properties).get();
+      properties.setProperty("db.name", databaseName);
+    }
     /*
      * conn1 used for miscellanous SQL statements and dropping temp tables, etc., and has autocommit set to 'true'. conn2 is used by liquibase
      */

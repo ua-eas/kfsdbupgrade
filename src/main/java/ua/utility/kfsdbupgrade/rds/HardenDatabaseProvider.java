@@ -13,6 +13,7 @@ import static ua.utility.kfsdbupgrade.md.base.Props.parseInt;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
 import static ua.utility.kfsdbupgrade.md.base.Threads.sleep;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
 import java.util.List;
 import java.util.Properties;
@@ -44,7 +45,7 @@ public final class HardenDatabaseProvider implements Provider<String> {
 
   public String get() {
     Stopwatch sw = createStarted();
-    Rds.checkPresent(rds, instanceId);
+    checkPresent(rds, instanceId);
     harden(rds, instanceId);
     sleep(5, SECONDS);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
