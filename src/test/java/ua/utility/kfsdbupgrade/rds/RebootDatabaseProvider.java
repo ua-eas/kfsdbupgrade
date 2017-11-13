@@ -8,6 +8,7 @@ import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
 import javax.inject.Provider;
 
@@ -34,7 +35,7 @@ public final class RebootDatabaseProvider implements Provider<String> {
 
   public String get() {
     Stopwatch sw = createStarted();
-    Rds.checkPresent(rds, instanceId);
+    checkPresent(rds, instanceId);
     reboot(rds, instanceId);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"));
