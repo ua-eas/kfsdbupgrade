@@ -55,10 +55,10 @@ public final class DeleteDatabaseProvider implements Provider<String> {
   }
 
   private void delete(AmazonRDS rds, String instanceId) {
+    info(LOGGER, "deleting database [%s]", instanceId);
     DeleteDBInstanceRequest delete = new DeleteDBInstanceRequest();
     delete.setDBInstanceIdentifier(instanceId);
     delete.setSkipFinalSnapshot(parseBoolean(props, "rds.skip.final.snapshot", true));
-    info(LOGGER, "deleting database [%s]", instanceId);
     rds.deleteDBInstance(delete);
   }
 

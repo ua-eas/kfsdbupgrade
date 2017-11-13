@@ -13,6 +13,8 @@ public final class DatabaseProviderTest {
     try {
       System.setProperty("db.name", "kfs36014");
       System.setProperty("db.snapshot.name", "kfs3imp");
+      System.setProperty("rds.tag.contactnetid", "jcaddel");
+      System.setProperty("rds.tag.ticket", "UAF-6014");
       Properties props = new PropertiesProvider().get();
       new DatabaseProvider(props).get();
     } catch (Throwable e) {
