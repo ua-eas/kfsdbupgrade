@@ -57,7 +57,7 @@ public final class HardenDatabaseProvider implements Provider<String> {
   }
 
   private void harden(AmazonRDS rds, String instanceId) {
-    info(LOGGER, "hardening [%s]", instanceId);
+    info(LOGGER, "modifying [%s]", instanceId);
     List<String> vpcSecurityGroupIds = csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2"));
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();
     request.setDBInstanceIdentifier(instanceId);
