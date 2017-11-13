@@ -29,11 +29,11 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 
-public final class HardenDatabaseProvider implements Provider<String> {
+public final class FinalizeDatabaseProvider implements Provider<String> {
 
-  private static final Logger LOGGER = getLogger(HardenDatabaseProvider.class);
+  private static final Logger LOGGER = getLogger(FinalizeDatabaseProvider.class);
 
-  public HardenDatabaseProvider(AmazonRDS rds, String instanceId, Properties props) {
+  public FinalizeDatabaseProvider(AmazonRDS rds, String instanceId, Properties props) {
     this.rds = checkNotNull(rds);
     this.instanceId = checkNotBlank(instanceId, "instanceId");
     this.props = checkNotNull(props);
