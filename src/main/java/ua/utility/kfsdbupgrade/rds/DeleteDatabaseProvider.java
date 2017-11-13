@@ -35,7 +35,7 @@ public final class DeleteDatabaseProvider implements Provider<String> {
   public String get() {
     Stopwatch sw = createStarted();
     if (isAbsent(rds, instanceId)) {
-      info(LOGGER, "skipping delete [%s] does not exist", instanceId);
+      info(LOGGER, "[%s] does not exist - skipping delete", instanceId);
       return instanceId;
     }
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
