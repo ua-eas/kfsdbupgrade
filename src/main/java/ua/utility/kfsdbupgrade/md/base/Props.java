@@ -26,4 +26,13 @@ public final class Props {
     throw illegalArgument("%s were all blank", nullSafeCast(keys, String.class));
   }
 
+  public static String checkedValue(Properties props, Iterable<String> keys, String defaultValue) {
+    for (String key : keys) {
+      String value = props.getProperty(key);
+      if (isNotBlank(value)) {
+        return value;
+      }
+    }
+    return defaultValue;
+  }
 }

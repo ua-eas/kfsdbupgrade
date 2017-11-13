@@ -34,11 +34,11 @@ public final class DeleteDatabaseProvider implements Provider<String> {
   public String get() {
     Stopwatch sw = createStarted();
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
-    if (deleteRequired(provider.get())) {
+    if (isDeleteRequired(provider.get())) {
       delete(rds, instanceId);
     }
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"));
-    info(LOGGER, "waiting up to %s for [%s] to be fully deleted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     new Waiter<>(ctx, provider, not(db -> db.isPresent())).get();
     info(LOGGER, "database=%s, status=deleted [%s]", instanceId, getTime(sw));
     return instanceId;
@@ -52,7 +52,7 @@ public final class DeleteDatabaseProvider implements Provider<String> {
     rds.deleteDBInstance(delete);
   }
 
-  private boolean deleteRequired(Optional<DBInstance> instance) {
+  private boolean isDeleteRequired(Optional<DBInstance> instance) {
     return instance.isPresent() && !instance.get().getDBInstanceStatus().equalsIgnoreCase("deleting");
   }
 

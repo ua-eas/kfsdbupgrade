@@ -3,16 +3,12 @@ package ua.utility.kfsdbupgrade.rds;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Arrays.asList;
 import static ua.utility.kfsdbupgrade.md.base.Props.checkedValue;
-import static ua.utility.kfsdbupgrade.rds.Credentials.fromProvider;
 
-import java.util.List;
 import java.util.Properties;
 
 import javax.inject.Provider;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.rds.AmazonRDS;
 
 public final class DatabaseProvider implements Provider<String> {
@@ -25,12 +21,11 @@ public final class DatabaseProvider implements Provider<String> {
 
   @Override
   public String get() {
-    List<AWSCredentialsProvider> providers = asList(DefaultAWSCredentialsProviderChain.getInstance(), fromProvider(new CredentialsProvider(props)));
-    AWSCredentialsProviderChain chain = new AWSCredentialsProviderChain(providers);
-    String region = props.getProperty("aws.region", "us-west-2");
+    String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), "us-west-2");
     String snapshotDatabase = checkedValue(props, "db.snapshot.name");
     String instanceId = checkedValue(props, "db.name");
-    AmazonRDS rds = new AmazonRdsProvider(region, chain.getCredentials()).get();
+    AWSCredentials credentials = new CredentialsProvider(props).get();
+    AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
     new DeleteDatabaseProvider(rds, instanceId).get();
     new CreateDatabaseProvider(rds, instanceId, snapshotId).get();

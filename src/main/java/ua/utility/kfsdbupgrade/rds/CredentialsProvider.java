@@ -1,14 +1,18 @@
 package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static ua.utility.kfsdbupgrade.md.base.Props.checkedValue;
+import static java.util.Arrays.asList;
+import static ua.utility.kfsdbupgrade.rds.Credentials.fromProvider;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.inject.Provider;
 
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
 public final class CredentialsProvider implements Provider<AWSCredentials> {
 
@@ -20,9 +24,11 @@ public final class CredentialsProvider implements Provider<AWSCredentials> {
 
   @Override
   public AWSCredentials get() {
-    String accessKey = checkedValue(props, "aws.accessKeyId", "AWS_ACCESS_KEY_ID");
-    String secretKey = checkedValue(props, "aws.secretKey", "AWS_SECRET_KEY");
-    return new BasicAWSCredentials(accessKey, secretKey);
+    DefaultAWSCredentialsProviderChain defaultChain = DefaultAWSCredentialsProviderChain.getInstance();
+    AWSCredentialsProvider custom = fromProvider(new BasicCredentialsProvider(props));
+    List<AWSCredentialsProvider> providers = asList(defaultChain, custom);
+    AWSCredentialsProviderChain chain = new AWSCredentialsProviderChain(providers);
+    return chain.getCredentials();
   }
 
 }
