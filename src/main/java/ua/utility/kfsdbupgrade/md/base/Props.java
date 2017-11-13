@@ -12,6 +12,14 @@ public final class Props {
   private Props() {
   }
 
+  public static boolean parseBoolean(Properties props, String key, boolean defaultValue) {
+    if (props.containsKey(key)) {
+      return Boolean.parseBoolean(props.getProperty(key));
+    } else {
+      return defaultValue;
+    }
+  }
+
   public static String checkedValue(Properties props, String key) {
     return checkNotBlank(props.getProperty(key), key);
   }

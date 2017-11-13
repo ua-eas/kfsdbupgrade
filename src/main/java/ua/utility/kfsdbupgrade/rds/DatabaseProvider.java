@@ -28,7 +28,7 @@ public final class DatabaseProvider implements Provider<String> {
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
     new DeleteDatabaseProvider(rds, instanceId).get();
-    new CreateDatabaseProvider(rds, instanceId, snapshotId).get();
+    new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
     new HardenDatabaseProvider(rds, instanceId).get();
     new RebootDatabaseProvider(rds, instanceId).get();
     return instanceId;
