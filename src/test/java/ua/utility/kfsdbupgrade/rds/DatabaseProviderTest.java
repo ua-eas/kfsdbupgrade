@@ -11,14 +11,10 @@ public final class DatabaseProviderTest {
   @Test
   public void test() {
     try {
-      System.setProperty("rds.snapshot.name", "kfs3imp");
-      System.setProperty("rds.name", "kfs36014");
-      Properties properties = new PropertiesProvider().get();
-      String region = properties.getProperty("aws.region", "us-west-2");
-      String snapshotDatabase = properties.getProperty("rds.snapshot.name");
-      String instanceId = properties.getProperty("rds.name");
-      ProvideDatabaseRequest request = new ProvideDatabaseRequest(region, snapshotDatabase, instanceId);
-      new DatabaseProvider(request).get();
+      System.setProperty("db.snapshot.name", "kfs3imp");
+      System.setProperty("db.name", "kfs36014");
+      Properties props = new PropertiesProvider().get();
+      new DatabaseProvider(props).get();
     } catch (Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e);

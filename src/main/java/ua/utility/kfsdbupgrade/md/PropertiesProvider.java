@@ -52,6 +52,8 @@ public final class PropertiesProvider implements Provider<Properties> {
       Properties props = loadProperties(commandLineArgument);
       override(props, getEnvironmentVariables(), "environment variables");
       override(props, System.getProperties(), "system properties");
+      props.putAll(getEnvironmentVariables());
+      props.putAll(System.getProperties());
       return props;
     } catch (IOException e) {
       throw new IllegalStateException(e);
