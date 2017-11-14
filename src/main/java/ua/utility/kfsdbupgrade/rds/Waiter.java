@@ -3,7 +3,6 @@ package ua.utility.kfsdbupgrade.rds;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.lang.Math.max;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
@@ -38,7 +37,9 @@ public final class Waiter<T> implements Provider<T> {
     T instance = null;
     do {
       long diff = context.getDuration() - other.elapsed(context.getUnit());
-      checkedSleep(max(diff, 0), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
+      long sleep = max(diff, 0);
+      info(LOGGER, "display=%s, diff=%s, sleep=%s [%s]", display, diff, sleep, getTime(timer));
+      checkedSleep(sleep, context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
       other = createStarted();
       display = display(display, timer);
       instance = provider.get();
@@ -47,9 +48,9 @@ public final class Waiter<T> implements Provider<T> {
   }
 
   private long display(long display, Stopwatch timer) {
-    if (timer.elapsed(MILLISECONDS) - display > 60 * 1000) {
+    if (timer.elapsed(context.getUnit()) - display > context.getDisplay()) {
       info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
-      return timer.elapsed(MILLISECONDS);
+      return timer.elapsed(context.getUnit());
     } else {
       return display;
     }
