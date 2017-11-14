@@ -52,8 +52,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
       checkPresent(rds, instanceId);
     }
     DBInstance aws = new DatabaseInstanceProvider(rds, instanceId).get().get();
-    OracleDatabase oracle = OracleDatabaseFunction.INSTANCE.apply(aws);
-    return oracle;
+    return OracleDatabaseFunction.INSTANCE.apply(aws);
   }
 
 }
