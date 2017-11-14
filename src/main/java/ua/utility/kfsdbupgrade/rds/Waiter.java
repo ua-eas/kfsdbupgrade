@@ -36,9 +36,8 @@ public final class Waiter<T> implements Provider<T> {
     long display = 0;
     T instance = null;
     do {
-      long diff = context.getDuration() - other.elapsed(context.getUnit());
-      long sleep = max(diff, 0);
-      info(LOGGER, "display=%s, diff=%s, sleep=%s [%s]", display, diff, sleep, getTime(timer));
+      long sleep = max(context.getDuration() - other.elapsed(context.getUnit()), 0);
+      info(LOGGER, "display=%s, sleep=%s [%s]", display, sleep, getTime(timer));
       checkedSleep(sleep, context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
       other = createStarted();
       display = display(display, timer);
