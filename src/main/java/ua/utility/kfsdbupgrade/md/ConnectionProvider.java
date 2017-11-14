@@ -43,8 +43,9 @@ public final class ConnectionProvider implements Provider<Connection> {
       if (props.containsKey("db.endpoint")) {
         String endpoint = checkedValue(props, "db.endpoint");
         info(LOGGER, "using database endpoint '%s' to construct full jdbc url", endpoint);
+        String name = props.getProperty("db.name", Splitter.on('.').split(endpoint).iterator().next().toUpperCase(ENGLISH));
         String port = props.getProperty("db.port", "1521");
-        String sid = props.getProperty("db.sid", Splitter.on('.').split(endpoint).iterator().next().toUpperCase(ENGLISH));
+        String sid = props.getProperty("db.sid", name);
         url = format("jdbc:oracle:thin:@%s:%s:%s", endpoint, port, sid);
       } else if (props.containsKey("db.name")) {
         String name = checkedValue(props, "db.name");
