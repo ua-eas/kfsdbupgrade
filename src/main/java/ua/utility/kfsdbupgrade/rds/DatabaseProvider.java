@@ -16,9 +16,10 @@ import org.apache.log4j.Logger;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.rds.AmazonRDS;
+import com.amazonaws.services.rds.model.DBInstance;
 import com.google.common.base.Stopwatch;
 
-public final class DatabaseProvider implements Provider<String> {
+public final class DatabaseProvider implements Provider<OracleDatabase> {
 
   private static final Logger LOGGER = getLogger(DatabaseProvider.class);
 
@@ -29,7 +30,7 @@ public final class DatabaseProvider implements Provider<String> {
   private final Properties props;
 
   @Override
-  public String get() {
+  public OracleDatabase get() {
     Stopwatch sw = createStarted();
     info(LOGGER, "provisioning new database");
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), "us-west-2");
@@ -42,8 +43,15 @@ public final class DatabaseProvider implements Provider<String> {
     new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
     new FinalizeDatabaseProvider(rds, instanceId, props).get();
     new RebootDatabaseProvider(rds, instanceId).get();
+    DBInstance db = new DatabaseInstanceProvider(rds, instanceId).get().get();
+    OracleDatabase.Builder builder = OracleDatabase.builder();
+    builder.withId(db.getDBInstanceIdentifier());
+    builder.withEndpoint(db.getEndpoint().getAddress());
+    builder.withSid(db.getDBName());
+    builder.withPort(db.getDbInstancePort());
+    OracleDatabase database = builder.build();
     info(LOGGER, "provisioned database [%s] - [%s]", instanceId, getTime(sw));
-    return instanceId;
+    return database;
   }
 
 }
