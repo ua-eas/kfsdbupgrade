@@ -58,10 +58,11 @@ public final class CreateDatabaseProvider implements Provider<String> {
 
   public String get() {
     Stopwatch sw = createStarted();
-    checkAbsent(rds, instanceId);
     info(LOGGER, "creating database [%s] from snapshot [%s]", instanceId, snapshotId);
+    checkAbsent(rds, instanceId);
     List<Tag> tags = getTags(getDefaultTags(props, instanceId));
     create(rds, instanceId, snapshotId, tags);
+    info(LOGGER, "database created [%s] - [%s]", instanceId, getTime(sw));
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"), getMillis("1m"));
     info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
