@@ -47,9 +47,9 @@ public final class DeleteDatabaseProvider implements Provider<String> {
     if (isDeleteRequired(provider.get())) {
       delete(rds, instanceId);
     }
-    WaitContext ctx = new WaitContext(getMillis("5ms"), getMillis("15m"));
+    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
     info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
-    new Waiter<>(ctx, provider, not(db -> db.isPresent())).get();
+    new Waiter<>(getMillis("15m"), provider, not(db -> db.isPresent())).get();
     info(LOGGER, "database=%s, status=deleted [%s]", instanceId, getTime(sw));
     return instanceId;
   }

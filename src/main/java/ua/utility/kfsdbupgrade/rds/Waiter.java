@@ -19,6 +19,10 @@ public final class Waiter<T> implements Provider<T> {
 
   private static final Logger LOGGER = getLogger(Waiter.class);
 
+  public Waiter(long timeout, Provider<T> provider, Predicate<T> predicate) {
+    this(new WaitContext(timeout), provider, predicate);
+  }
+
   public Waiter(WaitContext context, Provider<T> provider, Predicate<T> predicate) {
     this.context = checkNotNull(context);
     this.provider = checkNotNull(provider);

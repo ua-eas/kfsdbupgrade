@@ -46,7 +46,7 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
     checkPresent(rds, instanceId);
     finalize(rds, instanceId);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"));
+    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
     info(LOGGER, "waiting up to %s for [%s] to be modified", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     Optional<DBInstance> instance = new Waiter<>(ctx, provider, predicate).get();

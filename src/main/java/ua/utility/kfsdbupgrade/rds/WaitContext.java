@@ -8,6 +8,10 @@ import java.util.concurrent.TimeUnit;
 
 public final class WaitContext {
 
+  public WaitContext(long timeout) {
+    this(5 * 1000, timeout, 60 * 1000);
+  }
+
   public WaitContext(long duration, long timeout) {
     this(duration, timeout, 60 * 1000);
   }

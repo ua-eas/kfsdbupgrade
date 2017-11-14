@@ -63,7 +63,7 @@ public final class CreateDatabaseProvider implements Provider<String> {
     List<Tag> tags = getTags(getDefaultTags(props, instanceId));
     create(rds, instanceId, snapshotId, tags);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"));
+    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"), getMillis("1m"));
     info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
     Optional<DBInstance> database = new Waiter<>(ctx, provider, predicate).get();
