@@ -45,16 +45,14 @@ public final class ConnectionProvider implements Provider<Connection> {
         info(LOGGER, "using database endpoint '%s' to construct full jdbc url", endpoint);
         String port = props.getProperty("db.port", "1521");
         String sid = props.getProperty("db.sid", Splitter.on('.').split(endpoint).iterator().next().toUpperCase(ENGLISH));
-        String formatted = format("jdbc:oracle:thin:@%s:%s:%s", endpoint, port, sid);
-        url = formatted;
+        url = format("jdbc:oracle:thin:@%s:%s:%s", endpoint, port, sid);
       } else if (props.containsKey("db.name")) {
         String name = checkedValue(props, "db.name");
         info(LOGGER, "using database name '%s' to construct full jdbc url", name, username);
         String fragment = checkedValue(props, "db.fragment");
         String port = props.getProperty("db.port", "1521");
-        String sid = props.getProperty("db.sid", name);
-        String formatted = format("jdbc:oracle:thin:@%s.%s:%s:%s", name.toLowerCase(), fragment, port, sid.toUpperCase());
-        url = formatted;
+        String sid = props.getProperty("db.sid", name.toUpperCase(ENGLISH));
+        url = format("jdbc:oracle:thin:@%s.%s:%s:%s", name.toLowerCase(ENGLISH), fragment, port, sid);
       } else {
         if (props.containsKey("db.url")) {
           url = props.getProperty("db.url");
