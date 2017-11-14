@@ -11,7 +11,7 @@ public enum OracleDatabaseFunction implements Function<DBInstance, OracleDatabas
     builder.withId(input.getDBInstanceIdentifier());
     builder.withEndpoint(input.getEndpoint().getAddress());
     builder.withSid(input.getDBName());
-    builder.withPort(input.getDbInstancePort());
+    builder.withPort(input.getEndpoint().getPort());
     return builder.build();
   }
 
