@@ -115,10 +115,10 @@ public class App {
       Optional<String> commandLinePropertiesFile = getArg(args, 0);
       Optional<String> workflowIndicator = getArg(args, 1);
       App app = new App(commandLinePropertiesFile);
-      if (isIngestWorkflow(workflowIndicator)) {
+      if (isIngestWorkflowOnly(workflowIndicator)) {
         app.doWorkflow(commandLinePropertiesFile.get());
       } else {
-        app.doUpgrade();
+        app.execute();
       }
       System.exit(0);
     } catch (Throwable e) {
@@ -128,7 +128,17 @@ public class App {
     }
   }
 
-  private static boolean isIngestWorkflow(Optional<String> workflowIndicator) {
+  private void execute() {
+    boolean integrated = parseBoolean(properties.getProperty("db.process.integrated"));
+    if (integrated) {
+      doCreateDatabase();
+      doUpgrade();
+    } else {
+      doUpgrade();
+    }
+  }
+
+  private static boolean isIngestWorkflowOnly(Optional<String> workflowIndicator) {
     return "ingestWorkflow".equalsIgnoreCase(workflowIndicator.orNull());
   }
 
@@ -176,13 +186,14 @@ public class App {
     }
   }
 
+  private String doCreateDatabase() {
+    return new DatabaseProvider(properties).get();
+  }
+
   /**
    * Main entry point for the database upgrade code path.
    */
   private void doUpgrade() {
-    if (parseBoolean(properties.getProperty("db.process.integrated"))) {
-      new DatabaseProvider(properties).get();
-    }
     /*
      * conn1 used for miscellanous SQL statements and dropping temp tables, etc., and has autocommit set to 'true'. conn2 is used by liquibase
      */
