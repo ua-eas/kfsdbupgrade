@@ -50,7 +50,7 @@ public final class Waiter<T> implements Provider<T> {
   }
 
   private long display(long display, Stopwatch timer) {
-    if (timer.elapsed(context.getUnit()) - display > context.getDisplay()) {
+    if (timer.elapsed(context.getUnit()) - display >= context.getDisplay()) {
       info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
       return timer.elapsed(context.getUnit());
     } else {
