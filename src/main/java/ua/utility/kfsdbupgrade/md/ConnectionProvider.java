@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.lang.String.format;
+import static java.util.Locale.ENGLISH;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -18,6 +19,7 @@ import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 
 public final class ConnectionProvider implements Provider<Connection> {
@@ -38,7 +40,14 @@ public final class ConnectionProvider implements Provider<Connection> {
       String username = checkedValue(props, "database-user");
       String password = checkedValue(props, "database-password");
       String url;
-      if (props.containsKey("db.name")) {
+      if (props.containsKey("db.endpoint")) {
+        String endpoint = checkedValue(props, "db.endpoint");
+        info(LOGGER, "using database endpoint '%s' to construct full jdbc url", endpoint);
+        String port = props.getProperty("db.port", "1521");
+        String sid = props.getProperty("db.sid", Splitter.on('.').split(endpoint).iterator().next().toUpperCase(ENGLISH));
+        String formatted = format("jdbc:oracle:thin:@%s:%s:%s", endpoint, port, sid);
+        url = formatted;
+      } else if (props.containsKey("db.name")) {
         String name = checkedValue(props, "db.name");
         info(LOGGER, "using database name '%s' to construct full jdbc url", name, username);
         String fragment = checkedValue(props, "db.fragment");
