@@ -2,7 +2,6 @@ package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
@@ -11,7 +10,6 @@ import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseInt;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
-import static ua.utility.kfsdbupgrade.md.base.Threads.sleep;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
@@ -46,18 +44,17 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
   public String get() {
     Stopwatch sw = createStarted();
     checkPresent(rds, instanceId);
-    harden(rds, instanceId);
-    sleep(5, SECONDS);
+    finalize(rds, instanceId);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"));
-    info(LOGGER, "waiting up to %s for [%s] to be modified", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
+    info(LOGGER, "waiting up to %s for [%s] to be modified", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
     Optional<DBInstance> instance = new Waiter<>(ctx, provider, predicate).get();
     info(LOGGER, "database=%s, status=%s [%s]", instanceId, instance.get().getDBInstanceStatus(), getTime(sw));
     return instanceId;
   }
 
-  private void harden(AmazonRDS rds, String instanceId) {
+  private void finalize(AmazonRDS rds, String instanceId) {
     info(LOGGER, "modifying [%s]", instanceId);
     List<String> vpcSecurityGroupIds = csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2"));
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();

@@ -33,12 +33,12 @@ public final class Waiter<T> implements Provider<T> {
   public T get() {
     Stopwatch timer = createStarted();
     long display = 0;
-    T instance = provider.get();
-    while (!predicate.apply(instance)) {
+    T instance = null;
+    do {
       checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
       display = display(display, timer);
       instance = provider.get();
-    }
+    } while (!predicate.apply(instance));
     return instance;
   }
 
