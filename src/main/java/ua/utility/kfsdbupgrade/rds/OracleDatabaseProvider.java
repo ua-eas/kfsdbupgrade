@@ -41,7 +41,8 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     if (parseBoolean(props, "db.create", true)) {
       info(LOGGER, "provisioning new database");
-      String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
+      boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
+      String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, automatedOnly).get();
       new DeleteDatabaseProvider(rds, instanceId, props).get();
       new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
       new FinalizeDatabaseProvider(rds, instanceId, props).get();
