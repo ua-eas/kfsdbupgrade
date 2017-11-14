@@ -17,7 +17,11 @@ package ua.utility.kfsdbupgrade;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.io.Files.write;
 import static java.lang.Boolean.parseBoolean;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.md.base.Exceptions.illegalState;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -27,6 +31,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -131,8 +137,15 @@ public class App {
   private void execute() {
     boolean integrated = parseBoolean(properties.getProperty("db.process.integrated"));
     if (integrated) {
-      doCreateDatabase();
-      doUpgrade();
+      if (parseBoolean(properties.getProperty("db.create"))) {
+        doCreateDatabase();
+      }
+      if (parseBoolean(properties.getProperty("db.upgrade"))) {
+        doUpgrade();
+      }
+      if (parseBoolean(properties.getProperty("db.workflow"))) {
+        doWorkflow();
+      }
     } else {
       doUpgrade();
     }
@@ -299,6 +312,21 @@ public class App {
     finally {
       closeDbObjects(conn1, stmt, null);
       closeDbObjects(conn2, null, null);
+    }
+  }
+
+  private void doWorkflow() {
+    try {
+      File file = new File("./target/workflow.properties").getCanonicalFile();
+      StringWriter writer = new StringWriter();
+      properties.store(writer, "kfsdbupgrade workflow properties");
+      info(LOGGER, "storing workflow properties to -> %s", file);
+      write(writer.toString(), file, UTF_8);
+      URL url = file.toURI().toURL();
+      System.getProperties().setProperty("security.property.file", url.toString());
+      new WorkflowImporter(upgradeRoot, upgradeFolders);
+    } catch (IOException e) {
+      throw illegalState(e);
     }
   }
 
