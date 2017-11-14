@@ -7,6 +7,8 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Props.checkedValue;
+import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
 import java.util.Properties;
 
@@ -19,11 +21,11 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.google.common.base.Stopwatch;
 
-public final class DatabaseProvider implements Provider<OracleDatabase> {
+public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
 
-  private static final Logger LOGGER = getLogger(DatabaseProvider.class);
+  private static final Logger LOGGER = getLogger(OracleDatabaseProvider.class);
 
-  public DatabaseProvider(Properties props) {
+  public OracleDatabaseProvider(Properties props) {
     this.props = checkNotNull(props);
   }
 
@@ -32,26 +34,25 @@ public final class DatabaseProvider implements Provider<OracleDatabase> {
   @Override
   public OracleDatabase get() {
     Stopwatch sw = createStarted();
-    info(LOGGER, "provisioning new database");
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), "us-west-2");
     String snapshotDatabase = checkedValue(props, "db.snapshot.name");
     String instanceId = checkedValue(props, "db.name");
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
-    String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
-    new DeleteDatabaseProvider(rds, instanceId, props).get();
-    new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
-    new FinalizeDatabaseProvider(rds, instanceId, props).get();
-    new RebootDatabaseProvider(rds, instanceId).get();
-    DBInstance db = new DatabaseInstanceProvider(rds, instanceId).get().get();
-    OracleDatabase.Builder builder = OracleDatabase.builder();
-    builder.withId(db.getDBInstanceIdentifier());
-    builder.withEndpoint(db.getEndpoint().getAddress());
-    builder.withSid(db.getDBName());
-    builder.withPort(db.getDbInstancePort());
-    OracleDatabase database = builder.build();
-    info(LOGGER, "provisioned database [%s] - [%s]", instanceId, getTime(sw));
-    return database;
+    if (parseBoolean(props, "db.create", true)) {
+      info(LOGGER, "provisioning new database");
+      String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, true).get();
+      new DeleteDatabaseProvider(rds, instanceId, props).get();
+      new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
+      new FinalizeDatabaseProvider(rds, instanceId, props).get();
+      new RebootDatabaseProvider(rds, instanceId).get();
+      info(LOGGER, "provisioned database [%s] - [%s]", instanceId, getTime(sw));
+    } else {
+      checkPresent(rds, instanceId);
+    }
+    DBInstance aws = new DatabaseInstanceProvider(rds, instanceId).get().get();
+    OracleDatabase oracle = OracleDatabaseFunction.INSTANCE.apply(aws);
+    return oracle;
   }
 
 }

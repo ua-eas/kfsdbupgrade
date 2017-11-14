@@ -61,4 +61,20 @@ public final class OracleDatabase {
     }
   }
 
+  public String getId() {
+    return id;
+  }
+
+  public String getEndpoint() {
+    return endpoint;
+  }
+
+  public String getSid() {
+    return sid;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
 }

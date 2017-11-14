@@ -70,7 +70,8 @@ import ua.utility.kfsdbupgrade.log.SimplePatternLayout;
 import ua.utility.kfsdbupgrade.md.ConnectionProvider;
 import ua.utility.kfsdbupgrade.md.MDocsProvider;
 import ua.utility.kfsdbupgrade.md.PropertiesProvider;
-import ua.utility.kfsdbupgrade.rds.DatabaseProvider;
+import ua.utility.kfsdbupgrade.rds.OracleDatabase;
+import ua.utility.kfsdbupgrade.rds.OracleDatabaseProvider;
 
 public class App {
   private static final Logger LOGGER = Logger.getLogger(App.class);
@@ -137,9 +138,13 @@ public class App {
   private void execute() {
     boolean integrated = parseBoolean(properties.getProperty("db.process.integrated"));
     if (integrated) {
-      if (parseBoolean(properties.getProperty("db.create"))) {
-        doCreateDatabase();
-      }
+      // provisions a new database if db.create=true, otherwise just gets connection details
+      OracleDatabase db = new OracleDatabaseProvider(properties).get();
+      properties.setProperty("db.name", db.getId());
+      properties.setProperty("db.endpoint", db.getEndpoint());
+      properties.setProperty("db.sid", db.getSid());
+      properties.setProperty("db.port", Integer.toString(db.getPort()));
+
       if (parseBoolean(properties.getProperty("db.upgrade"))) {
         doUpgrade();
       }
@@ -199,8 +204,8 @@ public class App {
     }
   }
 
-  private String doCreateDatabase() {
-    return new DatabaseProvider(properties).get();
+  private OracleDatabase doCreateDatabase() {
+    return new OracleDatabaseProvider(properties).get();
   }
 
   /**
