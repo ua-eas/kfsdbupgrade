@@ -2,6 +2,7 @@ package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
+import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -31,11 +32,14 @@ public final class Waiter<T> implements Provider<T> {
 
   @Override
   public T get() {
+    Stopwatch other = createStarted();
     Stopwatch timer = createStarted();
     long display = 0;
     T instance = null;
     do {
-      checkedSleep(context.getDuration(), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
+      long diff = context.getDuration() - other.elapsed(context.getUnit());
+      checkedSleep(max(diff, 0), context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
+      other = createStarted();
       display = display(display, timer);
       instance = provider.get();
     } while (!predicate.apply(instance));
@@ -43,7 +47,7 @@ public final class Waiter<T> implements Provider<T> {
   }
 
   private long display(long display, Stopwatch timer) {
-    if (timer.elapsed(MILLISECONDS) - display > 60 * 1000) {
+    if (timer.elapsed(MILLISECONDS) - display > 1) {
       info(LOGGER, "waited for %s, max wait=%s", getTime(timer), getTime(context.getTimeout(), context.getUnit()));
       return timer.elapsed(MILLISECONDS);
     } else {
