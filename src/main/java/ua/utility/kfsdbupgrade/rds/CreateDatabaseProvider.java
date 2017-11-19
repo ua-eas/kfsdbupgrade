@@ -87,8 +87,7 @@ public final class CreateDatabaseProvider implements Provider<String> {
   private ImmutableList<Tag> getTags(Map<String, Optional<String>> tags) {
     List<Tag> list = newArrayList();
     for (String tag : tags.keySet()) {
-      Optional<String> value = tags.get(tag);
-      list.add(new Tag().withKey(tag).withValue(value.orNull()));
+      list.add(new Tag().withKey(tag).withValue(tags.get(tag).orNull()));
     }
     return newList(list);
   }
