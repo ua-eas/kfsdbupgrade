@@ -9,7 +9,7 @@ import static ua.utility.kfsdbupgrade.log.Logging.date;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getCount;
 import static ua.utility.kfsdbupgrade.md.base.Lists.sort;
-import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public final class LatestSnapshotProvider implements Provider<String> {
 
   public LatestSnapshotProvider(AmazonRDS rds, String name, boolean automatedOnly) {
     this.rds = checkNotNull(rds);
-    this.name = checkNotBlank(name, "name");
+    this.name = checkedName(name);
     this.automatedOnly = automatedOnly;
   }
 

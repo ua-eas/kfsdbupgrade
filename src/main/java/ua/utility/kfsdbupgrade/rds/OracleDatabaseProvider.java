@@ -11,6 +11,7 @@ import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
 import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_REGION;
 import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ORACLE_SID;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 
 import java.util.Properties;
 
@@ -38,12 +39,12 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     Stopwatch sw = createStarted();
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), DEFAULT_AWS_REGION);
     String snapshotName = checkedValue(props, "db.snapshot.name");
-    String name = checkedValue(props, "db.name");
+    String name = checkedName(checkedValue(props, "db.name"));
     String sid = props.getProperty("db.sid", DEFAULT_ORACLE_SID);
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     if (parseBoolean(props, "db.create", false)) {
-      info(LOGGER, "provisioning new database");
+      info(LOGGER, "provisioning new database [%s] oracle sid: %s", name, sid);
       boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
       String snapshotId = new LatestSnapshotProvider(rds, snapshotName, automatedOnly).get();
       new DeleteDatabaseProvider(rds, name, props).get();
@@ -55,7 +56,15 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
       checkPresent(rds, name);
     }
     DBInstance aws = new DatabaseInstanceProvider(rds, name).get().get();
-    return OracleDatabaseFunction.INSTANCE.apply(aws);
+    OracleDatabase oracle = OracleDatabaseFunction.INSTANCE.apply(aws);
+    info(LOGGER, "database is %s", aws.getDBInstanceStatus());
+    info(LOGGER, "region ---> %s", region);
+    info(LOGGER, "name -----> %s", name);
+    info(LOGGER, "endpoint -> %s", oracle.getEndpoint());
+    info(LOGGER, "port -----> %s", oracle.getPort());
+    info(LOGGER, "SID ------> %s", oracle.getSid());
+    info(LOGGER, "jdbc -----> %s", OracleJdbcUrlFunction.INSTANCE.apply(oracle));
+    return oracle;
   }
 
 }

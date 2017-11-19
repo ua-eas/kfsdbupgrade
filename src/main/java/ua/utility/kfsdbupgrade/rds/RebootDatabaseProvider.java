@@ -6,9 +6,9 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 
 import java.util.Properties;
 
@@ -33,7 +33,7 @@ public final class RebootDatabaseProvider implements Provider<String> {
 
   public RebootDatabaseProvider(AmazonRDS rds, String name, Properties props) {
     this.rds = checkNotNull(rds);
-    this.name = checkNotBlank(name, "name");
+    this.name = checkedName(name);
     this.props = checkNotNull(props);
   }
 

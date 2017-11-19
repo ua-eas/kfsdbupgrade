@@ -1,7 +1,12 @@
 package ua.utility.kfsdbupgrade.rds;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedSid;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 public final class OracleDatabase {
 
@@ -11,9 +16,9 @@ public final class OracleDatabase {
   private final int port;
 
   private OracleDatabase(Builder builder) {
-    this.name = builder.name;
+    this.name = checkedName(builder.name);
     this.endpoint = builder.endpoint;
-    this.sid = builder.sid;
+    this.sid = checkedSid(builder.sid);
     this.port = builder.port;
   }
 
@@ -75,6 +80,16 @@ public final class OracleDatabase {
 
   public String getName() {
     return name;
+  }
+
+  @Override
+  public String toString() {
+    ToStringHelper helper = toStringHelper(this);
+    helper.add("name", name);
+    helper.add("endpoint", endpoint);
+    helper.add("port", port);
+    helper.add("sid", sid);
+    return helper.toString();
   }
 
 }

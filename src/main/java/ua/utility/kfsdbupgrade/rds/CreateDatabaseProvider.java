@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static java.util.Locale.ENGLISH;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -23,6 +22,8 @@ import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_ACCOUNT;
 import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ENVIRONMENT;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkAbsent;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedSid;
 
 import java.util.Iterator;
 import java.util.List;
@@ -50,8 +51,8 @@ public final class CreateDatabaseProvider implements Provider<String> {
 
   public CreateDatabaseProvider(AmazonRDS rds, String name, String sid, String snapshotId, Properties props) {
     this.rds = checkNotNull(rds);
-    this.name = checkNotBlank(name, "name");
-    this.sid = checkNotBlank(sid, "sid").toUpperCase(ENGLISH);
+    this.name = checkedName(name);
+    this.sid = checkedSid(sid);
     this.snapshotId = checkNotBlank(snapshotId, "snapshotId");
     this.props = checkNotNull(props);
     checkArgument(sid.length() < 8, "max length for an oracle sid is 8 characters");

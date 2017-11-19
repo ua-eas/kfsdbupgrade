@@ -23,7 +23,7 @@ public final class DatabaseInstanceProvider implements Provider<Optional<DBInsta
 
   public Optional<DBInstance> get() {
     for (DBInstance instance : rds.describeDBInstances().getDBInstances()) {
-      if (name.equalsIgnoreCase(instance.getDBInstanceIdentifier())) {
+      if (name.equals(instance.getDBInstanceIdentifier())) {
         return of(instance);
       }
     }

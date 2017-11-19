@@ -6,12 +6,12 @@ import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseInt;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 
 import java.util.Properties;
 
@@ -32,7 +32,7 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
 
   public FinalizeDatabaseProvider(AmazonRDS rds, String name, Properties props) {
     this.rds = checkNotNull(rds);
-    this.name = checkNotBlank(name, "name");
+    this.name = checkedName(name);
     this.props = checkNotNull(props);
   }
 
