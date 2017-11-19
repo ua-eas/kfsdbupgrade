@@ -13,17 +13,17 @@ import com.google.common.base.Optional;
 
 public final class DatabaseInstanceProvider implements Provider<Optional<DBInstance>> {
 
-  public DatabaseInstanceProvider(AmazonRDS rds, String instanceId) {
+  public DatabaseInstanceProvider(AmazonRDS rds, String name) {
     this.rds = checkNotNull(rds);
-    this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.name = checkNotBlank(name, "name");
   }
 
   private final AmazonRDS rds;
-  private final String instanceId;
+  private final String name;
 
   public Optional<DBInstance> get() {
     for (DBInstance instance : rds.describeDBInstances().getDBInstances()) {
-      if (instanceId.equalsIgnoreCase(instance.getDBInstanceIdentifier())) {
+      if (name.equalsIgnoreCase(instance.getDBInstanceIdentifier())) {
         return of(instance);
       }
     }

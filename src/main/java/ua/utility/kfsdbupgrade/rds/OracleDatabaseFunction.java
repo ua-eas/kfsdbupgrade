@@ -3,6 +3,7 @@ package ua.utility.kfsdbupgrade.rds;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.google.common.base.Function;
 
+// singleton enum pattern
 public enum OracleDatabaseFunction implements Function<DBInstance, OracleDatabase> {
   INSTANCE;
 
