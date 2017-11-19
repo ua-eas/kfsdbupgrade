@@ -13,6 +13,9 @@ import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_REGION;
 import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ORACLE_SID;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedSid;
+import static ua.utility.kfsdbupgrade.rds.Rds.getNormalizedName;
+import static ua.utility.kfsdbupgrade.rds.Rds.getNormalizedSid;
 
 import java.util.Properties;
 
@@ -40,8 +43,8 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     Stopwatch sw = createStarted();
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), DEFAULT_AWS_REGION);
     String snapshotName = checkedValue(props, "db.snapshot.name");
-    String name = checkedName(checkedValue(props, "db.name"));
-    String sid = props.getProperty("db.sid", DEFAULT_ORACLE_SID);
+    String name = checkedName(getNormalizedName(checkedValue(props, "db.name")));
+    String sid = checkedSid(getNormalizedSid(props.getProperty("db.sid", DEFAULT_ORACLE_SID)));
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     if (parseBoolean(props, "db.create", false)) {

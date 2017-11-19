@@ -7,6 +7,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.lang3.StringUtils.isAllLowerCase;
 import static org.apache.commons.lang3.StringUtils.isAllUpperCase;
 
+import java.util.Locale;
+
 import com.amazonaws.services.rds.AmazonRDS;
 
 public final class Rds {
@@ -30,12 +32,20 @@ public final class Rds {
     return sid;
   }
 
+  public static String getNormalizedName(String name) {
+    return normalize(name.toLowerCase(Locale.ENGLISH).trim(), true);
+  }
+
+  public static String getNormalizedSid(String sid) {
+    return normalize(sid.toUpperCase(Locale.ENGLISH).trim(), false);
+  }
+
   public static String checkedName(String name) {
     checkArgument(isAllLowerCase(name), "[%s] must be all lower case", name);
     checkArgument(!name.endsWith("-"), "[%s] name cannot end with a hyphen", name);
     checkArgument(!name.contains("--"), "[%s] name cannot contain consecutive hyphens", name);
     checkArgument(name.length() < 63, "[%s] %s characters is too long, max is 63", name, name.length());
-    checkArgument(name.length() > 0, "[%s] name must contain at least one character", name);
+    checkArgument(name.length() > 0, "[%s] name cannot be blank", name);
     checkArgument(isLowerCase(name.charAt(0)), "[%s] name must start with a letter", name);
     checkArgument(isNormalized(name, true), "[%s] name must only contain letters, digits, and hyphens", name);
     return name;
