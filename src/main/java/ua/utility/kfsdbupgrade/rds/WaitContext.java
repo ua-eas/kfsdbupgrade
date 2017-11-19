@@ -9,32 +9,25 @@ import java.util.concurrent.TimeUnit;
 
 public final class WaitContext {
 
-  private static final long DEFAULT_PAUSE = getMillis("15s");
-  private static final long DEFAULT_INTERVAL = getMillis("5s");
+  private static final long DEFAULT_PAUSE = getMillis("30s");
+  private static final long DEFAULT_INTERVAL = getMillis("10s");
   private static final long DEFAULT_DISPLAY = getMillis("1m");
 
   public WaitContext(long timeout) {
-    this(DEFAULT_INTERVAL, timeout, DEFAULT_DISPLAY);
+    this(DEFAULT_PAUSE, DEFAULT_INTERVAL, timeout, DEFAULT_DISPLAY);
   }
 
-  public WaitContext(long interval, long timeout) {
-    this(interval, timeout, DEFAULT_DISPLAY);
-  }
-
-  public WaitContext(long interval, long timeout, long display) {
-    this(interval, timeout, display, MILLISECONDS);
-  }
-
-  public WaitContext(long interval, long timeout, long display, TimeUnit unit) {
-    this(DEFAULT_PAUSE, interval, timeout, display, unit);
+  public WaitContext(long pause, long interval, long timeout, long display) {
+    this(pause, interval, timeout, display, MILLISECONDS);
   }
 
   public WaitContext(long pause, long interval, long timeout, long display, TimeUnit unit) {
     checkArgument(pause >= 0, "pause must be >= 0");
-    checkArgument(interval > 0, "interval must be > 0");
+    checkArgument(interval >= 0, "interval must be >= 0");
     checkArgument(timeout > 0, "timeout must be > 0");
+    checkArgument(timeout >= pause, "timeout must be >= pause");
+    checkArgument(timeout >= interval, "timeout must be >= interval");
     checkArgument(display >= 0, "display must be >= 0");
-    checkArgument(timeout >= interval, "timeout must be >= than interval");
     this.unit = checkNotNull(unit);
     this.pause = pause;
     this.interval = interval;
