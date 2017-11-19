@@ -40,11 +40,18 @@ public final class Waiter<T> implements Provider<T> {
     long display = 0;
     T instance = null;
     do {
-      long sleep = max(context.getDuration() - other.elapsed(context.getUnit()), 0);
+      // if this is the first iteration, sleep for "pause" amount
+      // otherwise sleep for "interval" minus the amount of time consumed by activities other than sleeping
+      // if activities other than sleeping consume more time than "interval", sleep for zero
+      long sleep = (instance == null) ? context.getPause() : max(context.getInterval() - other.elapsed(context.getUnit()), 0);
       checkedSleep(sleep, context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
+      // start a new stopwatch that tracks any time spent doing anything besides sleeping
       other = createStarted();
+      // display how long we've been waiting
       display = display(display, timer);
-      instance = provider.get();
+      // use the provider to obtain another instance
+      instance = checkNotNull(provider.get(), "instance");
+      // continue looping until we get an instance that matches our predicate
     } while (!predicate.apply(instance));
     return instance;
   }

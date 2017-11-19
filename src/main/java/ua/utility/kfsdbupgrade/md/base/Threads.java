@@ -18,7 +18,7 @@ public final class Threads {
   }
 
   public static long checkedSleep(long duration, long timeout, long elapsed, TimeUnit unit) {
-    checkState(elapsed <= timeout, "timeout exceeded %s > %s", getTime(elapsed, unit), getTime(timeout, unit));
+    checkState(timeout >= elapsed, "timeout exceeded %s > %s", getTime(elapsed, unit), getTime(timeout, unit));
     long sleep = min(duration, timeout - elapsed);
     return sleep(sleep, unit);
   }
