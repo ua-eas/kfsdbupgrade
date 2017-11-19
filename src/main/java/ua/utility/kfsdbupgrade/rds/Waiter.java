@@ -46,7 +46,7 @@ public final class Waiter<T> implements Provider<T> {
       long sleep = (instance == null) ? context.getPause() : max(context.getInterval() - other.elapsed(context.getUnit()), 0);
       checkedSleep(sleep, context.getTimeout(), timer.elapsed(context.getUnit()), context.getUnit());
       // start a new stopwatch that tracks any time spent doing anything besides sleeping
-      other = createStarted();
+      other.reset().start();
       // display how long we've been waiting
       display = display(display, timer);
       // use the provider to obtain another instance
