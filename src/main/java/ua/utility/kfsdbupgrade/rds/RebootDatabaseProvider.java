@@ -25,30 +25,30 @@ public final class RebootDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(RebootDatabaseProvider.class);
 
-  public RebootDatabaseProvider(AmazonRDS rds, String instanceId) {
+  public RebootDatabaseProvider(AmazonRDS rds, String name) {
     this.rds = checkNotNull(rds);
-    this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.name = checkNotBlank(name, "name");
   }
 
   private final AmazonRDS rds;
-  private final String instanceId;
+  private final String name;
 
   public String get() {
     Stopwatch sw = createStarted();
-    checkPresent(rds, instanceId);
-    reboot(rds, instanceId);
-    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
+    checkPresent(rds, name);
+    reboot(rds, name);
+    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
-    info(LOGGER, "waiting up to %s for [%s] to be rebooted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    info(LOGGER, "waiting up to %s for [%s] to be rebooted", getTime(ctx.getTimeout(), ctx.getUnit()), name);
     Optional<DBInstance> instance = new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", instanceId, instance.get().getDBInstanceStatus(), getTime(sw));
-    return instanceId;
+    info(LOGGER, "database=%s, status=%s [%s]", name, instance.get().getDBInstanceStatus(), getTime(sw));
+    return name;
   }
 
-  private void reboot(AmazonRDS rds, String instanceId) {
+  private void reboot(AmazonRDS rds, String name) {
     RebootDBInstanceRequest request = new RebootDBInstanceRequest();
-    request.setDBInstanceIdentifier(instanceId);
+    request.setDBInstanceIdentifier(name);
     rds.rebootDBInstance(request);
   }
 

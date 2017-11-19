@@ -31,34 +31,34 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(FinalizeDatabaseProvider.class);
 
-  public FinalizeDatabaseProvider(AmazonRDS rds, String instanceId, Properties props) {
+  public FinalizeDatabaseProvider(AmazonRDS rds, String name, Properties props) {
     this.rds = checkNotNull(rds);
-    this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.name = checkNotBlank(name, "name");
     this.props = checkNotNull(props);
   }
 
   private final AmazonRDS rds;
-  private final String instanceId;
+  private final String name;
   private final Properties props;
 
   public String get() {
     Stopwatch sw = createStarted();
-    checkPresent(rds, instanceId);
-    finalize(rds, instanceId);
-    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
+    checkPresent(rds, name);
+    finalize(rds, name);
+    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
-    info(LOGGER, "waiting up to %s for [%s] to be modified", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    info(LOGGER, "waiting up to %s for [%s] to be modified", getTime(ctx.getTimeout(), ctx.getUnit()), name);
     Optional<DBInstance> instance = new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", instanceId, instance.get().getDBInstanceStatus(), getTime(sw));
-    return instanceId;
+    info(LOGGER, "database=%s, status=%s [%s]", name, instance.get().getDBInstanceStatus(), getTime(sw));
+    return name;
   }
 
-  private void finalize(AmazonRDS rds, String instanceId) {
-    info(LOGGER, "modifying [%s]", instanceId);
+  private void finalize(AmazonRDS rds, String name) {
+    info(LOGGER, "modifying [%s]", name);
     List<String> vpcSecurityGroupIds = csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2"));
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();
-    request.setDBInstanceIdentifier(instanceId);
+    request.setDBInstanceIdentifier(name);
     request.setVpcSecurityGroupIds(vpcSecurityGroupIds);
     request.setDBParameterGroupName(props.getProperty("rds.parameter.group.name", "kuali-oracle-12-1"));
     request.setBackupRetentionPeriod(parseInt(props, "rds.backup.retention.period", 0));
