@@ -3,7 +3,7 @@ package ua.utility.kfsdbupgrade.rds;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
+import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 
 import javax.inject.Provider;
 
@@ -15,7 +15,7 @@ public final class DatabaseInstanceProvider implements Provider<Optional<DBInsta
 
   public DatabaseInstanceProvider(AmazonRDS rds, String name) {
     this.rds = checkNotNull(rds);
-    this.name = checkNotBlank(name, "name");
+    this.name = checkedName(name);
   }
 
   private final AmazonRDS rds;
