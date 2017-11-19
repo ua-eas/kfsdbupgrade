@@ -18,8 +18,11 @@
  */
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.base.Stopwatch.createStarted;
+import static java.lang.String.format;
+import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
+
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,20 +31,21 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.impl.config.property.JAXBConfigImpl;
 import org.kuali.rice.kew.batch.XmlPollerServiceImpl;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.google.common.base.Stopwatch;
+
 public class WorkflowImporter {
+
+  private static final Logger LOGGER = Logger.getLogger(WorkflowImporter.class);
+
   private static final String WORKFLOW_PROCESSING_FOLDER = "workflow-processing";
   private static ClassPathXmlApplicationContext context;
   private String upgradeRoot;
-  private static final Logger LOGGER = Logger.getLogger(WorkflowImporter.class);
 
   /**
    * Initializes the KFS web context components necessary to process the Workflow XML. This context is defined in the resource file <code>kfs-workflow-importer-startup.xml</code> .
@@ -49,7 +53,7 @@ public class WorkflowImporter {
   private void initializeKfs() {
     LOGGER.info("Initializing Web Context");
     LOGGER.info("Calling KualiInitializeListener.contextInitialized");
-    long start = System.currentTimeMillis();
+    Stopwatch sw = createStarted();
 
     Properties baseProps = new Properties();
     baseProps.putAll(System.getProperties());
@@ -59,7 +63,7 @@ public class WorkflowImporter {
     context = new ClassPathXmlApplicationContext("kfs-workflow-importer-startup.xml");
     context.start();
 
-    LOGGER.info("Completed KualiInitializeListener.contextInitialized in " + ((System.currentTimeMillis() - start) / 1000) + "sec");
+    LOGGER.info(format("Completed KualiInitializeListener.contextInitialized in %s", getTime(sw)));
   }
 
   /**
@@ -75,16 +79,6 @@ public class WorkflowImporter {
    */
   public WorkflowImporter(String upgradeRoot, List<String> upgradeFolders) {
     this.upgradeRoot = upgradeRoot;
-    Appender logFileAppender;
-    try {
-      logFileAppender = new FileAppender(new SimpleLayout(), getLogFileName());
-      LOGGER.addAppender(logFileAppender);
-    } catch (IOException e) {
-      /*
-       * Unable to recover, but still logging to console, so reasonable to continue
-       */
-      LOGGER.error("Unable to log to file " + getLogFileName() + " . IOException encountered: ", e);
-    }
     try {
       initializeKfs();
 

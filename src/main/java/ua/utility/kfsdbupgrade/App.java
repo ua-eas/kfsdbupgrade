@@ -204,10 +204,6 @@ public class App {
     }
   }
 
-  private OracleDatabase doCreateDatabase() {
-    return new OracleDatabaseProvider(properties).get();
-  }
-
   /**
    * Main entry point for the database upgrade code path.
    */
@@ -328,7 +324,7 @@ public class App {
       info(LOGGER, "storing workflow properties to -> %s", file);
       write(writer.toString(), file, UTF_8);
       URL url = file.toURI().toURL();
-      System.getProperties().setProperty("security.property.file", url.toString());
+      System.setProperty("security.property.file", url.toString());
       new WorkflowImporter(upgradeRoot, upgradeFolders);
     } catch (IOException e) {
       throw illegalState(e);
@@ -342,7 +338,7 @@ public class App {
    *          {@link String} of the path to the <code>.properties</code> file to use
    */
   private void doWorkflow(String propertyFileName) {
-    System.getProperties().setProperty("security.property.file", "file:" + propertyFileName);
+    System.setProperty("security.property.file", "file:" + propertyFileName);
     new WorkflowImporter(upgradeRoot, upgradeFolders);
   }
 
