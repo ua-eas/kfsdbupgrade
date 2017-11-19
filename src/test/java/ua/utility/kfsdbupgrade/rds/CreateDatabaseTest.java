@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 
-public final class OracleDatabaseProviderTest {
+public final class CreateDatabaseTest {
 
   @Test
   public void test() {
