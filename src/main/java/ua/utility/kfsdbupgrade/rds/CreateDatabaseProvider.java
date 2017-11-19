@@ -44,39 +44,41 @@ public final class CreateDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(CreateDatabaseProvider.class);
 
-  public CreateDatabaseProvider(AmazonRDS rds, String instanceId, String snapshotId, Properties props) {
+  public CreateDatabaseProvider(AmazonRDS rds, String name, String sid, String snapshotId, Properties props) {
     this.rds = checkNotNull(rds);
-    this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.name = checkNotBlank(name, "name");
+    this.sid = checkNotBlank(sid, "sid");
     this.snapshotId = checkNotBlank(snapshotId, "snapshotId");
     this.props = checkNotNull(props);
   }
 
   private final AmazonRDS rds;
-  private final String instanceId;
+  private final String name;
+  private final String sid;
   private final String snapshotId;
   private final Properties props;
 
   public String get() {
     Stopwatch sw = createStarted();
-    info(LOGGER, "creating database [%s] from snapshot [%s]", instanceId, snapshotId);
-    checkAbsent(rds, instanceId);
-    List<Tag> tags = getTags(getDefaultTags(props, instanceId));
-    create(rds, instanceId, snapshotId, tags);
-    info(LOGGER, "database created [%s] - [%s]", instanceId, getTime(sw));
-    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
+    info(LOGGER, "creating database [%s] from snapshot [%s]", name, snapshotId);
+    checkAbsent(rds, name);
+    List<Tag> tags = getTags(getDefaultTags(props, name));
+    create(rds, name, sid, snapshotId, tags);
+    info(LOGGER, "database created [%s] - [%s]", name, getTime(sw));
+    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"), getMillis("1m"));
-    info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), name);
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
     Optional<DBInstance> database = new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", instanceId, database.get().getDBInstanceStatus(), getTime(sw));
+    info(LOGGER, "database=%s, status=%s [%s]", name, database.get().getDBInstanceStatus(), getTime(sw));
     return database.get().getDBInstanceIdentifier();
   }
 
-  private void create(AmazonRDS rds, String instanceId, String snapshotId, Iterable<Tag> tags) {
+  private void create(AmazonRDS rds, String name, String sid, String snapshotId, Iterable<Tag> tags) {
     RestoreDBInstanceFromDBSnapshotRequest request = new RestoreDBInstanceFromDBSnapshotRequest();
     request.setDBSnapshotIdentifier(snapshotId);
-    request.setDBInstanceIdentifier(instanceId);
-    request.setDBName(instanceId);
+    request.setDBInstanceIdentifier(name);
+    request.setDBName(sid);
     request.setDBInstanceClass(props.getProperty("rds.instance.class", "db.m4.xlarge"));
     request.setDBSubnetGroupName(props.getProperty("rds.subnet.group.name", "rds-private-subnet-group"));
     request.setMultiAZ(parseBoolean(props, "rds.multi.az", false));

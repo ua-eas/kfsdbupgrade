@@ -140,7 +140,7 @@ public class App {
     if (integrated) {
       // provisions a new database if db.create=true, otherwise just gets connection details
       OracleDatabase db = new OracleDatabaseProvider(properties).get();
-      properties.setProperty("db.name", db.getId());
+      properties.setProperty("db.name", db.getName());
       properties.setProperty("db.endpoint", db.getEndpoint());
       properties.setProperty("db.sid", db.getSid());
       properties.setProperty("db.port", Integer.toString(db.getPort()));

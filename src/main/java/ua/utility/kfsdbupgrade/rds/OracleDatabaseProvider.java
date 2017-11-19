@@ -36,22 +36,23 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     Stopwatch sw = createStarted();
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), "us-west-2");
     String snapshotDatabase = checkedValue(props, "db.snapshot.name");
-    String instanceId = checkedValue(props, "db.name");
+    String name = checkedValue(props, "db.name");
+    String sid = checkedValue(props, "db.sid");
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     if (parseBoolean(props, "db.create", true)) {
       info(LOGGER, "provisioning new database");
       boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
       String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, automatedOnly).get();
-      new DeleteDatabaseProvider(rds, instanceId, props).get();
-      new CreateDatabaseProvider(rds, instanceId, snapshotId, props).get();
-      new FinalizeDatabaseProvider(rds, instanceId, props).get();
-      new RebootDatabaseProvider(rds, instanceId).get();
-      info(LOGGER, "provisioned database [%s] - [%s]", instanceId, getTime(sw));
+      new DeleteDatabaseProvider(rds, name, props).get();
+      new CreateDatabaseProvider(rds, name, sid, snapshotId, props).get();
+      new FinalizeDatabaseProvider(rds, name, props).get();
+      new RebootDatabaseProvider(rds, name).get();
+      info(LOGGER, "provisioned database [%s] - [%s]", name, getTime(sw));
     } else {
-      checkPresent(rds, instanceId);
+      checkPresent(rds, name);
     }
-    DBInstance aws = new DatabaseInstanceProvider(rds, instanceId).get().get();
+    DBInstance aws = new DatabaseInstanceProvider(rds, name).get().get();
     return OracleDatabaseFunction.INSTANCE.apply(aws);
   }
 
