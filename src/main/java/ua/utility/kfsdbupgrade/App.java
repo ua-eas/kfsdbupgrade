@@ -903,11 +903,9 @@ public class App {
    *           Any {@link IOException} encountered OTHER than {@link FileNotFoundException}s will be rethrown
    */
   private void deleteFile(File f) throws IOException {
-    try {
+    if (f.exists()) {
       FileUtils.forceDelete(f);
-    } catch (FileNotFoundException ex) {
     }
-    ;
   }
 
   /**
@@ -932,27 +930,23 @@ public class App {
       logHeader2("dropping materialized view logs...");
       res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
 
-      List<String> logs = new ArrayList<String>();
-
+      List<String> logs = new ArrayList<>();
       while (res.next()) {
         logs.add(res.getString(1));
       }
-
       for (String log : logs) {
         stmt.execute("drop materialized view log on " + log);
         LOGGER.info("dropped materialized view log on " + log);
       }
-
       res.close();
 
       logHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
 
-      StringBuilder sql = new StringBuilder(256);
+      StringBuilder sql = new StringBuilder();
       sql.append("select count(*), SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
       sql.append("from KRIM_TYP_ATTR_T group by SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
       sql.append("having count(*) > 1");
       res = stmt.executeQuery(sql.toString());
-
       while (res.next()) {
         if (stmt2 == null) {
           stmt2 = conn.prepareStatement("select KIM_TYP_ATTR_ID from KRIM_TYP_ATTR_T where sort_cd = ? and KIM_TYP_ID = ? and  KIM_ATTR_DEFN_ID = ? and ACTV_IND = ?");
@@ -962,9 +956,7 @@ public class App {
         stmt2.setString(2, res.getString(2));
         stmt2.setString(3, res.getString(3));
         stmt2.setString(4, res.getString(4));
-
         res2 = stmt2.executeQuery();
-
         int indx = 0;
         // FIXME dead code; indx is NEVER > 0
         while (res2.next()) {
@@ -976,7 +968,6 @@ public class App {
           }
         }
       }
-
       retval = true;
     } catch (Exception ex) {
       LOGGER.error(ex);
@@ -984,7 +975,6 @@ public class App {
       closeDbObjects(null, null, res);
       closeDbObjects(null, stmt2, res2);
     }
-
     return retval;
   }
 
