@@ -19,7 +19,6 @@ import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 
 public final class ConnectionProvider implements Provider<Connection> {
@@ -42,10 +41,9 @@ public final class ConnectionProvider implements Provider<Connection> {
       String url;
       if (props.containsKey("db.endpoint")) {
         String endpoint = checkedValue(props, "db.endpoint");
-        info(LOGGER, "using database endpoint '%s' to construct full jdbc url", endpoint);
-        String name = props.getProperty("db.name", Splitter.on('.').split(endpoint).iterator().next().toUpperCase(ENGLISH));
+        info(LOGGER, "using db endpoint [%s] to create jdbc url", endpoint);
         String port = props.getProperty("db.port", "1521");
-        String sid = props.getProperty("db.sid", name);
+        String sid = props.getProperty("db.sid", "ORCL");
         url = format("jdbc:oracle:thin:@%s:%s:%s", endpoint, port, sid);
       } else if (props.containsKey("db.name")) {
         String name = checkedValue(props, "db.name");
