@@ -13,7 +13,6 @@ import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
-import java.util.List;
 import java.util.Properties;
 
 import javax.inject.Provider;
@@ -56,10 +55,9 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
   }
 
   private void finalize(AmazonRDS rds, String name) {
-    List<String> vpcSecurityGroupIds = csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2"));
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();
     request.setDBInstanceIdentifier(name);
-    request.setVpcSecurityGroupIds(vpcSecurityGroupIds);
+    request.setVpcSecurityGroupIds(csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2")));
     request.setDBParameterGroupName(props.getProperty("rds.parameter.group.name", "kuali-oracle-12-1"));
     request.setBackupRetentionPeriod(parseInt(props, "rds.backup.retention.period", 0));
     request.setApplyImmediately(parseBoolean(props, "rds.apply.immediately", true));
