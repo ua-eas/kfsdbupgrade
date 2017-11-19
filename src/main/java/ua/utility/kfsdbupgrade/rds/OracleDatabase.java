@@ -5,13 +5,13 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public final class OracleDatabase {
 
-  private final String id;
+  private final String name;
   private final String endpoint;
   private final String sid;
   private final int port;
 
   private OracleDatabase(Builder builder) {
-    this.id = builder.id;
+    this.name = builder.name;
     this.endpoint = builder.endpoint;
     this.sid = builder.sid;
     this.port = builder.port;
@@ -23,13 +23,13 @@ public final class OracleDatabase {
 
   public static class Builder {
 
-    private String id;
+    private String name;
     private String endpoint;
     private String sid;
     private int port;
 
-    public Builder withId(String id) {
-      this.id = id;
+    public Builder withName(String name) {
+      this.name = name;
       return this;
     }
 
@@ -53,16 +53,12 @@ public final class OracleDatabase {
     }
 
     private static OracleDatabase validate(OracleDatabase instance) {
-      checkArgument(isNotBlank(instance.id), "id cannot be blank");
+      checkArgument(isNotBlank(instance.name), "name cannot be blank");
       checkArgument(isNotBlank(instance.endpoint), "endpoint cannot be blank");
       checkArgument(isNotBlank(instance.sid), "sid cannot be blank");
       checkArgument(instance.port > 0, "port must be greater than zero");
       return instance;
     }
-  }
-
-  public String getId() {
-    return id;
   }
 
   public String getEndpoint() {
@@ -75,6 +71,10 @@ public final class OracleDatabase {
 
   public int getPort() {
     return port;
+  }
+
+  public String getName() {
+    return name;
   }
 
 }

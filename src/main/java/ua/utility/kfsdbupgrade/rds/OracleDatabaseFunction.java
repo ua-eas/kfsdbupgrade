@@ -8,7 +8,7 @@ public enum OracleDatabaseFunction implements Function<DBInstance, OracleDatabas
 
   public OracleDatabase apply(DBInstance input) {
     OracleDatabase.Builder builder = OracleDatabase.builder();
-    builder.withId(input.getDBInstanceIdentifier());
+    builder.withName(input.getDBInstanceIdentifier());
     builder.withEndpoint(input.getEndpoint().getAddress());
     builder.withSid(input.getDBName());
     builder.withPort(input.getEndpoint().getPort());
