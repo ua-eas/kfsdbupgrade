@@ -10,6 +10,8 @@ import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
+import java.util.Properties;
+
 import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
@@ -26,24 +28,30 @@ public final class RebootDatabaseProvider implements Provider<String> {
   private static final Logger LOGGER = getLogger(RebootDatabaseProvider.class);
 
   public RebootDatabaseProvider(AmazonRDS rds, String name) {
+    this(rds, name, new Properties());
+  }
+
+  public RebootDatabaseProvider(AmazonRDS rds, String name, Properties props) {
     this.rds = checkNotNull(rds);
     this.name = checkNotBlank(name, "name");
+    this.props = checkNotNull(props);
   }
 
   private final AmazonRDS rds;
   private final String name;
+  private final Properties props;
 
   public String get() {
     Stopwatch sw = createStarted();
     checkPresent(rds, name);
     reboot(rds, name);
+    long timeout = getMillis(props.getProperty("rds.reboot.timeout", "15m"));
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
-    info(LOGGER, "waiting up to %s for [%s] to be rebooted", getTime(ctx.getTimeout(), ctx.getUnit()), name);
-    Optional<DBInstance> instance = new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", name, instance.get().getDBInstanceStatus(), getTime(sw));
-    return name;
+    info(LOGGER, "waiting up to %s for [%s] to be rebooted", getTime(timeout), name);
+    DBInstance instance = new Waiter<>(timeout, provider, predicate).get().get();
+    info(LOGGER, "database [%s, status=%s] [%s]", instance.getDBInstanceIdentifier(), instance.getDBInstanceStatus(), getTime(sw));
+    return instance.getDBInstanceIdentifier();
   }
 
   private void reboot(AmazonRDS rds, String name) {

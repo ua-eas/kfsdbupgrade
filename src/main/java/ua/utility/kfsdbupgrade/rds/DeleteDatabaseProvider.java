@@ -9,6 +9,7 @@ import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
+import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_DELETING;
 import static ua.utility.kfsdbupgrade.rds.Rds.isAbsent;
 
 import java.util.Properties;
@@ -20,7 +21,6 @@ import org.apache.log4j.Logger;
 import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
 public final class DeleteDatabaseProvider implements Provider<String> {
@@ -48,26 +48,29 @@ public final class DeleteDatabaseProvider implements Provider<String> {
       return name;
     }
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
-    if (isDeleteRequired(provider.get())) {
+    DBInstance instance = provider.get().get();
+    if (isDeleteRequired(instance)) {
+      info(LOGGER, "deleting database [%s]", name);
       delete(rds, name);
+    } else {
+      info(LOGGER, "database [%s] is already in state [%s]", name, STATUS_DELETING);
     }
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
-    info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(ctx.getTimeout(), ctx.getUnit()), name);
-    new Waiter<>(getMillis("15m"), provider, not(db -> db.isPresent())).get();
-    info(LOGGER, "database=%s, status=deleted [%s]", name, getTime(sw));
+    long timeout = getMillis(props.getProperty("rds.delete.timeout", "15m"));
+    info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(timeout), name);
+    new Waiter<>(timeout, provider, not(db -> db.isPresent())).get();
+    info(LOGGER, "database [%s, status=deleted] [%s]", name, getTime(sw));
     return name;
   }
 
-  private void delete(AmazonRDS rds, String instanceId) {
-    info(LOGGER, "deleting database [%s]", instanceId);
+  private void delete(AmazonRDS rds, String name) {
     DeleteDBInstanceRequest delete = new DeleteDBInstanceRequest();
-    delete.setDBInstanceIdentifier(instanceId);
+    delete.setDBInstanceIdentifier(name);
     delete.setSkipFinalSnapshot(parseBoolean(props, "rds.skip.final.snapshot", true));
     rds.deleteDBInstance(delete);
   }
 
-  private boolean isDeleteRequired(Optional<DBInstance> instance) {
-    return instance.isPresent() && !instance.get().getDBInstanceStatus().equalsIgnoreCase("deleting");
+  private boolean isDeleteRequired(DBInstance instance) {
+    return !instance.getDBInstanceStatus().equalsIgnoreCase(STATUS_DELETING);
   }
 
 }

@@ -6,6 +6,7 @@ import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.endsWithIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.substring;
 import static ua.utility.kfsdbupgrade.md.base.Exceptions.illegalArgument;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 
@@ -86,7 +87,7 @@ public final class Formats {
 
   protected static long getTimeValue(String time, String suffix, long multiplier) {
     int len = StringUtils.length(time);
-    String substring = StringUtils.substring(time, 0, len - suffix.length());
+    String substring = substring(time, 0, len - suffix.length());
     Double value = new Double(substring);
     value = value * multiplier;
     return value.longValue();

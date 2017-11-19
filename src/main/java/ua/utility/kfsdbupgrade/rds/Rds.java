@@ -9,8 +9,13 @@ public final class Rds {
   private Rds() {
   }
 
-  public static String STATUS_AVAILABLE = "available";
-  public static String STATUS_MODIFYING = "modifying";
+  public static final String STATUS_AVAILABLE = "available";
+  public static final String STATUS_MODIFYING = "modifying";
+  public static final String STATUS_DELETING = "deleting";
+  public static final String DEFAULT_ORACLE_SID = "ORCL";
+  public static final String DEFAULT_AWS_ACCOUNT = "UAccess Financials";
+  public static final String DEFAULT_ENVIRONMENT = "dev";
+  public static final String DEFAULT_AWS_REGION = "us-west-2";
 
   public static String checkAbsent(AmazonRDS rds, String instanceId) {
     checkState(isAbsent(rds, instanceId), "database [%s] already exists", instanceId);

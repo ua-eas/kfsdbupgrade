@@ -1,10 +1,12 @@
 package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Optional.fromNullable;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static java.util.Locale.ENGLISH;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
@@ -17,6 +19,8 @@ import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.split;
+import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_ACCOUNT;
+import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ENVIRONMENT;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkAbsent;
 
@@ -47,9 +51,11 @@ public final class CreateDatabaseProvider implements Provider<String> {
   public CreateDatabaseProvider(AmazonRDS rds, String name, String sid, String snapshotId, Properties props) {
     this.rds = checkNotNull(rds);
     this.name = checkNotBlank(name, "name");
-    this.sid = checkNotBlank(sid, "sid");
+    this.sid = checkNotBlank(sid, "sid").toUpperCase(ENGLISH);
     this.snapshotId = checkNotBlank(snapshotId, "snapshotId");
     this.props = checkNotNull(props);
+    checkArgument(sid.length() < 8, "max length for an oracle sid is 8 characters");
+    checkArgument(name.length() < 63, "max length for an rds database name is 63 characters");
   }
 
   private final AmazonRDS rds;
@@ -60,18 +66,18 @@ public final class CreateDatabaseProvider implements Provider<String> {
 
   public String get() {
     Stopwatch sw = createStarted();
+    long timeout = getMillis(props.getProperty("rds.create.timeout", "1h"));
     info(LOGGER, "creating database [%s] from snapshot [%s]", name, snapshotId);
     checkAbsent(rds, name);
     List<Tag> tags = getTags(getDefaultTags(props, name));
     create(rds, name, sid, snapshotId, tags);
     info(LOGGER, "database created [%s] - [%s]", name, getTime(sw));
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("1h"), getMillis("1m"));
-    info(LOGGER, "waiting up to %s for [%s] to become available", getTime(ctx.getTimeout(), ctx.getUnit()), name);
+    info(LOGGER, "waiting up to %s for [%s] to become available", getTime(timeout), name);
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
-    Optional<DBInstance> database = new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", name, database.get().getDBInstanceStatus(), getTime(sw));
-    return database.get().getDBInstanceIdentifier();
+    DBInstance instance = new Waiter<>(timeout, provider, predicate).get().get();
+    info(LOGGER, "database [%s, status=%s] [%s]", instance.getDBInstanceIdentifier(), instance.getDBInstanceStatus(), getTime(sw));
+    return instance.getDBInstanceIdentifier();
   }
 
   private void create(AmazonRDS rds, String name, String sid, String snapshotId, Iterable<Tag> tags) {
@@ -103,14 +109,14 @@ public final class CreateDatabaseProvider implements Provider<String> {
     return newList(list);
   }
 
-  private ImmutableMap<String, Optional<String>> getDefaultTags(Properties props, String instanceId) {
-    String uaf = props.getProperty("rds.account", "UAccess Financials");
+  private ImmutableMap<String, Optional<String>> getDefaultTags(Properties props, String name) {
+    String account = props.getProperty("rds.account", DEFAULT_AWS_ACCOUNT);
     Map<String, Optional<String>> map = newLinkedHashMap();
-    map.put("service", fromNullable(props.getProperty("rds.tag.service", uaf)));
-    map.put("accountnumber", fromNullable(props.getProperty("rds.tag.accountnumber", uaf)));
-    map.put("subaccount", fromNullable(props.getProperty("rds.tag.subaccount", uaf)));
-    map.put("name", fromNullable(props.getProperty("rds.tag.name", instanceId)));
-    map.put("environment", fromNullable(props.getProperty("rds.tag.environment", "dev")));
+    map.put("service", fromNullable(props.getProperty("rds.tag.service", account)));
+    map.put("accountnumber", fromNullable(props.getProperty("rds.tag.accountnumber", account)));
+    map.put("subaccount", fromNullable(props.getProperty("rds.tag.subaccount", account)));
+    map.put("name", fromNullable(props.getProperty("rds.tag.name", name)));
+    map.put("environment", fromNullable(props.getProperty("rds.tag.environment", DEFAULT_ENVIRONMENT)));
     String prefix = "rds.tag.";
     for (String key : filter(props.stringPropertyNames(), key -> key.startsWith(prefix))) {
       map.put(removeStart(key, prefix), fromNullable(props.getProperty(key)));

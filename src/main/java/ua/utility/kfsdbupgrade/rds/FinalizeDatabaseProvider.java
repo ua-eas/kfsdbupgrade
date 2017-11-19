@@ -44,18 +44,18 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
   public String get() {
     Stopwatch sw = createStarted();
     checkPresent(rds, name);
+    info(LOGGER, "finalizing [%s]", name);
     finalize(rds, name);
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
-    WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
+    long timeout = getMillis(props.getProperty("rds.finalize.timeout", "15m"));
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
-    info(LOGGER, "waiting up to %s for [%s] to be modified", getTime(ctx.getTimeout(), ctx.getUnit()), name);
-    Optional<DBInstance> instance = new Waiter<>(ctx, provider, predicate).get();
-    info(LOGGER, "database=%s, status=%s [%s]", name, instance.get().getDBInstanceStatus(), getTime(sw));
+    info(LOGGER, "waiting up to %s for [%s] to be finalized", getTime(timeout), name);
+    DBInstance instance = new Waiter<>(timeout, provider, predicate).get().get();
+    info(LOGGER, "database [%s, status=%s] [%s]", name, instance.getDBInstanceStatus(), getTime(sw));
     return name;
   }
 
   private void finalize(AmazonRDS rds, String name) {
-    info(LOGGER, "modifying [%s]", name);
     List<String> vpcSecurityGroupIds = csv(props.getProperty("rds.vpc.security.group.ids", "sg-9afa41e2"));
     ModifyDBInstanceRequest request = new ModifyDBInstanceRequest();
     request.setDBInstanceIdentifier(name);

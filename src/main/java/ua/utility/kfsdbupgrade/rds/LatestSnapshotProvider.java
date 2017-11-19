@@ -26,22 +26,22 @@ public final class LatestSnapshotProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(LatestSnapshotProvider.class);
 
-  public LatestSnapshotProvider(AmazonRDS rds, String instanceId, boolean automatedOnly) {
+  public LatestSnapshotProvider(AmazonRDS rds, String name, boolean automatedOnly) {
     this.rds = checkNotNull(rds);
-    this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.name = checkNotBlank(name, "name");
     this.automatedOnly = automatedOnly;
   }
 
   private final AmazonRDS rds;
-  private final String instanceId;
+  private final String name;
   private final boolean automatedOnly;
   private final String automatedPrefix = "rds:";
 
   public String get() {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
-    request.setDBInstanceIdentifier(instanceId);
+    request.setDBInstanceIdentifier(name);
     Predicate<DBSnapshot> predicate = (automatedOnly) ? (ss) -> ss.getDBSnapshotIdentifier().startsWith(automatedPrefix) : (ss) -> true;
-    String log = (automatedOnly) ? format("instance=%s, startsWith=%s", instanceId, automatedPrefix) : "instance:" + instanceId;
+    String log = (automatedOnly) ? format("instance=%s, startsWith=%s", name, automatedPrefix) : "instance:" + name;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, (ss) -> ss.getSnapshotCreateTime().getTime()));
     checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);

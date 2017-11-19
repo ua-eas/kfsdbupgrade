@@ -8,6 +8,8 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Props.checkedValue;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
+import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_REGION;
+import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ORACLE_SID;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkPresent;
 
 import java.util.Properties;
@@ -34,20 +36,20 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
   @Override
   public OracleDatabase get() {
     Stopwatch sw = createStarted();
-    String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), "us-west-2");
-    String snapshotDatabase = checkedValue(props, "db.snapshot.name");
+    String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), DEFAULT_AWS_REGION);
+    String snapshotName = checkedValue(props, "db.snapshot.name");
     String name = checkedValue(props, "db.name");
-    String sid = props.getProperty("db.sid", "ORCL");
+    String sid = props.getProperty("db.sid", DEFAULT_ORACLE_SID);
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     if (parseBoolean(props, "db.create", false)) {
       info(LOGGER, "provisioning new database");
       boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
-      String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, automatedOnly).get();
+      String snapshotId = new LatestSnapshotProvider(rds, snapshotName, automatedOnly).get();
       new DeleteDatabaseProvider(rds, name, props).get();
       new CreateDatabaseProvider(rds, name, sid, snapshotId, props).get();
       new FinalizeDatabaseProvider(rds, name, props).get();
-      new RebootDatabaseProvider(rds, name).get();
+      new RebootDatabaseProvider(rds, name, props).get();
       info(LOGGER, "provisioned database [%s] - [%s]", name, getTime(sw));
     } else {
       checkPresent(rds, name);
