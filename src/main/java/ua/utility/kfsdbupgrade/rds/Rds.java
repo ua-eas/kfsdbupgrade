@@ -30,7 +30,7 @@ public final class Rds {
     String normalized = normalize(name, true);
     checkArgument(!normalized.endsWith("-"), "[%s] name cannot end with a hyphen", normalized);
     checkArgument(!normalized.contains("--"), "[%s] name cannot contain consecutive hyphens", normalized);
-    checkArgument(normalized.length() < 63, "[%s] name must be 63 characters or less", normalized);
+    checkArgument(normalized.length() < 63, "[%s] name is %s characters. Must be 63 characters or less", normalized, normalized.length());
     checkArgument(normalized.length() > 0, "[%s] name must contain at least one character", normalized);
     checkArgument(isLowerCase(normalized.charAt(0)), "[%s] name must start with a letter", normalized);
     return normalized;
