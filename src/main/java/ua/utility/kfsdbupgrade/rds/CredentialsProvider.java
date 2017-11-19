@@ -16,6 +16,10 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
 public final class CredentialsProvider implements Provider<AWSCredentials> {
 
+  public CredentialsProvider() {
+    this(new Properties());
+  }
+
   public CredentialsProvider(Properties props) {
     this.props = checkNotNull(props);
   }

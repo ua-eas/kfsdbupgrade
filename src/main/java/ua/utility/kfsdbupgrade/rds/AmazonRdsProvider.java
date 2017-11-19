@@ -22,6 +22,10 @@ public final class AmazonRdsProvider implements Provider<AmazonRDS> {
 
   private static final Logger LOGGER = getLogger(AmazonRdsProvider.class);
 
+  public AmazonRdsProvider() {
+    this("us-west-2", new CredentialsProvider().get());
+  }
+
   public AmazonRdsProvider(String region, AWSCredentials credentials) {
     this.region = checkNotBlank(region, "region");
     this.credentials = checkNotNull(credentials);

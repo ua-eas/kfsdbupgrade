@@ -27,31 +27,35 @@ public final class DeleteDatabaseProvider implements Provider<String> {
 
   private static final Logger LOGGER = getLogger(DeleteDatabaseProvider.class);
 
-  public DeleteDatabaseProvider(AmazonRDS rds, String instanceId, Properties props) {
+  public DeleteDatabaseProvider(AmazonRDS rds, String name) {
+    this(rds, name, new Properties());
+  }
+
+  public DeleteDatabaseProvider(AmazonRDS rds, String name, Properties props) {
     this.rds = checkNotNull(rds);
-    this.instanceId = checkNotBlank(instanceId, "instanceId");
+    this.name = checkNotBlank(name, "name");
     this.props = checkNotNull(props);
   }
 
   private final AmazonRDS rds;
-  private final String instanceId;
+  private final String name;
   private final Properties props;
 
   public String get() {
     Stopwatch sw = createStarted();
-    if (isAbsent(rds, instanceId)) {
-      info(LOGGER, "[%s] does not exist - skipping delete", instanceId);
-      return instanceId;
+    if (isAbsent(rds, name)) {
+      info(LOGGER, "[%s] does not exist - skipping delete", name);
+      return name;
     }
-    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, instanceId);
+    DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
     if (isDeleteRequired(provider.get())) {
-      delete(rds, instanceId);
+      delete(rds, name);
     }
     WaitContext ctx = new WaitContext(getMillis("5s"), getMillis("15m"), getMillis("1m"));
-    info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(ctx.getTimeout(), ctx.getUnit()), instanceId);
+    info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(ctx.getTimeout(), ctx.getUnit()), name);
     new Waiter<>(getMillis("15m"), provider, not(db -> db.isPresent())).get();
-    info(LOGGER, "database=%s, status=deleted [%s]", instanceId, getTime(sw));
-    return instanceId;
+    info(LOGGER, "database=%s, status=deleted [%s]", name, getTime(sw));
+    return name;
   }
 
   private void delete(AmazonRDS rds, String instanceId) {

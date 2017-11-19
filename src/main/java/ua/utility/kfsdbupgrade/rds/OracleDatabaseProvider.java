@@ -40,7 +40,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     String sid = props.getProperty("db.sid", "ORCL");
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
-    if (parseBoolean(props, "db.create", true)) {
+    if (parseBoolean(props, "db.create", false)) {
       info(LOGGER, "provisioning new database");
       boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
       String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, automatedOnly).get();
