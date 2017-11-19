@@ -53,7 +53,7 @@ public final class Waiter<T> implements Provider<T> {
     long elapsed = timer.elapsed(context.getUnit());
     if (elapsed - display >= context.getDisplay()) {
       info(LOGGER, "waited for %s, max wait=%s", getTime(elapsed), getTime(context.getTimeout(), context.getUnit()));
-      return elapsed;
+      return timer.elapsed(context.getUnit());
     } else {
       return display;
     }
