@@ -37,7 +37,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), "us-west-2");
     String snapshotDatabase = checkedValue(props, "db.snapshot.name");
     String name = checkedValue(props, "db.name");
-    String sid = props.getProperty("db.sid", name);
+    String sid = props.getProperty("db.sid", "ORCL");
     AWSCredentials credentials = new CredentialsProvider(props).get();
     AmazonRDS rds = new AmazonRdsProvider(region, credentials).get();
     if (parseBoolean(props, "db.create", true)) {
