@@ -1,6 +1,7 @@
 package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.util.Arrays.asList;
 import static org.apache.log4j.Logger.getLogger;
@@ -51,19 +52,19 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
       new CreateDatabaseProvider(rds, name, sid, snapshotId, props).get();
       new FinalizeDatabaseProvider(rds, name, props).get();
       new RebootDatabaseProvider(rds, name, props).get();
-      info(LOGGER, "provisioned database [%s] - [%s]", name, getTime(sw));
     } else {
       checkPresent(rds, name);
     }
     DBInstance aws = new DatabaseInstanceProvider(rds, name).get().get();
     OracleDatabase oracle = OracleDatabaseFunction.INSTANCE.apply(aws);
-    info(LOGGER, "database is %s", aws.getDBInstanceStatus());
+    checkState(oracle.getSid().equals(sid), "Oracle SID mismatch :: [expected=%s, actual=%s]", sid, oracle.getSid());
     info(LOGGER, "region ---> %s", region);
     info(LOGGER, "name -----> %s", name);
     info(LOGGER, "endpoint -> %s", oracle.getEndpoint());
     info(LOGGER, "port -----> %s", oracle.getPort());
     info(LOGGER, "SID ------> %s", oracle.getSid());
     info(LOGGER, "jdbc -----> %s", OracleJdbcUrlFunction.INSTANCE.apply(oracle));
+    info(LOGGER, "database [%s] is %s - [%s]", name, aws.getDBInstanceStatus(), getTime(sw));
     return oracle;
   }
 

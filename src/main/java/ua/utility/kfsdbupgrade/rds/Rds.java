@@ -1,9 +1,11 @@
 package ua.utility.kfsdbupgrade.rds;
 
 import static com.google.common.base.Ascii.isLowerCase;
+import static com.google.common.base.Ascii.isUpperCase;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Locale.ENGLISH;
+import static org.apache.commons.lang3.StringUtils.isAllLowerCase;
+import static org.apache.commons.lang3.StringUtils.isAllUpperCase;
 
 import com.amazonaws.services.rds.AmazonRDS;
 
@@ -21,25 +23,36 @@ public final class Rds {
   public static final String DEFAULT_AWS_REGION = "us-west-2";
 
   public static String checkedSid(String sid) {
-    String normalized = normalize(sid, false).toUpperCase(ENGLISH);
-    checkArgument(normalized.length() < 8, "[%s] sid must be 8 characters or less", normalized);
-    return normalized;
+    checkArgument(isAllUpperCase(sid), "[%s] must be all upper case", sid);
+    checkArgument(sid.length() < 8, "[%s] %s characters is too long, max is 8", sid, sid.length());
+    checkArgument(sid.length() > 0, "[%s] sid cannot be blank", sid);
+    checkArgument(isNormalized(sid, false), "[%s] sid must only contain letters and digits", sid);
+    return sid;
   }
 
   public static String checkedName(String name) {
-    String normalized = normalize(name, true);
-    checkArgument(!normalized.endsWith("-"), "[%s] name cannot end with a hyphen", normalized);
-    checkArgument(!normalized.contains("--"), "[%s] name cannot contain consecutive hyphens", normalized);
-    checkArgument(normalized.length() < 63, "[%s] name is %s characters. Must be 63 characters or less", normalized, normalized.length());
-    checkArgument(normalized.length() > 0, "[%s] name must contain at least one character", normalized);
-    checkArgument(isLowerCase(normalized.charAt(0)), "[%s] name must start with a letter", normalized);
-    return normalized;
+    checkArgument(isAllLowerCase(name), "[%s] must be all lower case", name);
+    checkArgument(!name.endsWith("-"), "[%s] name cannot end with a hyphen", name);
+    checkArgument(!name.contains("--"), "[%s] name cannot contain consecutive hyphens", name);
+    checkArgument(name.length() < 63, "[%s] %s characters is too long, max is 63", name, name.length());
+    checkArgument(name.length() > 0, "[%s] name must contain at least one character", name);
+    checkArgument(isLowerCase(name.charAt(0)), "[%s] name must start with a letter", name);
+    checkArgument(isNormalized(name, true), "[%s] name must only contain letters, digits, and hyphens", name);
+    return name;
   }
 
-  private static String normalize(String name, boolean hyphens) {
-    String lower = name.toLowerCase(ENGLISH).trim();
+  private static boolean isNormalized(String string, boolean hyphens) {
+    for (char c : string.trim().toCharArray()) {
+      if (isNotAllowed(c, hyphens)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static String normalize(String string, boolean hyphens) {
     StringBuilder sb = new StringBuilder();
-    for (char c : lower.toCharArray()) {
+    for (char c : string.trim().toCharArray()) {
       if (isAllowed(c, hyphens)) {
         sb.append(c);
       }
@@ -47,8 +60,12 @@ public final class Rds {
     return sb.toString();
   }
 
+  private static boolean isNotAllowed(char c, boolean hyphens) {
+    return !isAllowed(c, hyphens);
+  }
+
   private static boolean isAllowed(char c, boolean hyphens) {
-    return isLowerCase(c) || isDigit(c) || (hyphens && c == '-');
+    return isUpperCase(c) || isLowerCase(c) || isDigit(c) || (hyphens && c == '-');
   }
 
   private static boolean isDigit(char c) {

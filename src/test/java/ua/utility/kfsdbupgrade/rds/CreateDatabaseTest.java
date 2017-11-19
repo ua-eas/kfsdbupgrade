@@ -12,7 +12,8 @@ public final class CreateDatabaseTest {
   public void test() {
     try {
       System.setProperty("db.name", "kfs3-integrated-upgrade");
-      System.setProperty("db.create", "false");
+      System.setProperty("db.create", "true");
+      System.setProperty("db.sid", "KFS6UPG");
       System.setProperty("db.snapshot.name", "kfs3imp");
       System.setProperty("rds.tag.contactnetid", "jcaddel");
       System.setProperty("rds.tag.ticket", "UAF-6014");
