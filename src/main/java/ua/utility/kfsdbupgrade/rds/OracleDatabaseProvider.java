@@ -42,7 +42,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
   public OracleDatabase get() {
     Stopwatch sw = createStarted();
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), DEFAULT_AWS_REGION);
-    String snapshotName = checkedValue(props, "db.snapshot.name");
+    String snapshotName = checkedName(getNormalizedName(checkedValue(props, "db.snapshot.name")));
     String name = checkedName(getNormalizedName(checkedValue(props, "db.name")));
     String sid = checkedSid(getNormalizedSid(props.getProperty("db.sid", DEFAULT_ORACLE_SID)));
     AWSCredentials credentials = new CredentialsProvider(props).get();

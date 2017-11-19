@@ -1,31 +1,20 @@
 package ua.utility.kfsdbupgrade.rds;
 
-import static com.google.common.base.Optional.fromNullable;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newLinkedHashMap;
-import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.log4j.Logger.getLogger;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getMillis;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
-import static ua.utility.kfsdbupgrade.md.base.Lists.filter;
 import static ua.utility.kfsdbupgrade.md.base.Lists.newList;
-import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.md.base.Props.parseBoolean;
-import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
-import static ua.utility.kfsdbupgrade.md.base.Splitters.split;
-import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_ACCOUNT;
-import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ENVIRONMENT;
 import static ua.utility.kfsdbupgrade.rds.Rds.STATUS_AVAILABLE;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkAbsent;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkedSid;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,12 +27,10 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.RestoreDBInstanceFromDBSnapshotRequest;
 import com.amazonaws.services.rds.model.Tag;
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 public final class CreateDatabaseProvider implements Provider<String> {
 
@@ -55,8 +42,6 @@ public final class CreateDatabaseProvider implements Provider<String> {
     this.sid = checkedSid(sid);
     this.snapshotId = checkNotBlank(snapshotId, "snapshotId");
     this.props = checkNotNull(props);
-    checkArgument(sid.length() < 8, "max length for an oracle sid is 8 characters");
-    checkArgument(name.length() < 63, "max length for an rds database name is 63 characters");
   }
 
   private final AmazonRDS rds;
@@ -70,7 +55,7 @@ public final class CreateDatabaseProvider implements Provider<String> {
     long timeout = getMillis(props.getProperty("rds.create.timeout", "1h"));
     info(LOGGER, "creating database [%s] from snapshot [%s]", name, snapshotId);
     checkAbsent(rds, name);
-    List<Tag> tags = getTags(getDefaultTags(props, name));
+    List<Tag> tags = getTags(new TagsProvider(name, props).get());
     create(rds, name, sid, snapshotId, tags);
     info(LOGGER, "database created [%s] - [%s]", name, getTime(sw));
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
@@ -99,30 +84,13 @@ public final class CreateDatabaseProvider implements Provider<String> {
     rds.restoreDBInstanceFromDBSnapshot(request);
   }
 
-  private ImmutableList<Tag> getTags(Map<String, Optional<String>> defaultTags) {
-    List<String> strings = transform(defaultTags.entrySet(), e -> e.getKey() + (e.getValue().isPresent() ? "=" + e.getValue().get() : ""));
-    String tags = props.getProperty("rds.tags", Joiner.on(',').join(strings));
+  private ImmutableList<Tag> getTags(Map<String, Optional<String>> tags) {
     List<Tag> list = newArrayList();
-    for (String tag : csv(tags)) {
-      Iterator<String> itr = split('=', tag).iterator();
-      list.add(new Tag().withKey(itr.next()).withValue(itr.hasNext() ? itr.next() : null));
+    for (String tag : tags.keySet()) {
+      Optional<String> value = tags.get(tag);
+      list.add(new Tag().withKey(tag).withValue(value.orNull()));
     }
     return newList(list);
-  }
-
-  private ImmutableMap<String, Optional<String>> getDefaultTags(Properties props, String name) {
-    String account = props.getProperty("rds.account", DEFAULT_AWS_ACCOUNT);
-    Map<String, Optional<String>> map = newLinkedHashMap();
-    map.put("service", fromNullable(props.getProperty("rds.tag.service", account)));
-    map.put("accountnumber", fromNullable(props.getProperty("rds.tag.accountnumber", account)));
-    map.put("subaccount", fromNullable(props.getProperty("rds.tag.subaccount", account)));
-    map.put("name", fromNullable(props.getProperty("rds.tag.name", name)));
-    map.put("environment", fromNullable(props.getProperty("rds.tag.environment", DEFAULT_ENVIRONMENT)));
-    String prefix = "rds.tag.";
-    for (String key : filter(props.stringPropertyNames(), key -> key.startsWith(prefix))) {
-      map.put(removeStart(key, prefix), fromNullable(props.getProperty(key)));
-    }
-    return ImmutableMap.copyOf(map);
   }
 
 }
