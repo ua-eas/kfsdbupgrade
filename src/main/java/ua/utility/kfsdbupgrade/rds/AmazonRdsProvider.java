@@ -7,6 +7,7 @@ import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.base.Formats.getTime;
 import static ua.utility.kfsdbupgrade.md.base.Preconditions.checkNotBlank;
 import static ua.utility.kfsdbupgrade.rds.Credentials.fromCredentials;
+import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_REGION;
 
 import javax.inject.Provider;
 
@@ -23,7 +24,7 @@ public final class AmazonRdsProvider implements Provider<AmazonRDS> {
   private static final Logger LOGGER = getLogger(AmazonRdsProvider.class);
 
   public AmazonRdsProvider() {
-    this("us-west-2", new CredentialsProvider().get());
+    this(DEFAULT_AWS_REGION, new CredentialsProvider().get());
   }
 
   public AmazonRdsProvider(String region, AWSCredentials credentials) {
