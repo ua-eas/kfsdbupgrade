@@ -37,11 +37,13 @@ public final class TagsProvider implements Provider<ImmutableMap<String, Optiona
   private ImmutableMap<String, Optional<String>> getTags(Map<String, Optional<String>> defaultTags) {
     Map<String, Optional<String>> map = newLinkedHashMap();
     map.putAll(defaultTags);
-    for (String tag : csv(props.getProperty("rds.tags", ""))) {
-      Iterator<String> itr = split('=', tag).iterator();
-      String key = itr.next();
-      Optional<String> value = itr.hasNext() ? Optional.of(itr.next()) : Optional.<String>absent();
-      map.put(key, value);
+    if (props.containsKey("rds.tags")) {
+      for (String tag : csv(props.getProperty("rds.tags"))) {
+        Iterator<String> itr = split('=', tag).iterator();
+        String key = itr.next();
+        Optional<String> value = itr.hasNext() ? Optional.of(itr.next()) : Optional.<String>absent();
+        map.put(key, value);
+      }
     }
     return ImmutableMap.copyOf(map);
   }
