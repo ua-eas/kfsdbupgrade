@@ -42,7 +42,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
   public OracleDatabase get() {
     Stopwatch sw = createStarted();
     String region = checkedValue(props, asList("aws.region", "AWS_DEFAULT_REGION"), DEFAULT_AWS_REGION);
-    String snapshotName = checkedName(getNormalizedName(checkedValue(props, "db.snapshot.name")));
+    String snapshotDatabase = checkedName(getNormalizedName(checkedValue(props, "db.snapshot.name")));
     String name = checkedName(getNormalizedName(checkedValue(props, "db.name")));
     String sid = checkedSid(getNormalizedSid(props.getProperty("db.sid", DEFAULT_ORACLE_SID)));
     AWSCredentials credentials = new CredentialsProvider(props).get();
@@ -50,7 +50,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
     if (parseBoolean(props, "db.create", false)) {
       info(LOGGER, "provisioning new database [%s] oracle sid: %s", name, sid);
       boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
-      String snapshotId = new LatestSnapshotProvider(rds, snapshotName, automatedOnly).get();
+      String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, automatedOnly).get();
       new DeleteDatabaseProvider(rds, name, props).get();
       new CreateDatabaseProvider(rds, name, sid, snapshotId, props).get();
       new FinalizeDatabaseProvider(rds, name, props).get();
