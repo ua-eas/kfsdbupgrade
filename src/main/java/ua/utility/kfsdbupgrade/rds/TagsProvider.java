@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static ua.utility.kfsdbupgrade.md.base.Lists.filter;
-import static ua.utility.kfsdbupgrade.md.base.Lists.transform;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.csv;
 import static ua.utility.kfsdbupgrade.md.base.Splitters.split;
 import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_AWS_ACCOUNT;
@@ -13,13 +12,11 @@ import static ua.utility.kfsdbupgrade.rds.Rds.DEFAULT_ENVIRONMENT;
 import static ua.utility.kfsdbupgrade.rds.Rds.checkedName;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Provider;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
@@ -38,10 +35,9 @@ public final class TagsProvider implements Provider<ImmutableMap<String, Optiona
   }
 
   private ImmutableMap<String, Optional<String>> getTags(Map<String, Optional<String>> defaultTags) {
-    List<String> strings = transform(defaultTags.entrySet(), e -> e.getKey() + (e.getValue().isPresent() ? "=" + e.getValue().get() : ""));
-    String tags = props.getProperty("rds.tags", Joiner.on(',').join(strings));
     Map<String, Optional<String>> map = newLinkedHashMap();
-    for (String tag : csv(tags)) {
+    map.putAll(defaultTags);
+    for (String tag : csv(props.getProperty("rds.tags", ""))) {
       Iterator<String> itr = split('=', tag).iterator();
       String key = itr.next();
       Optional<String> value = itr.hasNext() ? Optional.of(itr.next()) : Optional.<String>absent();
