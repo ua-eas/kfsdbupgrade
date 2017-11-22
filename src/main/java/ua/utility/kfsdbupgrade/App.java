@@ -15,11 +15,9 @@
  */
 package ua.utility.kfsdbupgrade;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.lang.String.format;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getCount;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getThroughputInSeconds;
-import static ua.utility.kfsdbupgrade.mdoc.Formats.getTime;
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
+import static java.lang.Boolean.parseBoolean;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -51,27 +49,25 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
+
+import com.google.common.base.Optional;
 
 import liquibase.FileSystemFileOpener;
 import liquibase.Liquibase;
-import ua.utility.kfsdbupgrade.mdoc.ExecutorProvider;
-import ua.utility.kfsdbupgrade.mdoc.MaintDocConverter;
-import ua.utility.kfsdbupgrade.mdoc.MaintDocResult;
-import ua.utility.kfsdbupgrade.mdoc.ThreadsProvider;
+import ua.utility.kfsdbupgrade.log.SimplePatternLayout;
+import ua.utility.kfsdbupgrade.md.ConnectionProvider;
+import ua.utility.kfsdbupgrade.md.MDocsProvider;
+import ua.utility.kfsdbupgrade.md.PropertiesProvider;
 
 public class App {
 	private static final Logger LOGGER = Logger.getLogger(App.class);
 
-    private static final int MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE = 1000;
-    
 	public static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final String UNDERLINE = "--------------------------------------------------------------------------------------------------------------------------";
     public static final String ERROR = "************************************************* error *************************************************";
@@ -121,31 +117,36 @@ public class App {
 	 * 
 	 * @param args
 	 */
-    public static void main(final String args[]) {
-      if (args == null || args.length == 0) {
-        System.out.println("Usage: java -jar kfsdbupgrade.jar kfsdbupgrade.properties");
-        System.exit(1);
-      }
+    public static void main(final String[] args) {
       try {
-        String propertyFileName = args[0];
-        boolean ingestWorkflow = false;
-        if (args.length > 1) {
-          ingestWorkflow = "ingestWorkflow".equalsIgnoreCase(args[1]);
-        }
-			  App app = new App(propertyFileName);
-			  if (ingestWorkflow) {
-			    app.doWorkflow(propertyFileName);
+        Optional<String> commandLinePropertiesFile = getArg(args, 0);
+        Optional<String> workflowIndicator = getArg(args, 1);
+			  App app = new App(commandLinePropertiesFile);
+			  if (isIngestWorkflow(workflowIndicator)) {
+			    app.doWorkflow(commandLinePropertiesFile.get());
 			  } else {
 			    app.doUpgrade();
         }
 			  System.exit(0);
       } catch(Throwable e) {
-        LOGGER.fatal(e);
         e.printStackTrace();
+        LOGGER.fatal(e);
         System.exit(1);
       }
     }
+    
+    private static boolean isIngestWorkflow(Optional<String> workflowIndicator) {
+     return "ingestWorkflow".equalsIgnoreCase(workflowIndicator.orNull());
+    }
 
+    private static Optional<String> getArg(String[] args, int index) {
+      if (args != null && args.length > index) {
+        return of(args[index]);
+      } else {
+        return absent();
+      }
+    }
+    
     /**
 	 * Constructor.
 	 * 
@@ -153,15 +154,12 @@ public class App {
 	 *            {@link String} of the <code>.properties</code> file location
 	 *            to use
 	 */
-	public App(String propertyFileName) {
-		properties = loadProperties(DEFAULT_PROPERTIES_FILE);
-        if (propertyFileName != null) {
-			Properties overridenProps = loadProperties(propertyFileName);
-			if ( overridenProps != null ){
-				properties.putAll(overridenProps);
-			}
-			LOGGER.debug("Finished loading properties from "+propertyFileName);
-            upgradeRoot = properties.getProperty("upgrade-base-directory");
+    public App(String commandLinePropertiesFile) {
+      this(Optional.of(commandLinePropertiesFile));
+    }
+    public App(Optional<String> commandLinePropertiesFile) {
+		  this.properties = new PropertiesProvider(commandLinePropertiesFile).get();
+      upgradeRoot = properties.getProperty("upgrade-base-directory");
 			/*
 			 * If the post-upgrade-directory property is specified, use it as
 			 * the path for the directory; otherwise, default to
@@ -177,7 +175,7 @@ public class App {
             upgradeFiles = loadFolderFileMap("files-");
 			Appender logFileAppender;
 			try {
-				logFileAppender = new FileAppender(new SimpleLayout(), properties.getProperty("output-log-file-name"));
+				logFileAppender = new FileAppender(new SimplePatternLayout(), properties.getProperty("output-log-file-name"));
 				LOGGER.addAppender(logFileAppender);
 			} catch (IOException e) {
 				/*
@@ -187,10 +185,6 @@ public class App {
 				LOGGER.error("Unable to log to file " + properties.getProperty("output-log-file-name")
 						+ " . IOException encountered: ", e);
 			}
-        } else {
-			LOGGER.fatal("invalid properties file: " + propertyFileName);
-			postUpgradeDirectory = null;
-        }
     }
             
 	/**
@@ -206,15 +200,14 @@ public class App {
         Statement stmt = null;
         boolean success = false;
         try {
-            conn1 = getUpgradeConnection();
-            conn2 = getUpgradeConnection();
-            conn2.setAutoCommit(true);
+            conn1 = new ConnectionProvider(properties, false).get();
+            conn2 = new ConnectionProvider(properties, true).get();
             stmt = conn2.createStatement();
             stmt.execute("ALTER SESSION ENABLE PARALLEL DML");
             stmt.close();
             stmt = conn1.createStatement();
-			LOGGER.info("Starting KFS database upgrade process...");
-			     if (Boolean.parseBoolean(System.getProperty("mdoc.only"))) {
+			     LOGGER.info("Starting KFS database upgrade process...");
+			     if (parseBoolean(properties.getProperty("mdoc.only"))) {
 			       convertMaintenanceDocuments(conn1);
 			       return;
 			     }
@@ -402,37 +395,6 @@ public class App {
         }
 
         return retval;
-    }
-
-	/**
-	 * @param fname
-	 *            {@link String} location of a file to load into
-	 *            {@link Properties}
-	 * @return {@link Properties} loaded from the file at <code>fname</code>, or
-	 *         <code>null</code> if the file at <code>fname</code> does not
-	 *         contain an entry for <code>database-url</code> or if an
-	 *         {@link Exception} is encountered while attempting to read the
-	 *         file.
-	 */
-    private Properties loadProperties(String fname) {
-        Properties properties = new Properties();
-        FileReader reader = null;
-
-        try {
-            reader = new FileReader(fname);
-			properties.load(reader);
-        } catch (Exception fatal) {
-			    throw new IllegalStateException(fatal);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception ex) {
-            }
-        }
-
-        return properties;
     }
 
 	/**
@@ -863,16 +825,16 @@ public class App {
         props.setProperty("user", properties.getProperty("database-user"));
         props.setProperty("password", properties.getProperty("database-password"));
 
-		LOGGER.info("Connecting to db " + properties.getProperty("database-name") + "...");
-		LOGGER.info("url=" + url);
+		    LOGGER.info("Connecting to db " + properties.getProperty("database-name") + "...");
+		    LOGGER.info("url=" + url);
 
         Class.forName(properties.getProperty("database-driver"));
         retval = DriverManager.getConnection(url, props);
         retval.setReadOnly(false);
         retval.setAutoCommit(false);
 
-		LOGGER.info("connected to database " + properties.getProperty("database-name"));
-		LOGGER.info("");
+		    LOGGER.info("connected to database " + properties.getProperty("database-name"));
+		    LOGGER.info("");
 
         return retval;
     }
@@ -2760,37 +2722,10 @@ public class App {
 	 */
     private void convertMaintenanceDocuments(Connection upgradeConn) {
       logHeader2("Converting legacy maintenance documents to rice 2.0...");
-      MaintDocConverter converter = getMaintDocConverter(upgradeConn);
       try {
-        MaintDocResult result = converter.get();
-        String throughput = getThroughputInSeconds(result.getElapsed(), result.getConverted(), "docs/second");
-        LOGGER.info(format("maintenance docs converted -> %s", getCount(result.getConverted())));
-        LOGGER.info(format("maintenance docs errors ----> %s", getCount(result.getErrors())));
-        LOGGER.info(format("maintenance docs elapsed ---> %s", getTime(result.getElapsed())));
-        LOGGER.info(format("maintenance doc throughput -> %s", throughput));
+        new MDocsProvider(properties).get();
       } catch(Exception e) {
-        LOGGER.error(e);
-      }
-    }
-    
-    private MaintDocConverter getMaintDocConverter(Connection upgradeConn) {
-      try {
-        File rules = new File(properties.getProperty("maintenance-document-conversion-rules-file"));
-        checkArgument(rules.isFile(),"rules file does not exist -> %s", rules);
-        MaintainableXMLConversionServiceImpl converter = new MaintainableXMLConversionServiceImpl(rules);
-        EncryptionService encryptor = new EncryptionService(properties.getProperty("encryption-key"));
-        int threads = new ThreadsProvider(properties).get();
-        LOGGER.info(format("maintenance doc threads -> %s", threads));
-        ExecutorService executor = new ExecutorProvider("mdoc", threads).get();
-        MaintDocConverter.Builder builder = MaintDocConverter.builder();
-        builder.withBatchSize(MAINTENANCE_DOCUMENT_UPDATE_BATCH_SIZE);
-        builder.withConnection(upgradeConn);
-        builder.withConverter(converter);
-        builder.withEncryptor(encryptor);
-        builder.withExecutor(executor);
-        return builder.build();
-      }catch(Exception e) {
-        throw new IllegalStateException(e);
+        LOGGER.error("unexpected error converting maintenance documents",e);
       }
     }
 

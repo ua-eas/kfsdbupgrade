@@ -1,4 +1,4 @@
-package ua.utility.kfsdbupgrade.mdoc;
+package ua.utility.kfsdbupgrade.md;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -15,7 +15,7 @@ public final class ExecutorProvider implements Provider<ExecutorService> {
 
   public ExecutorProvider(String name, int threads) {
     checkArgument(isNotBlank(name), "name cannot be blank");
-    checkArgument(threads > 0, "threads must greater than zero");
+    checkArgument(threads > 0, "threads must be greater than zero");
     this.name = name;
     this.threads = threads;
   }
