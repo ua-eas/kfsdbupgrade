@@ -41,7 +41,7 @@ public final class LatestSnapshotProvider implements Provider<String> {
     DescribeDBSnapshotsRequest request = new DescribeDBSnapshotsRequest();
     request.setDBInstanceIdentifier(name);
     Predicate<DBSnapshot> predicate = (automatedOnly) ? (ss) -> ss.getDBSnapshotIdentifier().startsWith(automatedPrefix) : (ss) -> true;
-    String log = (automatedOnly) ? format("instance=%s, startsWith=%s", name, automatedPrefix) : "instance:" + name;
+    String log = (automatedOnly) ? format("instance=%s, startsWith=%s", name, automatedPrefix) : "instance=" + name;
     List<DBSnapshot> snapshots = rds.describeDBSnapshots(request).getDBSnapshots();
     List<DBSnapshot> filtered = reverse(sort(snapshots, predicate, (ss) -> ss.getSnapshotCreateTime().getTime()));
     checkState(filtered.size() > 0, "no snapshots found matching [%s]", log);
