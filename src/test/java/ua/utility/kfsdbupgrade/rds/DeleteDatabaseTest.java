@@ -9,7 +9,7 @@ public final class DeleteDatabaseTest {
   @Test
   public void test() {
     try {
-      String name = "kfs3-integrated-upgrade";
+      String name = "kfs6-integrated-upgrade";
       AmazonRDS rds = new AmazonRdsProvider().get();
       new DeleteDatabaseProvider(rds, name).get();
     } catch (Throwable e) {
@@ -19,3 +19,7 @@ public final class DeleteDatabaseTest {
   }
 
 }
+
+
+// error count
+// warning count 

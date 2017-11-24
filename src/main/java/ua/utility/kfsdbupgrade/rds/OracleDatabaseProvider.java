@@ -52,7 +52,7 @@ public final class OracleDatabaseProvider implements Provider<OracleDatabase> {
       boolean automatedOnly = parseBoolean(props, "rds.snapshot.automated.only", true);
       String snapshotId = new LatestSnapshotProvider(rds, snapshotDatabase, automatedOnly).get();
       new DeleteDatabaseProvider(rds, name, props).get();
-      new CreateDatabaseProvider(rds, name, sid, snapshotId, props).get();
+      new RestoreDatabaseProvider(rds, name, sid, snapshotId, props).get();
       new FinalizeDatabaseProvider(rds, name, props).get();
       new RebootDatabaseProvider(rds, name, props).get();
     } else {

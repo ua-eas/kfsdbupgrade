@@ -20,7 +20,9 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.io.Files.write;
 import static java.lang.Boolean.parseBoolean;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static ua.utility.kfsdbupgrade.log.Logging.info;
+import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.md.base.Exceptions.illegalState;
 
 import java.io.File;
@@ -228,11 +230,10 @@ public class App {
         return;
       }
 
-      if (doInitialProcessing(conn1, stmt)) {
-        doCommit(conn1);
-        if (doUpgrade(conn1, conn2, stmt)) {
-          success = true;
-        }
+      doInitialProcessing(conn1);
+      conn1.commit();
+      if (doUpgrade(conn1, conn2, stmt)) {
+        success = true;
       }
 
       if (success) {
@@ -592,9 +593,8 @@ public class App {
    *         a subset of {@link #upgradeFolders}; otherwise, will return a full copy of {@link #upgradeFolders}
    */
   private List<String> getFolders(String lastProcessedFile) {
-    List<String> retval = new ArrayList<String>();
-
-    if (StringUtils.isNotBlank(lastProcessedFile)) {
+    List<String> retval = new ArrayList<>();
+    if (isNotBlank(lastProcessedFile)) {
       String lastProcessedFolder = getLastProcessedFolder(lastProcessedFile);
       boolean foundit = false;
       for (String folder : upgradeFolders) {
@@ -917,65 +917,81 @@ public class App {
    *          {@link Statement} to execute SQL against
    * @return <code>true</code> if all commands executed successfully, <code>false</code> otherwise
    */
-  private boolean doInitialProcessing(Connection conn, Statement stmt) {
-    boolean retval = false;
-    ResultSet res = null;
-    ResultSet res2 = null;
-    PreparedStatement stmt2 = null;
+
+  private void dropMaterializedViewLogs(Connection conn) {
+    ResultSet rs = null;
+    Statement stmt = null;
     try {
-      deleteFile(new File(properties.getProperty("output-log-file-name")));
-      deleteFile(new File(properties.getProperty("processed-files-file-name")));
-
-      logHeader1("pre-upgrade processing");
       logHeader2("dropping materialized view logs...");
-      res = stmt.executeQuery("select LOG_OWNER || '.' || MASTER from SYS.user_mview_logs");
-
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery("SELECT LOG_OWNER || '.' || MASTER FROM SYS.user_mview_logs");
       List<String> logs = new ArrayList<>();
-      while (res.next()) {
-        logs.add(res.getString(1));
+      while (rs.next()) {
+        logs.add(rs.getString(1));
       }
       for (String log : logs) {
         stmt.execute("drop materialized view log on " + log);
         LOGGER.info("dropped materialized view log on " + log);
       }
-      res.close();
+    } catch (Throwable e) {
+      throw new IllegalStateException(e);
+    } finally {
+      closeQuietly(rs);
+      closeQuietly(stmt);
+    }
+  }
 
-      logHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
-
+  private void ensureKrimTypeAttributeUniqueness(Connection conn) {
+    logHeader2("ensuring combination of (SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND) unique on KRIM_TYP_ATTR_T...");
+    ResultSet rs = null;
+    ResultSet rs2 = null;
+    Statement stmt = null;
+    PreparedStatement pstmt = null;
+    try {
       StringBuilder sql = new StringBuilder();
       sql.append("select count(*), SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
       sql.append("from KRIM_TYP_ATTR_T group by SORT_CD, KIM_TYP_ID, KIM_ATTR_DEFN_ID, ACTV_IND ");
       sql.append("having count(*) > 1");
-      res = stmt.executeQuery(sql.toString());
-      while (res.next()) {
-        if (stmt2 == null) {
-          stmt2 = conn.prepareStatement("select KIM_TYP_ATTR_ID from KRIM_TYP_ATTR_T where sort_cd = ? and KIM_TYP_ID = ? and  KIM_ATTR_DEFN_ID = ? and ACTV_IND = ?");
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery(sql.toString());
+      while (rs.next()) {
+        if (pstmt == null) {
+          pstmt = conn.prepareStatement("select KIM_TYP_ATTR_ID from KRIM_TYP_ATTR_T where sort_cd = ? and KIM_TYP_ID = ? and  KIM_ATTR_DEFN_ID = ? and ACTV_IND = ?");
         }
-        String sortCd = res.getString(1);
-        stmt2.setString(1, sortCd);
-        stmt2.setString(2, res.getString(2));
-        stmt2.setString(3, res.getString(3));
-        stmt2.setString(4, res.getString(4));
-        res2 = stmt2.executeQuery();
+        String sortCd = rs.getString(1);
+        pstmt.setString(1, sortCd);
+        pstmt.setString(2, rs.getString(2));
+        pstmt.setString(3, rs.getString(3));
+        pstmt.setString(4, rs.getString(4));
+        rs2 = pstmt.executeQuery();
         int indx = 0;
         // FIXME dead code; indx is NEVER > 0
-        while (res2.next()) {
+        while (rs2.next()) {
           if (indx > 0) {
             indx++;
             if (sortCd.length() == 1) {
-              stmt.executeUpdate("update KRIM_TYP_ATTR_T set sort_cd = '" + (sortCd + indx) + "' where KIM_TYP_ATTR_ID = '" + res2.getString(1) + "'");
+              stmt.executeUpdate("update KRIM_TYP_ATTR_T set sort_cd = '" + (sortCd + indx) + "' where KIM_TYP_ATTR_ID = '" + rs2.getString(1) + "'");
             }
           }
         }
       }
-      retval = true;
-    } catch (Exception ex) {
-      LOGGER.error(ex);
+    } catch (Throwable e) {
+      throw new IllegalStateException(e);
     } finally {
-      closeDbObjects(null, null, res);
-      closeDbObjects(null, stmt2, res2);
+      closeQuietly(rs);
+      closeQuietly(rs2);
+      closeQuietly(stmt);
+      closeQuietly(pstmt);
     }
-    return retval;
+
+  }
+
+  private void doInitialProcessing(Connection conn) throws IOException {
+    logHeader1("pre-upgrade processing");
+    deleteFile(new File(properties.getProperty("output-log-file-name")));
+    deleteFile(new File(properties.getProperty("processed-files-file-name")));
+    dropMaterializedViewLogs(conn);
+    ensureKrimTypeAttributeUniqueness(conn);
   }
 
   /**

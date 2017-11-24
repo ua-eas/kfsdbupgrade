@@ -32,11 +32,11 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-public final class CreateDatabaseProvider implements Provider<String> {
+public final class RestoreDatabaseProvider implements Provider<String> {
 
-  private static final Logger LOGGER = getLogger(CreateDatabaseProvider.class);
+  private static final Logger LOGGER = getLogger(RestoreDatabaseProvider.class);
 
-  public CreateDatabaseProvider(AmazonRDS rds, String name, String sid, String snapshotId, Properties props) {
+  public RestoreDatabaseProvider(AmazonRDS rds, String name, String sid, String snapshotId, Properties props) {
     this.rds = checkNotNull(rds);
     this.name = checkedName(name);
     this.sid = checkedSid(sid);
@@ -56,7 +56,7 @@ public final class CreateDatabaseProvider implements Provider<String> {
     info(LOGGER, "creating database [%s] from snapshot [%s]", name, snapshotId);
     checkAbsent(rds, name);
     List<Tag> tags = getTags(new TagsProvider(name, props).get());
-    create(rds, name, sid, snapshotId, tags);
+    restore(rds, name, sid, snapshotId, tags);
     info(LOGGER, "database created [%s] - [%s]", name, getTime(sw));
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
     info(LOGGER, "waiting up to %s for [%s] to become available", getTime(timeout), name);
@@ -66,7 +66,7 @@ public final class CreateDatabaseProvider implements Provider<String> {
     return instance.getDBInstanceIdentifier();
   }
 
-  private void create(AmazonRDS rds, String name, String sid, String snapshotId, Iterable<Tag> tags) {
+  private void restore(AmazonRDS rds, String name, String sid, String snapshotId, Iterable<Tag> tags) {
     RestoreDBInstanceFromDBSnapshotRequest request = new RestoreDBInstanceFromDBSnapshotRequest();
     request.setDBSnapshotIdentifier(snapshotId);
     request.setDBInstanceIdentifier(name);
