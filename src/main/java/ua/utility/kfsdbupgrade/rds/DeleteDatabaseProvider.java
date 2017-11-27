@@ -57,7 +57,7 @@ public final class DeleteDatabaseProvider implements Provider<String> {
     }
     long timeout = getMillis(props.getProperty("rds.delete.timeout", "15m"));
     info(LOGGER, "waiting up to %s for [%s] to be deleted", getTime(timeout), name);
-    new Waiter<>(timeout, provider, not(db -> db.isPresent())).get();
+    new Waiter<>(provider, not(db -> db.isPresent()), timeout).get();
     info(LOGGER, "database [%s, status=deleted] [%s]", name, getTime(sw));
     return name;
   }

@@ -49,7 +49,7 @@ public final class RebootDatabaseProvider implements Provider<String> {
     DatabaseInstanceProvider provider = new DatabaseInstanceProvider(rds, name);
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
     info(LOGGER, "waiting up to %s for [%s] to be rebooted", getTime(timeout), name);
-    DBInstance instance = new Waiter<>(timeout, provider, predicate).get().get();
+    DBInstance instance = new Waiter<>(provider, predicate, timeout).get().get();
     info(LOGGER, "database [%s, status=%s] [%s]", instance.getDBInstanceIdentifier(), instance.getDBInstanceStatus(), getTime(sw));
     return instance.getDBInstanceIdentifier();
   }

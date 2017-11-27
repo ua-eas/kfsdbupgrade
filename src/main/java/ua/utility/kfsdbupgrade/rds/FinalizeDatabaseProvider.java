@@ -49,7 +49,7 @@ public final class FinalizeDatabaseProvider implements Provider<String> {
     long timeout = getMillis(props.getProperty("rds.finalize.timeout", "15m"));
     Predicate<Optional<DBInstance>> predicate = (db) -> db.isPresent() && db.get().getDBInstanceStatus().equals(STATUS_AVAILABLE);
     info(LOGGER, "waiting up to %s for [%s] to be finalized", getTime(timeout), name);
-    DBInstance instance = new Waiter<>(timeout, provider, predicate).get().get();
+    DBInstance instance = new Waiter<>(provider, predicate, timeout).get().get();
     info(LOGGER, "database [%s, status=%s] [%s]", name, instance.getDBInstanceStatus(), getTime(sw));
     return name;
   }
