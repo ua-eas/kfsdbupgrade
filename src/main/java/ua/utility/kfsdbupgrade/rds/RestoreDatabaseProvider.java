@@ -52,7 +52,7 @@ public final class RestoreDatabaseProvider implements Provider<String> {
 
   public String get() {
     Stopwatch sw = createStarted();
-    long timeout = getMillis(props.getProperty("rds.create.timeout", "1h"));
+    long timeout = getMillis(props.getProperty("rds.restore.timeout", "1h"));
     info(LOGGER, "creating database [%s] from snapshot [%s]", name, snapshotId);
     checkAbsent(rds, name);
     List<Tag> tags = getTags(new TagsProvider(name, props).get());
