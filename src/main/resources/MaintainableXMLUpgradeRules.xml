@@ -167,7 +167,11 @@
     <pattern>
       <match>edu.arizona.kfs.module.cam.businessobject.AssetAwardHistory</match>
       <replacement>edu.arizona.kfs.module.cam.businessobject.AssetAccountResponsibility</replacement>
-    </pattern>     
+    </pattern>  
+    <pattern>
+      <match>edu.arizona.kfs.coa.businessobject.OrganizationExt</match>
+      <replacement>org.kuali.kfs.krad.bo.PersistableBusinessObjectExtensionBase</replacement>
+    </pattern>         
   </rule>
 
   <!--  Rules specifying any change in class properties.
@@ -445,7 +449,22 @@
         <match>assetAwardHistory</match>
         <replacement>assetAccountResponsibilities</replacement>
       </pattern>
-    </pattern>       
+    </pattern>
+    <pattern>
+      <class>edu.arizona.kfs.coa.businessobject.OrganizationExt</class>
+      <pattern>
+        <match>organizationCode</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>chartOfAccountsCode</match>
+        <replacement></replacement>
+      </pattern>
+      <pattern>
+        <match>reportOrderCode</match>
+        <replacement></replacement>
+      </pattern>
+    </pattern>           
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
