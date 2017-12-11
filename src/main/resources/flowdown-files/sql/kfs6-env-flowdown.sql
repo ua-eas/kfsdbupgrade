@@ -82,9 +82,9 @@ select KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '1053323', 'T00000000000000546
 -- ====================================================================================================================
 
 -- add kfs-test-sec25 #T000000000000005416 to "Batch Job Modifier" role #82
--- insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd ) 
--- values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '82', 'T000000000000005416', 'P')
--- ;
+insert into krim_role_mbr_t ( role_mbr_id, ver_nbr, obj_id, role_id, mbr_id, mbr_typ_cd ) 
+values (KRIM_ROLE_MBR_ID_S.NEXTVAL, 1, SYS_GUID(), '82', 'T000000000000005416', 'P')
+;
 
 
 -- ====================================================================================================================
