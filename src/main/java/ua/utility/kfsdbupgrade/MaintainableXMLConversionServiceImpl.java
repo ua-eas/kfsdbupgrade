@@ -51,6 +51,7 @@ import org.kuali.rice.kim.api.identity.address.EntityAddress;
 import org.kuali.rice.kim.impl.identity.address.EntityAddressBo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -230,12 +231,41 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 			throw new SAXParseException(exMsg, null, ex);
 		}
 
-		// FIXME this traversal isn't guaranteed to get the full depth
         for(Node childNode = document.getFirstChild(); childNode != null;) {
 			Node nextChild = childNode.getNextSibling();
             transformClassNode(document, childNode);
+            // Also Transform first level Children which have class attribute
+            NodeList children = childNode.getChildNodes();        
+            for (int n = 0; n < children.getLength(); n++) {
+            	Node child = children.item(n);
+                if ((child != null) && (child.getNodeType() == Node.ELEMENT_NODE) && (child.hasAttributes())) {
+                    NamedNodeMap childAttributes = child.getAttributes();
+                    if (childAttributes.item(0).getNodeName() == "class") {
+                        String childClassName = childAttributes.item(0).getNodeValue();
+        	            if(classPropertyRuleMap.containsKey(childClassName)) {
+        	            	Map<String, String> propertyMappings = classPropertyRuleMap.get(childClassName);
+        	            	NodeList nestedChildren = child.getChildNodes();            	     
+        	                for (int i = 0; i < nestedChildren.getLength()-1; i++) {
+        	                	Node property = nestedChildren.item(i);
+        	                	String propertyName = property.getNodeName();
+        	                	if ((property.getNodeType() == Node.ELEMENT_NODE) && (propertyMappings != null) && (propertyMappings.containsKey(propertyName))) {
+    	            				String newPropertyName = propertyMappings.get(propertyName);
+    	            				if(StringUtils.isNotBlank(newPropertyName)) {
+    	            					document.renameNode(property, null, newPropertyName);
+    	            					propertyName = newPropertyName;
+    	            				} else {
+    	            					// If there is no replacement name then the element needs to be removed
+    	            					child.removeChild(property);
+    	            				}           	                		           	                		
+        	                    }
+        	                }
+        	            }
+                    }                 
+                }				
+            }
             childNode = nextChild;
-        }
+        }		
+
 
 		/*
 		 * the default logic that traverses over the document tree doesn't
@@ -247,6 +277,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 		migrateAccountExtensionObjects(document);
 		migrateClassAsAttribute(document);
 		removeAutoIncrementSetElements(document);
+		removeReconcilerGroup(document);
 		catchMissedTypedArrayListElements(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
@@ -542,6 +573,26 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 			LOGGER.error("XPathException encountered: ", e);
 		}
 	}
+	/*
+	 * UAF-5995
+	 * Used to remove the reconcilerGroup and its child nodes for the ProcurementCardDefault doc
+	 */
+	private void removeReconcilerGroup(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//reconcilerGroup");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node match = matchingNodes.item(i);
+				Node parent = match.getParentNode();
+				LOGGER.trace("Removing element 'reconcilerGroup' in " + parent.getNodeName());
+				parent.removeChild(match);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
 	/**
 	 * Investigative logging. Log if there are any elements with an \@class
 	 * attribute
@@ -595,7 +646,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
         
         return oldXML;
     }
-
+    
 	/**
 	 * Migrate any elements with the <code>class</code> containing
 	 * <code>PersonImpl</code> from the provided {@link Document} if there is a
@@ -658,27 +709,6 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 						tempNode.removeChild(child);
 					}
 				}
-				if (!(line1 == null || line1.isEmpty()) || !(line2 == null || line2.isEmpty())
-						|| !(line3 == null || line3.isEmpty()) || !(city == null || city.isEmpty())
-						|| !(stateProvinceCode == null || stateProvinceCode.isEmpty())
-						|| !(postalCode == null || postalCode.isEmpty())
-						|| !(countryCode == null || countryCode.isEmpty())) {
-					EntityAddressBo bo = new EntityAddressBo();
-					bo.setLine1(line1);
-					bo.setLine2(line2);
-					bo.setLine3(line3);
-					bo.setCity(city);
-					bo.setStateProvinceCode(stateProvinceCode);
-					bo.setPostalCode(postalCode);
-					bo.setCountryCode(countryCode);
-					EntityAddress address = EntityAddress.Builder.create(bo).build();
-
-					XStream xStream = new XStream(new DomDriver());
-					xStream.marshal(address, new DomWriter((Element) tempNode));
-				}
-				String newClassName = this.classNameRuleMap.get(personImplClassName);
-				Node classAttr = tempNode.getAttributes().getNamedItem("class");
-				classAttr.setNodeValue(newClassName);
             }
         } catch (XPathExpressionException e) {
 			LOGGER.error("XPathException encountered: ", e);

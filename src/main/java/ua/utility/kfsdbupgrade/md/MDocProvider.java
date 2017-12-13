@@ -5,6 +5,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.log4j.Logger.getLogger;
+import static ua.utility.kfsdbupgrade.log.Logging.info;
 import static ua.utility.kfsdbupgrade.md.Closeables.closeQuietly;
 import static ua.utility.kfsdbupgrade.md.Jdbc.asInClause;
 
@@ -15,9 +17,13 @@ import java.util.List;
 
 import javax.inject.Provider;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 
 public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
+
+  private static final Logger LOGGER = getLogger(MDocProvider.class);
 
   public MDocProvider(Connection conn, Iterable<String> rowIds, int selectSize) {
     this.conn = conn;
@@ -46,6 +52,8 @@ public final class MDocProvider implements Provider<ImmutableList<MaintDoc>> {
           if (isNotBlank(content)) {
             MaintDoc doc = MaintDoc.build(rowId, docId, content);
             docs.add(doc);
+          } else {
+            info(LOGGER, "document %s is blank", docId);
           }
         }
       }

@@ -15,6 +15,8 @@
  */
 package ua.utility.kfsdbupgrade;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static java.lang.Boolean.parseBoolean;
 
 import java.io.File;
@@ -117,9 +119,10 @@ public class App {
 	 */
     public static void main(final String[] args) {
       try {
-        Optional<String> commandLinePropertiesFile = (args != null && args.length > 0) ? Optional.of(args[0]) : Optional.<String> absent();
+        Optional<String> commandLinePropertiesFile = getArg(args, 0);
+        Optional<String> workflowIndicator = getArg(args, 1);
 			  App app = new App(commandLinePropertiesFile);
-			  if (isIngestWorkflow(args)) {
+			  if (isIngestWorkflow(workflowIndicator)) {
 			    app.doWorkflow(commandLinePropertiesFile.get());
 			  } else {
 			    app.doUpgrade();
@@ -132,14 +135,18 @@ public class App {
       }
     }
     
-    private static boolean isIngestWorkflow(String[] args) {
-      if (args != null && args.length > 1) {
-        return "ingestWorkflow".equalsIgnoreCase(args[1]);
-      } else {
-        return false;
-      }
+    private static boolean isIngestWorkflow(Optional<String> workflowIndicator) {
+     return "ingestWorkflow".equalsIgnoreCase(workflowIndicator.orNull());
     }
 
+    private static Optional<String> getArg(String[] args, int index) {
+      if (args != null && args.length > index) {
+        return of(args[index]);
+      } else {
+        return absent();
+      }
+    }
+    
     /**
 	 * Constructor.
 	 * 

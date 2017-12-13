@@ -47,6 +47,10 @@ public final class Formats {
     return getCountFormatter().format(countPerSecond) + " " + label;
   }
 
+  public static String getCount(long count) {
+    return getCountFormatter().format(count);
+  }
+
   public static String getCount(int count) {
     return getCountFormatter().format(count);
   }

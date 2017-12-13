@@ -43,6 +43,11 @@ public final class TimedInterval implements Comparable<TimedInterval> {
     return builder().withStart(start).withStop(stop).withElapsed(elapsed).build();
   }
 
+  public static TimedInterval build(long start, long elapsed) {
+    long stop = start + elapsed;
+    return builder().withStart(start).withStop(stop).withElapsed(elapsed).build();
+  }
+
   public static Builder builder() {
     return new Builder();
   }
