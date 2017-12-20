@@ -172,6 +172,10 @@
       <match>edu.arizona.kfs.coa.businessobject.OrganizationExt</match>
       <replacement>org.kuali.kfs.krad.bo.PersistableBusinessObjectExtensionBase</replacement>
     </pattern>         
+    <pattern>
+      <match>com.rsmart.kuali.kfs.cr.businessobject.CheckReconciliation</match>
+      <replacement>edu.arizona.kfs.module.cr.businessobject.CheckReconciliation</replacement>
+    </pattern>      
   </rule>
 
   <!--  Rules specifying any change in class properties.
