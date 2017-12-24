@@ -20,9 +20,11 @@ public final class LogStatsProvider implements Provider<LogStats> {
     long warn = 0;
     long error = 0;
     long other = 0;
+    long critical = 0;
     for (JobResult result : dbu.getResults()) {
       for (String line : Splitter.on('\n').split(result.getOutput())) {
         LogLineType type = LogLineTypeFunction.INSTANCE.apply(line);
+        Severity severity = new SeverityProvider(type, result.getJob(), line).get();
         switch (type) {
         case INFO:
           info++;
@@ -31,7 +33,11 @@ public final class LogStatsProvider implements Provider<LogStats> {
           warn++;
           break;
         case ERROR:
-          error++;
+          if (severity == Severity.HIGH) {
+            critical++;
+          } else {
+            error++;
+          }
           break;
         case OTHER:
           other++;
@@ -46,6 +52,7 @@ public final class LogStatsProvider implements Provider<LogStats> {
     builder.withInfo(info);
     builder.withOther(other);
     builder.withWarn(warn);
+    builder.withCritical(critical);
     return builder.build();
   }
 

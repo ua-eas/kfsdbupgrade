@@ -9,9 +9,8 @@ import javax.inject.Provider;
 public final class SeverityProvider implements Provider<Severity> {
 
   public SeverityProvider(LogLineType type, String step, String line) {
-    checkArgument(isNotBlank(line));
     checkArgument(isNotBlank(step));
-    this.line = line;
+    this.line = checkNotNull(line);
     this.step = step;
     this.type = checkNotNull(type);
   }
@@ -27,6 +26,18 @@ public final class SeverityProvider implements Provider<Severity> {
     }
     if (type == LogLineType.ERROR) {
       return Severity.HIGH;
+    }
+    if (line.contains("define") && line.contains("overlappping classes:")) {
+      return Severity.LOW;
+    }
+    if (line.contains("[WARNING]   - ")) {
+      return Severity.LOW;
+    }
+    if (line.contains("is using schema version dbchangelog rather than version 1.9")) {
+      return Severity.LOW;
+    }
+    if (line.contains("JAXBConfigImpl") && line.contains("is not available and hence set to empty")) {
+      return Severity.LOW;
     }
     return Severity.MEDIUM;
   }

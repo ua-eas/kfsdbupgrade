@@ -172,14 +172,15 @@ public class AnalyzeLogsTest {
       Date start = new Date(timing.getStart());
       String duration = getTime(timing.getElapsed());
       String size = getSize(value.getLogs());
+      String critical = getCount(value.getStats().getCritical());
       String error = getCount(value.getStats().getError());
       String warn = getCount(value.getStats().getWarn());
       String info = getCount(value.getStats().getInfo());
       String other = getCount(value.getStats().getOther());
-      Object[] row = { sequence++, start, duration, value.getSteps(), size, error, warn, info, other };
+      Object[] row = { sequence++, start, duration, value.getSteps(), size, critical, error, warn, info, other };
       rows.add(row);
     }
-    List<String> columns = asList("sequence", "start", "duration", "steps", "log output", "error", "warn", "info", "other");
+    List<String> columns = asList("sequence", "start", "duration", "steps", "log output", "critical", "error", "warn", "info", "other");
     System.out.println("---------------------------------------------------------------");
     System.out.println(view);
     System.out.println("---------------------------------------------------------------");
