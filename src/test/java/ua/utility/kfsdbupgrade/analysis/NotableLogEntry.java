@@ -11,6 +11,7 @@ public final class NotableLogEntry {
   private final long line;
   private final LogLineType type;
   private final String text;
+  private final Severity severity;
 
   private NotableLogEntry(Builder builder) {
     this.step = builder.step;
@@ -18,6 +19,7 @@ public final class NotableLogEntry {
     this.type = builder.type;
     this.line = builder.line;
     this.text = builder.text;
+    this.severity = builder.severity;
   }
 
   public static Builder builder() {
@@ -31,6 +33,12 @@ public final class NotableLogEntry {
     private LogLineType type;
     private long line = -1;
     private String text;
+    private Severity severity = Severity.MEDIUM;
+
+    public Builder withSeverity(Severity severity) {
+      this.severity = severity;
+      return this;
+    }
 
     public Builder withStep(int step) {
       this.step = step;
@@ -66,6 +74,7 @@ public final class NotableLogEntry {
       checkArgument(isNotBlank(instance.job), "step may not be blank");
       // checkArgument(isNotBlank(instance.text), "text may not be blank");
       checkNotNull(instance.type, "type may not be null");
+      checkNotNull(instance.severity, "severity may not be null");
       checkArgument(instance.line >= 1, "line must be >= 1");
       return instance;
     }
@@ -89,6 +98,10 @@ public final class NotableLogEntry {
 
   public String getText() {
     return text;
+  }
+
+  public Severity getSeverity() {
+    return severity;
   }
 
 }
