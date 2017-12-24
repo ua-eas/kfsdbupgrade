@@ -117,6 +117,7 @@ public class AnalyzeLogsTest {
     builder.withStep(step);
     builder.withText(text);
     builder.withType(type);
+    builder.withSeverity(new SeverityProvider(type, job, text).get());
     return builder.build();
   }
 
@@ -132,6 +133,8 @@ public class AnalyzeLogsTest {
           if (type == LogLineType.ERROR || type == LogLineType.WARNING) {
             list.add(getEntry(lines, i, result.getJob(), step, type));
             if (line.contains("ERROR at line")) {
+              list.add(list.size() - 2, getEntry(lines, i - 2, result.getJob(), step, type));
+              list.add(list.size() - 1, getEntry(lines, i - 1, result.getJob(), step, type));
               list.add(getEntry(lines, i + 1, result.getJob(), step, type));
             }
           }
@@ -143,14 +146,14 @@ public class AnalyzeLogsTest {
       String funkyJenkinsToken3 = "[8mha:////4EyDvuSZ61kzHdP1eoKfY+jRPl4tMiRJuy31musgJecDAAAAYB+LCAAAAAAAAP9b85aBtbiIQSmjNKU4P0+vJLE4u1gvPjexLDVPzxdEGvvmZ+X75ZekLlOVfvTjc8FPJgaGiiIGKaiG5Py84vycVD1nCA1SyAABjCCFBQCV27OjYAAAAA==[0m";
       Map<String, NotableLogEntry> map = newTreeMap();
       for (NotableLogEntry entry : list) {
-        String key = entry.getType() + "/" + leftPad(entry.getStep() + "", 3, "0") + leftPad(entry.getLine() + "", 6, "0");
+        String key = entry.getType() + "/" + entry.getSeverity().ordinal() + "/" + leftPad(entry.getStep() + "", 3, "0") + leftPad(entry.getLine() + "", 6, "0");
         map.put(key, entry);
       }
       List<String> csv = newArrayList();
-      csv.add("step,job,line,type,text");
+      csv.add("step,job,line,type,severity,text");
       for (NotableLogEntry entry : map.values()) {
         String text = entry.getText().replace(",", " ").replace(funkyJenkinsToken1, "").replace(funkyJenkinsToken2, "").replace(funkyJenkinsToken3, "");
-        csv.add(Joiner.on(',').join(entry.getStep(), entry.getJob(), entry.getLine(), entry.getType(), text));
+        csv.add(Joiner.on(',').join(entry.getStep(), entry.getJob(), entry.getLine(), entry.getType(), entry.getSeverity(), text));
       }
       String fragment = "dbupgrades" + "/" + asFilename(upgrade.getView());
       String filename = fragment + "-" + leftPad(upgrade.getSequence() + "", 3, "0") + ".txt";
