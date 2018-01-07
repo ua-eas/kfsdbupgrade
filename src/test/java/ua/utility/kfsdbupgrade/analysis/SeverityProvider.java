@@ -20,10 +20,6 @@ public final class SeverityProvider implements Provider<Severity> {
   private final LogLineType type;
 
   private boolean isShadePlugin(String line) {
-    // [WARNING] are present in two or more JARs. When this happens only
-    // [WARNING] warnings otherwise try to manually exclude artifacts
-    // [WARNING] based on mvn dependency:tree -Ddetail=true and the above
-    // [WARNING] output
     if (line.contains("[WARNING] maven-shade-plugin has detected that some .class files")) {
       return true;
     } else if (line.contains("[WARNING] are present in two or more JARs. When this happens, only")) {
@@ -46,8 +42,7 @@ public final class SeverityProvider implements Provider<Severity> {
   }
 
   public Severity get() {
-    boolean shade = isShadePlugin(line);
-    if (shade) {
+    if (isShadePlugin(line)) {
       return Severity.LOW;
     }
     if (line.contains("DistributedCacheManagerDecorator")

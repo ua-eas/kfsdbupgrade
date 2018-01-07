@@ -125,8 +125,10 @@ public class AnalyzeLogsTest {
   private void doJobExecutions(List<DbUpgrade> upgrades) throws IOException {
     for (DbUpgrade upgrade : upgrades) {
       List<String> lines = newArrayList();
+      lines.add("databaseUpgradeStep,buildNumber,jobName");
+      int step = 1;
       for (JobResult result : upgrade.getResults()) {
-        lines.add(result.getBuildNumber() + "," + result.getJob());
+        lines.add(step++ + "," + result.getBuildNumber() + "," + result.getJob());
       }
       String fragment = "dbupgrades/executions/" + asFilename(upgrade.getView());
       String filename = fragment + "-" + leftPad(upgrade.getSequence() + "", 3, "0") + ".txt";
