@@ -110,7 +110,7 @@ public class AnalyzeLogsTest {
   }
 
   private NotableLogEntry getEntry(List<String> lines, int index, String job, int step, LogLineType type) {
-    String text = lines.get(index).replace("\n", " ").replace("\r", " ");
+    String text = lines.get(index);
     NotableLogEntry.Builder builder = NotableLogEntry.builder();
     builder.withLine(index);
     builder.withJob(job);
@@ -152,7 +152,7 @@ public class AnalyzeLogsTest {
       List<String> csv = newArrayList();
       csv.add("step,job,line,type,severity,text");
       for (NotableLogEntry entry : map.values()) {
-        String text = entry.getText().replace(",", " ").replace(funkyJenkinsToken1, "").replace(funkyJenkinsToken2, "").replace(funkyJenkinsToken3, "");
+        String text = entry.getText().replace(",", "${ascii.comma}").replace(funkyJenkinsToken1, "").replace(funkyJenkinsToken2, "").replace(funkyJenkinsToken3, "");
         csv.add(Joiner.on(',').join(entry.getStep(), entry.getJob(), entry.getLine(), entry.getType(), entry.getSeverity(), text));
       }
       String fragment = "dbupgrades" + "/" + asFilename(upgrade.getView());

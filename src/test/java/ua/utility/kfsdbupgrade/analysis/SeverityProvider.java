@@ -19,7 +19,37 @@ public final class SeverityProvider implements Provider<Severity> {
   private final String step;
   private final LogLineType type;
 
+  private boolean isShadePlugin(String line) {
+    // [WARNING] are present in two or more JARs. When this happens only
+    // [WARNING] warnings otherwise try to manually exclude artifacts
+    // [WARNING] based on mvn dependency:tree -Ddetail=true and the above
+    // [WARNING] output
+    if (line.contains("[WARNING] maven-shade-plugin has detected that some .class files")) {
+      return true;
+    } else if (line.contains("[WARNING] are present in two or more JARs. When this happens, only")) {
+      return true;
+    } else if (line.contains("[WARNING] one single version of the class is copied in the uberjar.")) {
+      return true;
+    } else if (line.contains("[WARNING] Usually this is not harmful and you can skeep these")) {
+      return true;
+    } else if (line.contains("[WARNING] warnings, otherwise try to manually exclude artifacts")) {
+      return true;
+    } else if (line.contains("[WARNING] based on mvn dependency:tree -Ddetail=true and the above")) {
+      return true;
+    } else if (line.endsWith("[WARNING] output")) {
+      return true;
+    } else if (line.endsWith("[WARNING] See http://docs.codehaus.org/display/MAVENUSER/Shade+Plugin")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   public Severity get() {
+    boolean shade = isShadePlugin(line);
+    if (shade) {
+      return Severity.LOW;
+    }
     if (line.contains("DistributedCacheManagerDecorator")
         && line.contains("failed to execute distributed flush for serviceName {http://rice.kuali.org/kew/v2_0}kewCacheAdminService")) {
       return Severity.LOW;

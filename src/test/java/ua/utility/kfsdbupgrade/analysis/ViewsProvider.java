@@ -8,7 +8,6 @@ import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Integer.parseInt;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.removeStart;
@@ -89,8 +88,8 @@ public final class ViewsProvider implements Provider<ImmutableList<View>> {
     for (Integer buildNumber : buildNumbers) {
       String buildXmlKey = prefix + "/" + buildNumber + "/build.xml";
       if (data.containsKey(buildXmlKey)) {
-        String buildXml = data.get(buildXmlKey).asCharSource(UTF_8).read();
-        String log = data.get(prefix + "/" + buildNumber + "/log").asCharSource(US_ASCII).read();
+        String buildXml = fixed(asPrintableAsciiWithLineFeeds(data.get(buildXmlKey)));
+        String log = fixed(asPrintableAsciiWithLineFeeds(data.get(prefix + "/" + buildNumber + "/log")));
         String changeLogXmlKey = prefix + "/" + buildNumber + "/changelog.xml";
         if (data.containsKey(changeLogXmlKey)) {
           Optional<String> changeLogXml = fromNullable(trimToNull(data.get(changeLogXmlKey).asCharSource(UTF_8).read()));
@@ -101,6 +100,30 @@ public final class ViewsProvider implements Provider<ImmutableList<View>> {
       }
     }
     return newList(list);
+  }
+
+  private String fixed(String input) {
+    return input.replace(
+        "[8mha:////4C0zH08HHAWuL5uRS+LxnHy4EdYvJVrhddF7u1IJVAhRAAAAYx+LCAAAAAAAAP9b85aBtbiIQSWjNKU4P0+vJLE4u1gvPjexLDVPzxdEhicW5WXmpfvll6S2fNly5fzGzauYGBgqihikoFqS8/OK83NS9ZwhNEghAwQwghQWAACwxA+XYgAAAA==[0m",
+        "");
+  }
+
+  private String asPrintableAsciiWithLineFeeds(ByteSource bytes) throws IOException {
+    return getAscii(bytes.asCharSource(UTF_8).read());
+  }
+
+  private boolean isPrintable(char c) {
+    return c >= 32 && c <= 126;
+  }
+
+  private String getAscii(String s) {
+    StringBuilder sb = new StringBuilder();
+    for (char c : s.toCharArray()) {
+      if (isPrintable(c) || c == '\n') {
+        sb.append(c);
+      }
+    }
+    return sb.toString();
   }
 
   private ImmutableList<Integer> getBuildNumbers(Map<String, ByteSource> data, String prefix) {
