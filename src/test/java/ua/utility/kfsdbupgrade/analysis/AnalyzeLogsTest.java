@@ -96,6 +96,7 @@ public class AnalyzeLogsTest {
           show(view, summary.row(view));
         }
         doCsv(upgrades);
+        doJobExecutions(upgrades);
         info(LOGGER, "all done -----> %s", getTime(sw));
       }
     } catch (Throwable e) {
@@ -119,6 +120,21 @@ public class AnalyzeLogsTest {
     builder.withType(type);
     builder.withSeverity(new SeverityProvider(type, job, text).get());
     return builder.build();
+  }
+
+  private void doJobExecutions(List<DbUpgrade> upgrades) throws IOException {
+    for (DbUpgrade upgrade : upgrades) {
+      List<String> lines = newArrayList();
+      for (JobResult result : upgrade.getResults()) {
+        lines.add(result.getBuildNumber() + "," + result.getJob());
+      }
+      String fragment = "dbupgrades" + "/executions/" + asFilename(upgrade.getView());
+      String filename = fragment + "-" + leftPad(upgrade.getSequence() + "", 3, "0") + ".txt";
+      File file = canonical(new File(target, filename));
+      info(LOGGER, "creating --> %s", file);
+      createParentDirs(file);
+      write(Joiner.on('\n').join(lines), file, UTF_8);
+    }
   }
 
   private void doCsv(List<DbUpgrade> upgrades) throws IOException {
@@ -155,7 +171,7 @@ public class AnalyzeLogsTest {
         String text = entry.getText().replace(",", "${ascii.comma}").replace(funkyJenkinsToken1, "").replace(funkyJenkinsToken2, "").replace(funkyJenkinsToken3, "");
         csv.add(Joiner.on(',').join(entry.getStep(), entry.getJob(), entry.getLine(), entry.getType(), entry.getSeverity(), text));
       }
-      String fragment = "dbupgrades" + "/" + asFilename(upgrade.getView());
+      String fragment = "dbupgrades" + "/errors/" + asFilename(upgrade.getView());
       String filename = fragment + "-" + leftPad(upgrade.getSequence() + "", 3, "0") + ".txt";
       File file = canonical(new File(target, filename));
       info(LOGGER, "creating --> %s", file);
