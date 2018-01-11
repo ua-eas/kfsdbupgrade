@@ -1953,6 +1953,7 @@ public class App {
 		PreparedStatement insertStmt = null;
 		ResultSet legacyRes = null;
 		try {
+			conn.setAutoCommit(false);
 			stmt = conn.createStatement();
 			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
 			int i = 1;
@@ -1965,16 +1966,15 @@ public class App {
 				String desc = legacyRes.getString(2);
 				insertStmt.setString(1, docNbr);
 				insertStmt.setString(2, desc.replace("&", "and"));
-				insertStmt.executeUpdate();
-				/*insertStmt.addBatch();
+				insertStmt.addBatch();
 				if ((i % 10000) == 0) {
 					insertStmt.executeBatch();
 					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
-				}*/
+				}
 				i++;
 			}
 			// catch any straggler statements
-//			insertStmt.executeBatch();
+			insertStmt.executeBatch();
 			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
 			conn.commit();
 		} catch (Exception ex) {
@@ -1997,6 +1997,70 @@ public class App {
 	}
 
 	/**
+	 * Update KREW_SRCH_ATTR_S.nextval >  max(to_number(krew_doc_hdr_ext_t.doc_hdr_ext_id))
+	 * @param conn
+	 */
+	private void updateDocSearchSequence(Connection conn) {
+		Statement stmt = null;
+		LOGGER.info("Check and update KREW_SRCH_ATTR_S...");
+		Long maxId = null;
+		try {
+			stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select max(to_number(doc_hdr_ext_id)) from krew_doc_hdr_ext_t");
+			
+			if (rs != null && rs.next()) {
+				maxId = rs.getLong(1);
+				rs.close();
+			}
+		} catch (SQLException e) {
+			LOGGER.error(e);
+		
+		} finally{
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					LOGGER.error(e);
+				}
+			}
+		}
+		
+		if (maxId != null) {
+			Long nextVal = maxId + 1;
+			int i = 0;
+			PreparedStatement pStmt = null;
+			try {
+				pStmt = conn.prepareStatement("SELECT KREW_SRCH_ATTR_S.NEXTVAL FROM DUAL");
+				do {
+					ResultSet rst = pStmt.executeQuery();
+					
+					if ( rst !=null && rst .next() ) {
+						nextVal = rst.getLong(1);
+						rst.close();
+						
+						if (i == 0 ) {
+							LOGGER.info("Initial KREW_SRCH_ATTR_S.NEXTVAL is " + nextVal + " max(doc_hdr_ext_id is)" + maxId);
+						}
+						i++;
+					}
+				} while (nextVal <= maxId);
+			
+				LOGGER.info("After updates, KREW_SRCH_ATTR_S.NEXTVAL is "+ nextVal);
+			} catch (SQLException e) {
+				LOGGER.error(e);
+			} finally{
+			      try {
+			         if (pStmt != null) {
+			        	 pStmt.close();
+			         }
+			      }catch(SQLException se){
+			    	  
+			      }
+			 }// do nothing
+		}
+	}
+
+	/**
 	 * Execute the following prepared statement:
 	 * <code>insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)</code>
 	 * with the parameters specified by values returned by
@@ -2015,6 +2079,7 @@ public class App {
 		PreparedStatement insertStmt = null;
 		ResultSet legacyRes = null;
 		try {
+			conn.setAutoCommit(false);
 			stmt = conn.createStatement();
 			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
 			int i = 1;
@@ -2027,16 +2092,15 @@ public class App {
 				String desc = legacyRes.getString(2);
 				insertStmt.setString(1, docNbr);
 				insertStmt.setString(2, desc.replace("&", "and"));
-				insertStmt.executeUpdate();
-				/*insertStmt.addBatch();
+				insertStmt.addBatch();
 				if ((i % 10000) == 0) {
 					insertStmt.executeBatch();
 					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
-				}*/
+				}
 				i++;
 			}
 			// catch any straggler statements
-//			insertStmt.executeBatch();
+			insertStmt.executeBatch();
 			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
 			conn.commit();
 		} catch (Exception ex) {
@@ -2077,6 +2141,7 @@ public class App {
 		PreparedStatement insertStmt = null;
 		ResultSet legacyRes = null;
 		try {
+			conn.setAutoCommit(false);
 			stmt = conn.createStatement();
 			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
 			int i = 1;
@@ -2089,16 +2154,15 @@ public class App {
 				String desc = legacyRes.getString(2);
 				insertStmt.setString(1, docNbr);
 				insertStmt.setString(2, desc.replace("&", "and"));
-				insertStmt.executeUpdate();
-				/*insertStmt.addBatch();
+				insertStmt.addBatch();
 				if ((i % 10000) == 0) {
 					insertStmt.executeBatch();
 					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
-				}*/
+				}
 				i++;
 			}
 			// catch any straggler statements
-//			insertStmt.executeBatch();
+			insertStmt.executeBatch();
 			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
 			conn.commit();
 		} catch (Exception ex) {
@@ -2139,6 +2203,7 @@ public class App {
 		PreparedStatement insertStmt = null;
 		ResultSet legacyRes = null;
 		try {
+			conn.setAutoCommit(false);
 			stmt = conn.createStatement();
 			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
 			int i = 1;
@@ -2151,16 +2216,15 @@ public class App {
 				String desc = legacyRes.getString(2);
 				insertStmt.setString(1, docNbr);
 				insertStmt.setString(2, desc.replace("&", "and"));
-				insertStmt.executeUpdate();
-				/*insertStmt.addBatch();
+				insertStmt.addBatch();
 				if ((i % 10000) == 0) {
 					insertStmt.executeBatch();
 					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
-				}*/
+				}
 				i++;
 			}
 			// catch any straggler statements
-//			insertStmt.executeBatch();
+			insertStmt.executeBatch();
 			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
 			conn.commit();
 		} catch (Exception ex) {
@@ -2201,6 +2265,7 @@ public class App {
 		PreparedStatement insertStmt = null;
 		ResultSet legacyRes = null;
 		try {
+			conn.setAutoCommit(false);
 			stmt = conn.createStatement();
 			insertStmt = conn.prepareStatement("insert into krew_doc_hdr_ext_t (doc_hdr_ext_id, doc_hdr_id, key_cd, val) values (to_char(KREW_SRCH_ATTR_S.nextval), ?, 'applicationDocumentStatus', ?)");
 			int i = 1;
@@ -2213,16 +2278,15 @@ public class App {
 				String desc = legacyRes.getString(2);
 				insertStmt.setString(1, docNbr);
 				insertStmt.setString(2, desc.replace("&", "and"));
-				insertStmt.executeUpdate();
-				/*insertStmt.addBatch();
+				insertStmt.addBatch();
 				if ((i % 10000) == 0) {
 					insertStmt.executeBatch();
 					LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted");
-				}*/
+				}
 				i++;
 			}
 			// catch any straggler statements
-//			insertStmt.executeBatch();
+			insertStmt.executeBatch();
 			LOGGER.info(i + " krew_doc_hdr_ext_t entries inserted TOTAL");
 			conn.commit();
 		} catch (Exception ex) {
@@ -2316,8 +2380,10 @@ public class App {
         ResultSet legacyRes = null;
         PreparedStatement upgradeStmt1 = null;
         PreparedStatement upgradeStmt2 = null;
+        
+        updateDocSearchSequence(upgradeConn);
+        
         try {
-        	upgradeConn.setAutoCommit(true);
             // load status names from legacy status tables
 			legacyStmt = upgradeConn.createStatement();
 
@@ -2346,8 +2412,7 @@ public class App {
 
 			// Add Vendor Credit Memo Document status entries
 			addVendorCreditMemoDocStatus(upgradeConn, legacyStmt);
-			upgradeConn.setAutoCommit(true);
-			
+
 			legacyRes = legacyStmt
 					.executeQuery("select PMT_RQST_STAT_CD, PMT_RQST_STAT_DESC from DEPR_AP_PMT_RQST_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from AP_PMT_RQST_T where DEPR_PMT_RQST_STAT_CD = ?)");
@@ -2372,8 +2437,7 @@ public class App {
 
 			// Add Payment Request document status entries
 			addPREQDocStatus(upgradeConn, legacyStmt);
-			upgradeConn.setAutoCommit(true);
-			
+
 			legacyRes = legacyStmt.executeQuery("select PO_STAT_CD, PO_STAT_DESC from DEPR_PUR_PO_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_PO_T where DEPR_PO_STAT_CD = ?)");
@@ -2397,8 +2461,7 @@ public class App {
 
 			// Add Purchase Order document status entries
 			addPODocStatus(upgradeConn, legacyStmt);
-			upgradeConn.setAutoCommit(true);
-			
+
 			legacyRes = legacyStmt
 					.executeQuery("select RCVNG_LN_STAT_CD, RCVNG_LN_STAT_DESC from DEPR_PUR_RCVNG_LN_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_RCVNG_LN_T where DEPR_RCVNG_LN_STAT_CD = ?)");
@@ -2420,11 +2483,10 @@ public class App {
 
             closeDbObjects(null, upgradeStmt1, legacyRes);
             closeDbObjects(null, upgradeStmt2, null);
-            
+
 			// Add Purchasing Line Item Receiving document status entries
 			addLineItemReceivingDocStatus(upgradeConn, legacyStmt);
-			upgradeConn.setAutoCommit(true);
-			
+
 			legacyRes = legacyStmt.executeQuery("select REQS_STAT_CD, REQS_STAT_DESC from DEPR_PUR_REQS_STAT_T");
             upgradeStmt1 = upgradeConn.prepareStatement("update krew_doc_hdr_t set app_doc_stat = ? where doc_hdr_id in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
             upgradeStmt2 = upgradeConn.prepareStatement("update fs_doc_header_t set app_doc_stat = ? where fdoc_nbr in (select fdoc_nbr from PUR_REQS_T where DEPR_REQS_STAT_CD = ?)");
