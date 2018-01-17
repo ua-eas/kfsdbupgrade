@@ -175,7 +175,31 @@
     <pattern>
       <match>com.rsmart.kuali.kfs.cr.businessobject.CheckReconciliation</match>
       <replacement>edu.arizona.kfs.module.cr.businessobject.CheckReconciliation</replacement>
-    </pattern>      
+    </pattern>  
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.businessobject.Payee</match>
+      <replacement>edu.arizona.kfs.module.tax.businessobject.Payee</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PayeeRule</match>
+      <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PayeeRule</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.businessobject.Payment</match>
+      <replacement>edu.arizona.kfs.module.tax.businessobject.Payment</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PaymentRule</match>
+      <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PaymentRule</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.businessobject.Payer</match>
+      <replacement>edu.arizona.kfs.module.tax.businessobject.Payer</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PayerRule</match>
+      <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PayerRule</replacement>
+    </pattern>
   </rule>
 
   <!--  Rules specifying any change in class properties.
