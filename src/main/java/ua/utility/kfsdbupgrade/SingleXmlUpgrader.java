@@ -22,7 +22,7 @@ public class SingleXmlUpgrader {
 	private static final Logger LOGGER = Logger.getLogger(SingleXmlUpgrader.class.getName());
 	private static final String DB_USER = "kulowner";
 	private static final String KFS3_DB_CONNECTION_STRING = "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST=uaz-dv-scan-01.mosaic.arizona.edu)(PORT=1521)))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=kfdvu.mosaic.arizona.edu)))";
-	private static final String KFS6_DB_CONNECTION_STRING = "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST=uaz-dv-scan-01.mosaic.arizona.edu)(PORT=1521)))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=kfdev.mosaic.arizona.edu)))";
+	private static final String KFS6_DB_CONNECTION_STRING = "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST=kfs7dev.cryfdp9i1uh4.us-west-2.rds.amazonaws.com)(PORT=1521)))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=kfs7dev)))";
 	private static final String GET_DOC_QUERY = "SELECT DOC_CNTNT FROM krns_maint_doc_t where DOC_HDR_ID = ?";
 	private static final String UPDATE_DOC_BATCH = "DECLARE str varchar2(32767); BEGIN str := ?; update KRNS_MAINT_DOC_T set doc_cntnt = str where doc_hdr_id = ?; END;";
 
