@@ -200,6 +200,10 @@
       <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PayerRule</match>
       <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PayerRule</replacement>
     </pattern>
+    <pattern>
+		<match>edu.arizona.kfs.coa.businessobject.SourceOfFunds</match>
+		<replacement>org.kuali.kfs.coa.businessobject.SourceOfFunds</replacement>
+	</pattern>
   </rule>
 
   <!--  Rules specifying any change in class properties.
@@ -492,7 +496,14 @@
         <match>reportOrderCode</match>
         <replacement></replacement>
       </pattern>
-    </pattern>           
+    </pattern>
+    <pattern>
+		<class>org.kuali.kfs.coa.businessobject.SourceOfFunds</class>
+		<pattern>
+			<match>sourceOfFundsDesc</match>
+			<replacement>sourceOfFundsDescription</replacement>
+		</pattern>
+	</pattern>          
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
