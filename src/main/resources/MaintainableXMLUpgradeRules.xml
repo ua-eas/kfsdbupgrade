@@ -425,6 +425,55 @@
         <match>ruleResponsibilityKey</match>
         <replacement>id</replacement>
       </pattern>
+    </pattern>    
+    <pattern>
+      <class>org.kuali.rice.location.impl.county.CountyBo</class>
+      <pattern>
+        <match>countyCode</match>
+        <replacement>code</replacement>
+      </pattern>
+      <pattern>
+        <match>postalCountryCode</match>
+        <replacement>countryCode</replacement>
+      </pattern>
+      <pattern>
+        <match>countyName</match>
+        <replacement>name</replacement>
+      </pattern>
+    </pattern>
+    <pattern> 
+      <class>org.kuali.rice.location.impl.state.StateBo</class> 
+      <pattern> 
+        <match>postalCountryCode</match> 
+        <replacement>countryCode</replacement> 
+      </pattern> 
+      <pattern> 
+        <match>postalStateCode</match> 
+        <replacement>code</replacement> 
+      </pattern> 
+      <pattern> 
+        <match>postalStateName</match> 
+        <replacement>name</replacement> 
+      </pattern> 
+    </pattern>
+    <pattern>
+      <class>org.kuali.rice.location.impl.postalcode.PostalCodeBo</class>
+      <pattern>
+        <match>postalCountryCode</match>
+        <replacement>countryCode</replacement>
+      </pattern>
+      <pattern>
+        <match>postalCode</match>
+        <replacement>code</replacement>
+      </pattern>
+      <pattern>
+        <match>postalStateCode</match>
+        <replacement>stateCode</replacement>
+      </pattern>
+      <pattern>
+        <match>postalCityName</match>
+        <replacement>cityName</replacement>
+      </pattern>  
     </pattern>
     <!-- UA additions -->
     <pattern>
