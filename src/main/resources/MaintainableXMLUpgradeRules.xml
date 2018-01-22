@@ -503,7 +503,14 @@
 			<match>sourceOfFundsDesc</match>
 			<replacement>sourceOfFundsDescription</replacement>
 		</pattern>
-	</pattern>          
+	</pattern>
+	<pattern> 
+      <class>org.kuali.rice.kim.impl.responsibility.ReviewResponsibilityBo</class> 
+      <pattern> 
+        <match>responsibilityId</match> 
+        <replacement>id</replacement> 
+      </pattern> 
+	</pattern>
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
