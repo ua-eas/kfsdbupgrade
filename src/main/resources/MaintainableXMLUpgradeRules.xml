@@ -56,7 +56,7 @@
     </pattern>
     <pattern>
       <match>org.kuali.rice.kns.bo.KualiCodeBase</match>
-      <replacement>org.kuali.rice.krad.bo.KualiCodeBase</replacement>
+      <replacement>org.kuali.kfs.krad.bo.KualiCodeBase</replacement>
     </pattern>
     <pattern>
       <match>org.kuali.rice.kim.bo.impl.PersonImpl</match>
