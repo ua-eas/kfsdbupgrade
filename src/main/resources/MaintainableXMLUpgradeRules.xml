@@ -56,7 +56,7 @@
     </pattern>
     <pattern>
       <match>org.kuali.rice.kns.bo.KualiCodeBase</match>
-      <replacement>org.kuali.rice.krad.bo.KualiCodeBase</replacement>
+      <replacement>org.kuali.kfs.krad.bo.KualiCodeBase</replacement>
     </pattern>
     <pattern>
       <match>org.kuali.rice.kim.bo.impl.PersonImpl</match>
@@ -503,7 +503,7 @@
 			<match>sourceOfFundsDesc</match>
 			<replacement>sourceOfFundsDescription</replacement>
 		</pattern>
-	</pattern>          
+	</pattern>      
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The
