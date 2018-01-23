@@ -8,10 +8,6 @@ UPDATE KREW_DOC_TYP_T
     
 UPDATE KREW_DOC_TYP_T
     SET AUTHORIZER = 'org.kuali.rice.kew.doctype.service.impl.KimDocumentTypeAuthorizer', DOC_HDLR_URL='${kr.url}/maintenance.do?methodToCall=docHandler'
-    where DOC_TYP_NM = 'ParameterDetailTypeMaintenanceDocument' AND CUR_IND = 0;
-    
-UPDATE KREW_DOC_TYP_T
-    SET AUTHORIZER = 'org.kuali.rice.kew.doctype.service.impl.KimDocumentTypeAuthorizer', DOC_HDLR_URL='${kr.url}/maintenance.do?methodToCall=docHandler'
     where DOC_TYP_NM = 'ParameterMaintenanceDocument' AND CUR_IND = 0;
 
 --  ParameterDetailTypeMaintenanceDocument is discountinued completely in Rice 2.5.19, no BO, nor Doc DD, neither OJB mapping. 
