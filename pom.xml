@@ -221,6 +221,10 @@
 	            	<groupId>org.kuali.rice</groupId>
 	            	<artifactId>rice-impl</artifactId>
 	            </exclusion>
+                <exclusion>
+	            	<groupId>org.kuali.rice</groupId>
+	            	<artifactId>rice-kim-ldap</artifactId>
+	            </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
