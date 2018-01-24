@@ -216,6 +216,12 @@
             <groupId>org.kuali.kfs</groupId>
             <artifactId>kfs-kns</artifactId>
             <version>${kfs.version}</version>
+            <exclusions>
+                <exclusion>
+	            	<groupId>org.kuali.rice</groupId>
+	            	<artifactId>rice-impl</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
