@@ -5,20 +5,20 @@
 --------------------------------------------------------------------------------
 update KREW_DOC_TYP_T
     set AUTHORIZER = 'org.kuali.rice.kew.doctype.service.impl.KimDocumentTypeAuthorizer'
-    where PARNT_ID not in (select PARNT_ID from KREW_DOC_TYP_T where CUR_IND = 1 and DOC_TYP_NM ='CountyMaintenanceDocument')
+    where PARNT_ID = '329519'
     and DOC_TYP_NM = 'CountyMaintenanceDocument';
 
 update KREW_DOC_TYP_T
     set AUTHORIZER = 'org.kuali.rice.kew.doctype.service.impl.KimDocumentTypeAuthorizer'
-    where PARNT_ID not in (select PARNT_ID from KREW_DOC_TYP_T where CUR_IND = 1 and DOC_TYP_NM ='StateMaintenanceDocument')
+    where PARNT_ID = '329519'
     and DOC_TYP_NM = 'StateMaintenanceDocument';
 
 update KREW_DOC_TYP_T
     set AUTHORIZER = 'org.kuali.rice.kew.doctype.service.impl.KimDocumentTypeAuthorizer'
-    where PARNT_ID not in (select PARNT_ID from KREW_DOC_TYP_T where CUR_IND = 1 and DOC_TYP_NM ='PostalCodeMaintenanceDocument')
+    where PARNT_ID = '329519'
     and DOC_TYP_NM = 'PostalCodeMaintenanceDocument';
 
 update KREW_DOC_TYP_T
     set AUTHORIZER = 'org.kuali.rice.kew.doctype.service.impl.KimDocumentTypeAuthorizer'
-    where PARNT_ID not in (select PARNT_ID from KREW_DOC_TYP_T where CUR_IND = 1 and DOC_TYP_NM ='CountryMaintenanceDocument')
+    where PARNT_ID = '329519'
     and DOC_TYP_NM = 'CountryMaintenanceDocument';
