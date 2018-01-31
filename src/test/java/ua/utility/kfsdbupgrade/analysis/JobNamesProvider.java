@@ -15,16 +15,16 @@ import ua.utility.kfsdbupgrade.md.base.Xml;
 
 public final class JobNamesProvider implements Provider<ImmutableList<String>> {
 
-  public JobNamesProvider(String listViewXml) {
-    this.listViewXml = listViewXml;
-  }
+    public JobNamesProvider(String listViewXml) {
+        this.listViewXml = listViewXml;
+    }
 
-  private final String listViewXml;
+    private final String listViewXml;
 
-  public ImmutableList<String> get() {
-    String jobNames = substringBetween(listViewXml, "<jobNames>", "</jobNames>");
-    List<String> raw = newList(substringsBetween(jobNames, "<string>", "</string>"));
-    return transform(raw, Xml.UnescapeFunction.INSTANCE);
-  }
+    public ImmutableList<String> get() {
+        String jobNames = substringBetween(listViewXml, "<jobNames>", "</jobNames>");
+        List<String> raw = newList(substringsBetween(jobNames, "<string>", "</string>"));
+        return transform(raw, Xml.UnescapeFunction.INSTANCE);
+    }
 
 }

@@ -5,21 +5,20 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import com.google.common.collect.ImmutableList;
 
 public final class View {
+    private final String name;
+    private final ImmutableList<Job> jobs;
 
-  public View(String name, Iterable<Job> jobs) {
-    this.name = name;
-    this.jobs = copyOf(jobs);
-  }
+    public View(String name, Iterable<Job> jobs) {
+        this.name = name;
+        this.jobs = copyOf(jobs);
+    }
 
-  private final String name;
-  private final ImmutableList<Job> jobs;
+    public String getName() {
+        return name;
+    }
 
-  public String getName() {
-    return name;
-  }
-
-  public ImmutableList<Job> getJobs() {
-    return jobs;
-  }
+    public ImmutableList<Job> getJobs() {
+        return jobs;
+    }
 
 }

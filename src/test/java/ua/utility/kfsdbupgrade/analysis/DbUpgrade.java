@@ -11,77 +11,93 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public final class DbUpgrade {
+public final class DbUpgrade implements Comparable<DbUpgrade> {
 
-  private final Optional<String> folder;
-  private final String view;
-  private final int sequence;
-  private final ImmutableList<JobResult> results;
+    private final Optional<String> folder;
+    private final String view;
+    private final int sequence;
+    private final ImmutableList<JobResult> results;
 
-  private DbUpgrade(Builder builder) {
-    this.folder = builder.folder;
-    this.view = builder.view;
-    this.sequence = builder.sequence;
-    this.results = newList(builder.results);
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-
-    private Optional<String> folder = absent();
-    private String view;
-    private int sequence;
-    private List<JobResult> results = newArrayList();
-
-    public Builder withFolder(Optional<String> folder) {
-      this.folder = folder;
-      return this;
+    private DbUpgrade(Builder builder) {
+        this.folder = builder.folder;
+        this.view = builder.view;
+        this.sequence = builder.sequence;
+        this.results = newList(builder.results);
     }
 
-    public Builder withView(String view) {
-      this.view = view;
-      return this;
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public Builder withSequence(int sequence) {
-      this.sequence = sequence;
-      return this;
+    public static class Builder {
+
+        private Optional<String> folder = absent();
+        private String view;
+        private int sequence;
+        private List<JobResult> results = newArrayList();
+
+        public Builder withFolder(Optional<String> folder) {
+            this.folder = folder;
+            return this;
+        }
+
+        public Builder withView(String view) {
+            this.view = view;
+            return this;
+        }
+
+        public Builder withSequence(int sequence) {
+            this.sequence = sequence;
+            return this;
+        }
+
+        public Builder withResults(List<JobResult> results) {
+            this.results = results;
+            return this;
+        }
+
+        public DbUpgrade build() {
+            return validate(new DbUpgrade(this));
+        }
+
+        private static DbUpgrade validate(DbUpgrade instance) {
+            checkArgument(instance.folder.isPresent() ? isNotBlank(instance.folder.get()) : true, "folder cannot be blank");
+            checkArgument(isNotBlank(instance.view), "view cannot be blank");
+            checkArgument(instance.sequence >= 1, "sequence must be >= 1");
+            return instance;
+        }
     }
 
-    public Builder withResults(List<JobResult> results) {
-      this.results = results;
-      return this;
+    public Optional<String> getFolder() {
+        return folder;
     }
 
-    public DbUpgrade build() {
-      return validate(new DbUpgrade(this));
+    public String getView() {
+        return view;
     }
 
-    private static DbUpgrade validate(DbUpgrade instance) {
-      checkArgument(instance.folder.isPresent() ? isNotBlank(instance.folder.get()) : true, "folder cannot be blank");
-      checkArgument(isNotBlank(instance.view), "view cannot be blank");
-      checkArgument(instance.sequence >= 1, "sequence must be >= 1");
-      return instance;
+    public int getSequence() {
+        return sequence;
     }
-  }
 
-  public Optional<String> getFolder() {
-    return folder;
-  }
+    public ImmutableList<JobResult> getResults() {
+        return results;
+    }
 
-  public String getView() {
-    return view;
-  }
 
-  public int getSequence() {
-    return sequence;
-  }
+    /*
+     * Overriding to be ordered by the underlying View's name. This will have the
+     * effect that the report will list the job chains as master->develop->onbranch.
+     */
+    @Override
+    public int compareTo(DbUpgrade otherDbUpgrade) {
+        String thisView = getView();
+        ViewName thisViewName = ViewName.getViewNameByTitle(thisView);
 
-  public ImmutableList<JobResult> getResults() {
-    return results;
-  }
+        String otherView = otherDbUpgrade.getView();
+        ViewName otherViewName = ViewName.getViewNameByTitle(otherView);
+
+        return thisViewName.compareTo(otherViewName);
+    }
 
 }

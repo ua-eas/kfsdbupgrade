@@ -19,6 +19,14 @@ public enum LogLineTypeFunction implements Function<String, LogLineType> {
       return LogLineType.ERROR;
     }
 
+    if (input.contains("SEVERE")) {
+      return LogLineType.SEVERE;
+    }
+
+    if (input.contains("FATAL")) {
+      return LogLineType.FATAL;
+    }
+
     return LogLineType.OTHER;
   }
 
