@@ -56,7 +56,7 @@
     </pattern>
     <pattern>
       <match>org.kuali.rice.kns.bo.KualiCodeBase</match>
-      <replacement>org.kuali.rice.krad.bo.KualiCodeBase</replacement>
+      <replacement>org.kuali.kfs.krad.bo.KualiCodeBase</replacement>
     </pattern>
     <pattern>
       <match>org.kuali.rice.kim.bo.impl.PersonImpl</match>
@@ -175,7 +175,39 @@
     <pattern>
       <match>com.rsmart.kuali.kfs.cr.businessobject.CheckReconciliation</match>
       <replacement>edu.arizona.kfs.module.cr.businessobject.CheckReconciliation</replacement>
-    </pattern>      
+    </pattern>  
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.businessobject.Payee</match>
+      <replacement>edu.arizona.kfs.module.tax.businessobject.Payee</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PayeeRule</match>
+      <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PayeeRule</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.businessobject.Payment</match>
+      <replacement>edu.arizona.kfs.module.tax.businessobject.Payment</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PaymentRule</match>
+      <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PaymentRule</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.businessobject.Payer</match>
+      <replacement>edu.arizona.kfs.module.tax.businessobject.Payer</replacement>
+    </pattern>
+    <pattern>
+      <match>com.rsmart.kuali.kfs.tax.document.validation.impl.PayerRule</match>
+      <replacement>edu.arizona.kfs.module.tax.document.validation.impl.PayerRule</replacement>
+    </pattern>
+    <pattern>
+		<match>edu.arizona.kfs.coa.businessobject.SourceOfFunds</match>
+		<replacement>org.kuali.kfs.coa.businessobject.SourceOfFunds</replacement>
+	</pattern>
+    <pattern>
+		<match>org.kuali.kfs.module.cab.businessobject.AssetTransactionType</match>
+		<replacement>org.kuali.kfs.module.cam.businessobject.AssetTransactionType</replacement>
+	</pattern>
   </rule>
 
   <!--  Rules specifying any change in class properties.
@@ -397,6 +429,55 @@
         <match>ruleResponsibilityKey</match>
         <replacement>id</replacement>
       </pattern>
+    </pattern>    
+    <pattern>
+      <class>org.kuali.rice.location.impl.county.CountyBo</class>
+      <pattern>
+        <match>countyCode</match>
+        <replacement>code</replacement>
+      </pattern>
+      <pattern>
+        <match>postalCountryCode</match>
+        <replacement>countryCode</replacement>
+      </pattern>
+      <pattern>
+        <match>countyName</match>
+        <replacement>name</replacement>
+      </pattern>
+    </pattern>
+    <pattern> 
+      <class>org.kuali.rice.location.impl.state.StateBo</class> 
+      <pattern> 
+        <match>postalCountryCode</match> 
+        <replacement>countryCode</replacement> 
+      </pattern> 
+      <pattern> 
+        <match>postalStateCode</match> 
+        <replacement>code</replacement> 
+      </pattern> 
+      <pattern> 
+        <match>postalStateName</match> 
+        <replacement>name</replacement> 
+      </pattern> 
+    </pattern>
+    <pattern>
+      <class>org.kuali.rice.location.impl.postalcode.PostalCodeBo</class>
+      <pattern>
+        <match>postalCountryCode</match>
+        <replacement>countryCode</replacement>
+      </pattern>
+      <pattern>
+        <match>postalCode</match>
+        <replacement>code</replacement>
+      </pattern>
+      <pattern>
+        <match>postalStateCode</match>
+        <replacement>stateCode</replacement>
+      </pattern>
+      <pattern>
+        <match>postalCityName</match>
+        <replacement>cityName</replacement>
+      </pattern>  
     </pattern>
     <!-- UA additions -->
     <pattern>
@@ -468,7 +549,21 @@
         <match>reportOrderCode</match>
         <replacement></replacement>
       </pattern>
-    </pattern>           
+    </pattern>
+    <pattern>
+		<class>org.kuali.kfs.coa.businessobject.SourceOfFunds</class>
+		<pattern>
+			<match>sourceOfFundsDesc</match>
+			<replacement>sourceOfFundsDescription</replacement>
+		</pattern>
+	</pattern>
+	<pattern> 
+      <class>org.kuali.rice.kim.impl.responsibility.ReviewResponsibilityBo</class> 
+      <pattern> 
+        <match>responsibilityId</match> 
+        <replacement>id</replacement> 
+      </pattern> 
+	</pattern>
   </rule>
 
   <!-- Rules for any changes Dates from the format YYYY-MM-DD to other format.  The

@@ -47,8 +47,6 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.kuali.rice.kim.api.identity.address.EntityAddress;
-import org.kuali.rice.kim.impl.identity.address.EntityAddressBo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -61,10 +59,7 @@ import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.google.common.io.ByteSource;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-import com.thoughtworks.xstream.io.xml.DomWriter;
-    
+
 public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConversionService {
 	private static final Logger LOGGER = Logger.getLogger(MaintainableXMLConversionServiceImpl.class);
 	private static final String SERIALIZATION_ATTRIBUTE = "serialization";
@@ -72,6 +67,10 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 	private static final String MAINTENANCE_ACTION_ELEMENT_NAME = "maintenanceAction";
     private static final String OLD_MAINTAINABLE_OBJECT_ELEMENT_NAME = "oldMaintainableObject";
     private static final String NEW_MAINTAINABLE_OBJECT_ELEMENT_NAME = "newMaintainableObject";
+
+    private static final String ECRD_ROOT_NODE_NAME = "org.kuali.kfs.module.ec.businessobject.EffortCertificationReportDefinition";
+    private static final String ECRD_CHILD_NODE_NAME = "effortCertificationReportPositions";
+    private static final String LIST_PROXY_NAME = "org.apache.ojb.broker.core.proxy.ListProxyDefaultImpl";
 
    private LoadingCache<PropertyClassKey, Optional<Class<?>>> propertyClassCache = CacheBuilder.newBuilder().build(new PropertyClassLoader());
 	/**
@@ -916,6 +915,11 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 					Node classAttribute = childNode.getAttributes().getNamedItem(CLASS_ATTRIBUTE);
 					if(classAttribute != null && StringUtils.equals(classAttribute.getNodeValue(), "org.kuali.rice.kns.util.TypedArrayList")) {
                         handleTypedArrayList(document, xpath, (Element)childNode);
+					} else if (isTargetEffortCertificationReportPositionsNode(childNode)) {
+						// Need to skip over ECRD positions list due to needing serialization attr
+						// that otherwise was getting stripped on line 924. This also avoids a child
+						// list node from getting errantly pruned off ECRD doc types
+						deleteAllNoneListProxyChildren(childNode);
 					} else {
 						((Element)childNode).removeAttribute(SERIALIZATION_ATTRIBUTE);
 						
@@ -1118,5 +1122,43 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
         }
     }
 
+    /*
+     * True only when the node passed has the target ECRD's child node name,
+     * AND the parent is named the ECRD root node name. This should help to ensure
+     * we only test positive for the ECRD target as intended. A true effectively
+     * means a needed serialization attribute is not deleted, and that a child
+     * list node does not get pruned from the ECRD maintenance XML (happens in
+     * the calling method in the next 'else' case after the call here).
+     */
+	private boolean isTargetEffortCertificationReportPositionsNode(Node node) {
+		if (node == null
+				|| StringUtils.isBlank(node.getNodeName())
+				|| node.getParentNode() == null
+				|| StringUtils.isBlank(node.getParentNode().getNodeName())) {
+			return false;
+		}
+
+		String nodeName = node.getNodeName();
+		String parentNodeName = node.getParentNode().getNodeName();
+
+		return nodeName.equals(ECRD_CHILD_NODE_NAME)
+				&& parentNodeName.equals(ECRD_ROOT_NODE_NAME);
+	}
+
+	/*
+	 * Everything but ListProxyDefaultImpl node should be removed from input. A call to this
+	 * should always be preceded by a call to isTargetEffortCertificationReportPositionsNode(),
+	 * or similar guard.
+	 */
+	private void deleteAllNoneListProxyChildren(Node ecrdPositionsNode) {
+		Node childNode = ecrdPositionsNode.getFirstChild();
+		while(childNode != null) {
+			if (!childNode.getNodeName().equals(LIST_PROXY_NAME)) {
+				// Not a list proxy node, so remove it
+				ecrdPositionsNode.removeChild(childNode);
+			}
+			childNode = childNode.getNextSibling();
+		}
+	}
 
 }
