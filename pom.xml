@@ -3,13 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ua.utility</groupId>
     <artifactId>kfsdbupgrade</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <kuali.rice.version>2.1.9</kuali.rice.version>
+        <kfs.version>7.20170323-ua-release41</kfs.version>
     </properties>
     <dependencies>
         <dependency>
@@ -211,6 +212,21 @@
             <version>[4.11,)</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.kuali.kfs</groupId>
+            <artifactId>kfs-kns</artifactId>
+            <version>${kfs.version}</version>
+            <exclusions>
+                <exclusion>
+	            	<groupId>org.kuali.rice</groupId>
+	            	<artifactId>rice-impl</artifactId>
+	            </exclusion>
+                <exclusion>
+	            	<groupId>org.kuali.rice</groupId>
+	            	<artifactId>rice-kim-ldap</artifactId>
+	            </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -285,6 +301,17 @@
             <id>ksd-external-artifacts</id>
             <name>KSD External Artifacts</name>
             <url>https://ka-tools.mosaic.arizona.edu/nexus/content/repositories/ksd-external-artifacts/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>kfs-internal-releases</id>
+            <name>KFS internal releases</name>
+            <url>https://ka-tools.mosaic.arizona.edu/nexus/content/repositories/releases/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
