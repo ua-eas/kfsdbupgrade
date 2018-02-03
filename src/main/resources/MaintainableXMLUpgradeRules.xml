@@ -208,6 +208,10 @@
 		<match>org.kuali.kfs.module.cab.businessobject.AssetTransactionType</match>
 		<replacement>org.kuali.kfs.module.cam.businessobject.AssetTransactionType</replacement>
 	</pattern>
+    <pattern>
+		<match>org.kuali.kfs.module.cam.businessobject.AssetRetirementGlobal</match>
+		<replacement>edu.arizona.kfs.module.cam.businessobject.AssetRetirementGlobal</replacement>
+	</pattern>
   </rule>
 
   <!--  Rules specifying any change in class properties.
