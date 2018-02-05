@@ -277,6 +277,7 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 		migrateClassAsAttribute(document);
 		removeAutoIncrementSetElements(document);
 		removeReconcilerGroup(document);
+		removeMemberGroup(document);
 		catchMissedTypedArrayListElements(document);
 
         TransformerFactory transFactory = TransformerFactory.newInstance();
@@ -586,6 +587,54 @@ public class MaintainableXMLConversionServiceImpl implements MaintainableXmlConv
 				Node match = matchingNodes.item(i);
 				Node parent = match.getParentNode();
 				LOGGER.trace("Removing element 'reconcilerGroup' in " + parent.getNodeName());
+				parent.removeChild(match);
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.error("XPathException encountered: ", e);
+		}
+	}
+	
+	/*
+	 * UAF-6758
+	 * Used to remove memberGroup and its child nodes for the OreReviewRole doc. Also move memberGroup/activeFromDate up to the tree.
+	 */
+	private void removeMemberGroup(Document document) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = null;
+		try {
+			expr = xpath.compile("//memberGroup");
+			NodeList matchingNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+			for (int i = 0; i < matchingNodes.getLength(); i++) {
+				Node match = matchingNodes.item(i);
+				Node parent = match.getParentNode();
+				Node newActiveFromNode = null;
+				Node oldActiveFromNode = null;
+				NodeList childNodes = match.getChildNodes();
+				// find activeFromDate from memberGroup children (newActiveFromNode to move up of node hierarchy)
+				for (int j = 0; j < childNodes.getLength(); j++) {
+					Node child = childNodes.item(j);
+					if ("activeFromDate".equals(child.getNodeName())) {
+						newActiveFromNode = child;
+						break;
+					}
+				}
+				// find existing activeFromDate from memberGroup sibling node
+				childNodes = parent.getChildNodes();
+				for (int j = 0; j < childNodes.getLength(); j++) {
+					Node child = childNodes.item(j);
+					if ("activeFromDate".equals(child.getNodeName())) {
+						oldActiveFromNode = child;
+						break;
+					}
+				}
+				
+				if (oldActiveFromNode != null && newActiveFromNode != null) {
+					parent.removeChild(oldActiveFromNode);
+					parent.appendChild(newActiveFromNode);
+					LOGGER.trace("Update activeFromDate value from " + oldActiveFromNode.getTextContent() + " to " + newActiveFromNode.getTextContent());
+				}
+				
+				LOGGER.trace("Removing element 'memberGroup' in " + parent.getNodeName());
 				parent.removeChild(match);
 			}
 		} catch (XPathExpressionException e) {
